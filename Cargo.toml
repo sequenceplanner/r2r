@@ -1,0 +1,22 @@
+
+[package]
+name = "r2r"
+version = "0.0.1"
+authors = ["Martin Dahl <martin.dahl@gmail.com>"]
+description = "Minimal ros2 bindings."
+license = "Apache-2.0/MIT"
+edition = "2018"
+
+[features]
+headers = ["rcl/headers", "msg_gen/headers"]
+
+[dependencies]
+common = { path = "common", version = "0.0.1" }
+rcl = { path = "rcl", version = "0.0.1" }
+msg_gen = { path = "msg_gen", version = "0.0.1" }
+
+[build-dependencies]
+common = { path = "common", version = "0.0.1" }
+msg_gen = { path = "msg_gen", version = "0.0.1" }
+
+[workspace]

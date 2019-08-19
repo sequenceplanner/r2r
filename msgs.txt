@@ -1,0 +1,3 @@
+std_msgs/msg/Bool
+std_msgs/msg/String
+std_msgs/msg/Int32
