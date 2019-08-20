@@ -240,6 +240,19 @@ where
     }
 }
 
+pub fn publish_native<T>(publisher: &rcl_publisher_t, msg: &WrappedNativeMsg<T>) -> Result<(), ()>
+where
+    T: WrappedTypesupport,
+{
+    let result = unsafe { rcl_publish(publisher, msg.void_ptr(), std::ptr::null_mut()) };
+    if result == RCL_RET_OK as i32 {
+        Ok(())
+    } else {
+        eprintln!("{}", result);
+        Err(())
+    }
+}
+
 pub fn rcl_create_subscription<T>(
     node: &mut rcl_node_t,
     topic: &str,

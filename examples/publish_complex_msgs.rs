@@ -1,11 +1,14 @@
 use r2r::*;
 use builtin_interfaces::msg::Duration;
 use trajectory_msgs::msg::*;
+use std_msgs::msg::Int32;
+
 
 fn main() -> Result<(), ()> {
     let mut ctx = rcl_create_context()?;
     let mut node = rcl_create_node(&mut ctx, "testnode", "")?;
     let publisher = rcl_create_publisher::<JointTrajectoryPoint>(&mut node, "/hej")?;
+    let publisher2 = rcl_create_publisher::<Int32>(&mut node, "/native_count")?;
 
     let mut c = 0;
     let cb = move |x:std_msgs::msg::String| {
@@ -17,7 +20,11 @@ fn main() -> Result<(), ()> {
             time_from_start : Duration { sec: c, nanosec: 0 },
             ..Default::default()
         };
+        let mut native = WrappedNativeMsg::<Int32>::new();
+        native.data = c;
+
         publish(&publisher, &to_send).unwrap();
+        publish_native(&publisher2, &native).unwrap();
     };
 
     let cb2 = move |x:JointTrajectoryPoint| {
