@@ -59,6 +59,35 @@ impl Default for rmw_qos_profile_t {
 // conversions from/to vectors
 // macro:ify this increase maintainability
 
+impl rosidl_generator_c__String__Sequence {
+    pub fn update(&mut self, values: &[String]) {
+        unsafe { rosidl_generator_c__String__Sequence__fini(self as *mut _); }
+        unsafe { rosidl_generator_c__String__Sequence__init(self as *mut _, values.len()); }
+        let strs = unsafe { std::slice::from_raw_parts_mut(self.data, values.len()) };
+        for (target, source) in strs.iter_mut().zip(values) {
+            target.assign(&source);
+        }
+    }
+
+    pub fn to_vec(&self) -> Vec<String> {
+        let mut dst = Vec::with_capacity(self.size);
+        let strs = unsafe { std::slice::from_raw_parts(self.data, self.size) };
+        for s in strs {
+            dst.push(s.to_str().to_owned());
+        }
+        dst
+    }
+
+    // dont think we need fini? surely messages call fini on all their fields...?
+    //
+    // extern "C" {
+    //     pub fn rosidl_generator_c__float64__Sequence__fini(
+    //         sequence: *mut rosidl_generator_c__double__Sequence,
+    //     );
+    // }
+}
+
+
 impl rosidl_generator_c__double__Sequence {
     pub fn update(&mut self, values: &[f64]) {
         // crash here?

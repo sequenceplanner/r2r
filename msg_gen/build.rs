@@ -59,6 +59,7 @@ fn main() {
         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_generator_c__String")
+        .blacklist_type("rosidl_generator_c__String__Sequence")
         .blacklist_type("rosidl_generator_c__double__Sequence") // etc...
         .default_enum_style(bindgen::EnumVariation::Rust { non_exhaustive: false } );
 

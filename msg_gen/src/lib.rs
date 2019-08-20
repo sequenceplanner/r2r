@@ -14,25 +14,6 @@ use rcl::*;
 
 use std::ffi::CStr;
 
-//  Try to make these work, containing a nested msg with arrays. 
-//
-//  martin@martin-XPS-15-9550 ~ $ ros2 msg show trajectory_msgs/msg/JointTrajectoryPoint 
-//  # Each trajectory point specifies either positions[, velocities[, accelerations]]
-//  # or positions[, effort] for the trajectory to be executed.
-//  # All specified values are in the same order as the joint names in JointTrajectory.msg.
-//  
-//  float64[] positions
-//  float64[] velocities
-//  float64[] accelerations
-//  float64[] effort
-//  builtin_interfaces/Duration time_from_start
-//  martin@martin-XPS-15-9550 ~ $ ros2 msg show builtin_interfaces/msg/Duration
-//  int32 sec
-//  uint32 nanosec
-//  
-//  
-
-
 fn field_type(t: u8) -> String {
 
     // rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT = 1,
@@ -119,7 +100,9 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
 
             let rust_field_type = field_type(type_id);
 
-            if rust_field_type == "std::string::String" {
+            if is_array {
+                from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
+            } else if rust_field_type == "std::string::String" {
                 from_native.push_str(&format!("{field_name}: msg.{field_name}.to_str().to_owned(),\n", field_name = field_name));
             } else if rust_field_type == "message" {
                 // perform a hack!
@@ -131,11 +114,7 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
                 let (module, prefix) = ( nn[0], nn[1] );
                 from_native.push_str(&format!("{field_name}: {module}::{prefix}::{msgname}::from_native(&msg.{field_name}),", field_name = field_name, module = module, prefix=prefix, msgname = name));                
             } else {
-                if is_array {
-                    from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
-                } else {
-                    from_native.push_str(&format!("{field_name}: msg.{field_name},\n", field_name = field_name));
-                }
+                from_native.push_str(&format!("{field_name}: msg.{field_name},\n", field_name = field_name));
             }
         }
         from_native.push_str("      }\n    }\n");
@@ -151,16 +130,14 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
             let rust_field_type = field_type(type_id);
 
             // handle other special cases...
-            if rust_field_type == "std::string::String" {
+            if is_array {
+                copy_to_native.push_str(&format!("msg.{field_name}.update(&self.{field_name});\n", field_name = field_name));
+            } else if rust_field_type == "std::string::String" {
                 copy_to_native.push_str(&format!("msg.{field_name}.assign(&self.{field_name});\n", field_name = field_name));
             } else if rust_field_type == "message" {
                 copy_to_native.push_str(&format!("self.{field_name}.copy_to_native(&mut msg.{field_name});", field_name = field_name));
             } else {
-                if is_array {
-                    copy_to_native.push_str(&format!("msg.{field_name}.update(&self.{field_name});\n", field_name = field_name));
-                } else {
-                    copy_to_native.push_str(&format!("msg.{field_name} = self.{field_name};\n", field_name = field_name));
-                }
+                copy_to_native.push_str(&format!("msg.{field_name} = self.{field_name};\n", field_name = field_name));
             }
         }
         copy_to_native.push_str("}\n");
