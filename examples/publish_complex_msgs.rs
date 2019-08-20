@@ -41,13 +41,13 @@ fn main() -> Result<(), ()> {
     let sub3 = rcl_create_subscription_native(&mut node, "/hej", Box::new(cb3))?;
 
     // TODO: group subscriptions in a "node" struct
-    let mut subst: Vec<Box<Sub>> = vec![Box::new(sub1), Box::new(sub2), Box::new(sub3)];
+    let mut subs: Vec<Box<Sub>> = vec![Box::new(sub1), Box::new(sub2), Box::new(sub3)];
 
     // run for 10 seconds
     let mut count = 0;
     while count < 100 {
         let timeout = 100 * 1000 * 1000; // 0.1 sec
-        rcl_take_subst(&mut ctx, &mut subst, timeout)?;
+        take_subs(&mut ctx, &mut subs, timeout)?;
         count = count + 1;
     }
 

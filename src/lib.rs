@@ -3,9 +3,9 @@ include!("./generated_msgs.rs");
 use msg_gen::*;
 use rcl::*;
 
+use serde::{Deserialize, Serialize};
 use std::ffi::CString;
 use std::ops::{Deref, DerefMut};
-use serde::{Serialize, Deserialize};
 
 pub trait WrappedTypesupport {
     type CStruct;
@@ -85,25 +85,25 @@ pub trait Sub {
     fn rcl_msg(&mut self) -> *mut std::os::raw::c_void;
 }
 
-pub struct WrappedSubT<T>
+pub struct WrappedSub<T>
 where
     T: WrappedTypesupport,
 {
-    pub rcl_handle: rcl_subscription_t,
-    pub callback: Box<dyn FnMut(T) -> ()>,
-    pub rcl_msg: WrappedNativeMsg<T>,
+    rcl_handle: rcl_subscription_t,
+    callback: Box<dyn FnMut(T) -> ()>,
+    rcl_msg: WrappedNativeMsg<T>,
 }
 
 pub struct WrappedSubNative<T>
 where
     T: WrappedTypesupport,
 {
-    pub rcl_handle: rcl_subscription_t,
-    pub callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
-    pub rcl_msg: WrappedNativeMsg<T>,
+    rcl_handle: rcl_subscription_t,
+    callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
+    rcl_msg: WrappedNativeMsg<T>,
 }
 
-impl<T> Sub for WrappedSubT<T>
+impl<T> Sub for WrappedSub<T>
 where
     T: WrappedTypesupport,
 {
@@ -253,16 +253,15 @@ where
     }
 }
 
-pub fn rcl_create_subscription<T>(
+fn create_subscription_helper<T>(
     node: &mut rcl_node_t,
     topic: &str,
-    callback: Box<dyn FnMut(T) -> ()>,
-) -> Result<WrappedSubT<T>, ()>
+) -> Result<rcl_subscription_t, ()>
 where
     T: WrappedTypesupport,
 {
     let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
-    let topic_c_string = CString::new(topic).unwrap();
+    let topic_c_string = CString::new(topic).map_err(|_| ())?;
 
     let result = unsafe {
         let mut subscription_options = rcl_subscription_get_default_options();
@@ -276,17 +275,28 @@ where
         )
     };
     if result == RCL_RET_OK as i32 {
-        let wrapped_sub = WrappedSubT {
-            rcl_handle: subscription_handle,
-            rcl_msg: WrappedNativeMsg::<T>::new(),
-            callback: callback,
-        };
-
-        Ok(wrapped_sub)
+        Ok(subscription_handle)
     } else {
-        eprintln!("{}", result);
         Err(())
     }
+}
+
+pub fn rcl_create_subscription<T>(
+    node: &mut rcl_node_t,
+    topic: &str,
+    callback: Box<dyn FnMut(T) -> ()>,
+) -> Result<WrappedSub<T>, ()>
+where
+    T: WrappedTypesupport,
+{
+    let subscription_handle = create_subscription_helper::<T>(node, topic)?;
+    let wrapped_sub = WrappedSub {
+        rcl_handle: subscription_handle,
+        rcl_msg: WrappedNativeMsg::<T>::new(),
+        callback: callback,
+    };
+
+    Ok(wrapped_sub)
 }
 
 pub fn rcl_create_subscription_native<T>(
@@ -297,35 +307,17 @@ pub fn rcl_create_subscription_native<T>(
 where
     T: WrappedTypesupport,
 {
-    let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
-    let topic_c_string = CString::new(topic).unwrap();
-
-    let result = unsafe {
-        let mut subscription_options = rcl_subscription_get_default_options();
-        subscription_options.qos = rmw_qos_profile_t::default();
-        rcl_subscription_init(
-            &mut subscription_handle,
-            node,
-            T::get_ts(),
-            topic_c_string.as_ptr(),
-            &subscription_options,
-        )
+    let subscription_handle = create_subscription_helper::<T>(node, topic)?;
+    let wrapped_sub = WrappedSubNative {
+        rcl_handle: subscription_handle,
+        rcl_msg: WrappedNativeMsg::<T>::new(),
+        callback: callback,
     };
-    if result == RCL_RET_OK as i32 {
-        let wrapped_sub = WrappedSubNative {
-            rcl_handle: subscription_handle,
-            rcl_msg: WrappedNativeMsg::<T>::new(),
-            callback: callback,
-        };
 
-        Ok(wrapped_sub)
-    } else {
-        eprintln!("{}", result);
-        Err(())
-    }
+    Ok(wrapped_sub)
 }
 
-pub fn rcl_take_subst(
+pub fn take_subs(
     ctx: &mut rcl_context_t,
     subs: &mut Vec<Box<dyn Sub>>,
     timeout: i64,
@@ -344,6 +336,8 @@ pub fn rcl_take_subst(
             ctx,
             rcutils_get_default_allocator(),
         );
+    }
+    unsafe {
         rcl_wait_set_clear(&mut ws);
     }
 
@@ -359,9 +353,7 @@ pub fn rcl_take_subst(
 
     for s in subs {
         let mut msg_info = rmw_message_info_t::default();
-
         let ret = unsafe { rcl_take(s.handle(), s.rcl_msg(), &mut msg_info, std::ptr::null_mut()) };
-
         // fresh message, run cb
         if ret == RCL_RET_OK as i32 {
             s.run_cb();
@@ -436,7 +428,8 @@ mod tests {
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
             println!("{:#?}", *members);
 
-            let memberslice = std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
+            let memberslice =
+                std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
             for member in memberslice {
                 println!("member: {:#?}", *member);
             }
@@ -448,7 +441,8 @@ mod tests {
             msg.covariance[10] = 10.0;
             msg.covariance[35] = 99.0;
             msg.covariance.push(4444.0);
-            let msg_native2 = WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::from(&msg);
+            let msg_native2 =
+                WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::from(&msg);
             let msg2 = geometry_msgs::msg::AccelWithCovariance::from_native(&msg_native2);
             println!("{:#?}", msg2);
         }
@@ -463,7 +457,8 @@ mod tests {
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
             println!("{:#?}", *members);
 
-            let memberslice = std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
+            let memberslice =
+                std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
             for member in memberslice {
                 println!("member: {:#?}", *member);
             }
@@ -475,7 +470,7 @@ mod tests {
             msg.dimensions.push(1.0);
             msg.dimensions.push(1.0);
             msg.dimensions.push(1.0); // only three elements allowed
-            let msg_native2 = WrappedNativeMsg::<shape_msgs::msg::SolidPrimitive>::from(&msg);
+            let _msg_native2 = WrappedNativeMsg::<shape_msgs::msg::SolidPrimitive>::from(&msg);
         }
     }
 
@@ -493,7 +488,7 @@ mod tests {
         let msg = std_msgs::msg::Bool { data: true };
         let msg_native = WrappedNativeMsg::<std_msgs::msg::Bool>::from(&msg);
         let msg2 = std_msgs::msg::Bool::from_native(&msg_native);
-        assert_eq!(msg,msg2);
+        assert_eq!(msg, msg2);
     }
 
     #[test]
@@ -506,7 +501,7 @@ mod tests {
         let new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
         println!("{:#?}", new_msg);
-        assert_eq!(msg,new_msg);
+        assert_eq!(msg, new_msg);
     }
 
     #[test]
@@ -519,7 +514,7 @@ mod tests {
         unsafe { *((*new_native).positions.data) = 88.9 };
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
         println!("{:#?}", new_msg);
-        assert_ne!(msg,new_msg);
+        assert_ne!(msg, new_msg);
     }
 
 }
