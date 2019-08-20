@@ -25,11 +25,16 @@ fn main() -> Result<(), ()> {
         println!("JTP serialized as: {}", serialized);
     };    
 
+    let cb3 = move |raw_c:&WrappedNativeMsg<JointTrajectoryPoint>| {
+        println!("Raw c data: {:?}", (*raw_c).positions);
+    };
+
     let sub1 = rcl_create_subscription(&mut node, "/hopp", Box::new(cb))?;
     let sub2 = rcl_create_subscription(&mut node, "/hej", Box::new(cb2))?;
+    let sub3 = rcl_create_subscription_native(&mut node, "/hej", Box::new(cb3))?;
 
     // TODO: group subscriptions in a "node" struct
-    let mut subst: Vec<Box<Sub>> = vec![Box::new(sub1), Box::new(sub2)];
+    let mut subst: Vec<Box<Sub>> = vec![Box::new(sub1), Box::new(sub2), Box::new(sub3)];
 
     // run for 10 seconds
     let mut count = 0;

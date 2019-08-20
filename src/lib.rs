@@ -94,6 +94,15 @@ where
     pub rcl_msg: WrappedNativeMsg<T>,
 }
 
+pub struct WrappedSubNative<T>
+where
+    T: WrappedTypesupport,
+{
+    pub rcl_handle: rcl_subscription_t,
+    pub callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
+    pub rcl_msg: WrappedNativeMsg<T>,
+}
+
 impl<T> Sub for WrappedSubT<T>
 where
     T: WrappedTypesupport,
@@ -110,6 +119,25 @@ where
         // copy native msg to rust type and run callback
         let msg = T::from_native(&self.rcl_msg);
         (self.callback)(msg);
+    }
+}
+
+impl<T> Sub for WrappedSubNative<T>
+where
+    T: WrappedTypesupport,
+{
+    fn handle(&self) -> &rcl_subscription_t {
+        &self.rcl_handle
+    }
+
+    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
+        self.rcl_msg.void_ptr_mut()
+    }
+
+    fn run_cb(&mut self) -> () {
+        // *dont't* copy native msg to rust type.
+        // e.g. if you for instance have large image data...
+        (self.callback)(&self.rcl_msg);
     }
 }
 
@@ -236,6 +264,42 @@ where
     };
     if result == RCL_RET_OK as i32 {
         let wrapped_sub = WrappedSubT {
+            rcl_handle: subscription_handle,
+            rcl_msg: WrappedNativeMsg::<T>::new(),
+            callback: callback,
+        };
+
+        Ok(wrapped_sub)
+    } else {
+        eprintln!("{}", result);
+        Err(())
+    }
+}
+
+pub fn rcl_create_subscription_native<T>(
+    node: &mut rcl_node_t,
+    topic: &str,
+    callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
+) -> Result<WrappedSubNative<T>, ()>
+where
+    T: WrappedTypesupport,
+{
+    let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
+    let topic_c_string = CString::new(topic).unwrap();
+
+    let result = unsafe {
+        let mut subscription_options = rcl_subscription_get_default_options();
+        subscription_options.qos = rmw_qos_profile_t::default();
+        rcl_subscription_init(
+            &mut subscription_handle,
+            node,
+            T::get_ts(),
+            topic_c_string.as_ptr(),
+            &subscription_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        let wrapped_sub = WrappedSubNative {
             rcl_handle: subscription_handle,
             rcl_msg: WrappedNativeMsg::<T>::new(),
             callback: callback,
