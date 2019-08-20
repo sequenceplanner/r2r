@@ -26,7 +26,7 @@ use std::ffi::CStr;
 //  float64[] accelerations
 //  float64[] effort
 //  builtin_interfaces/Duration time_from_start
-//  martin@martin-XPS-15-9550 ~ $ ros2 msg show builtin_interfaces/Duration
+//  martin@martin-XPS-15-9550 ~ $ ros2 msg show builtin_interfaces/msg/Duration
 //  int32 sec
 //  uint32 nanosec
 //  
@@ -57,14 +57,19 @@ fn field_type(t: u8) -> String {
     // todo: add these as needed...
     if t == (rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8) { "std::string::String".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u8) { "bool".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 as u8) { "u32".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT32 as u8) { "i32".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u8) { "f32".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u8) { "f64".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u8) { "message".to_owned() }
+
     else { panic!("ros native type not implemented: {}", t); }
 }
 
 // TODO: this is a terrible hack :)
 pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
     let key = format!("{}__{}__{}", module, prefix, name);
-    let ptr = INTROSPECTION_FNS.get(key.as_str()).expect("code generation error");
+    let ptr = INTROSPECTION_FNS.get(key.as_str()).expect(&format!("code generation error: {}", name));
     let ptr = *ptr as *const i32 as *const rosidl_message_type_support_t;
     unsafe {
         let members = (*ptr).data as *const rosidl_typesupport_introspection_c__MessageMembers;
@@ -84,7 +89,21 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
             let type_id = (*member).type_id_;
             let is_array = (*member).is_array_; // TODO: use
             let rust_field_type = field_type(type_id);
-            let s = format!("pub {}: {},\n",field_name, rust_field_type);
+            let rust_field_type = if rust_field_type == "message" {
+                // perform a hack!
+                let ts = (*member).members_;
+                let members = (*ts).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+                let namespace = CStr::from_ptr((*members).message_namespace_).to_str().unwrap();
+                let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
+                let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
+                let (module, prefix) = ( nn[0], nn[1] );
+                format!("{module}::{prefix}::{msgname}", module = module, prefix=prefix, msgname = name)
+            } else { rust_field_type };
+            let s = if is_array {
+                format!("pub {}: Vec<{}>,\n",field_name, rust_field_type)
+            } else {
+                format!("pub {}: {},\n",field_name, rust_field_type)
+            };
             fields.push_str(&s);
         }
 
@@ -102,8 +121,21 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
 
             if rust_field_type == "std::string::String" {
                 from_native.push_str(&format!("{field_name}: msg.{field_name}.to_str().to_owned(),\n", field_name = field_name));
+            } else if rust_field_type == "message" {
+                // perform a hack!
+                let ts = (*member).members_;
+                let members = (*ts).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+                let namespace = CStr::from_ptr((*members).message_namespace_).to_str().unwrap();
+                let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
+                let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
+                let (module, prefix) = ( nn[0], nn[1] );
+                from_native.push_str(&format!("{field_name}: {module}::{prefix}::{msgname}::from_native(&msg.{field_name}),", field_name = field_name, module = module, prefix=prefix, msgname = name));                
             } else {
-                from_native.push_str(&format!("{field_name}: msg.{field_name},\n", field_name = field_name));
+                if is_array {
+                    from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
+                } else {
+                    from_native.push_str(&format!("{field_name}: msg.{field_name},\n", field_name = field_name));
+                }
             }
         }
         from_native.push_str("      }\n    }\n");
@@ -121,8 +153,14 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
             // handle other special cases...
             if rust_field_type == "std::string::String" {
                 copy_to_native.push_str(&format!("msg.{field_name}.assign(&self.{field_name});\n", field_name = field_name));
+            } else if rust_field_type == "message" {
+                copy_to_native.push_str(&format!("self.{field_name}.copy_to_native(&mut msg.{field_name});", field_name = field_name));
             } else {
-                copy_to_native.push_str(&format!("msg.{field_name} = self.{field_name};\n", field_name = field_name));
+                if is_array {
+                    copy_to_native.push_str(&format!("msg.{field_name}.update(&self.{field_name});\n", field_name = field_name));
+                } else {
+                    copy_to_native.push_str(&format!("msg.{field_name} = self.{field_name};\n", field_name = field_name));
+                }
             }
         }
         copy_to_native.push_str("}\n");
@@ -143,7 +181,7 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
         }}\n", msgname = name, c_struct = &c_struct, from_native=from_native, copy_to_native=copy_to_native);
 
         let module_str = format!("
-                          #[derive(Clone,Debug,PartialEq)]
+                          #[derive(Clone,Debug,Default,PartialEq,Serialize,Deserialize)]
                           pub struct {msgname} {{\n
                               {fields}
                           }}\n

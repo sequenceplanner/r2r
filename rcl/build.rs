@@ -4,6 +4,8 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    println!("cargo:rerun-if-changed=../");
+
     let headers_enabled = env::var_os("CARGO_FEATURE_HEADERS").is_some();
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")

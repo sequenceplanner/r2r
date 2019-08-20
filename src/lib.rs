@@ -5,6 +5,7 @@ use rcl::*;
 
 use std::ffi::CString;
 use std::ops::{Deref, DerefMut};
+use serde::{Serialize, Deserialize};
 
 pub trait WrappedTypesupport {
     type CStruct;
@@ -132,9 +133,9 @@ pub fn rcl_create_context() -> Result<rcl_context_t, ()> {
 }
 
 pub fn rcl_create_node(
+    ctx: &mut rcl_context_t,
     name: &str,
     namespace: &str,
-    ctx: &mut rcl_context_t,
 ) -> Result<rcl_node_t, ()> {
     let c_node_name = CString::new(name).unwrap();
     let c_node_ns = CString::new(namespace).unwrap();
@@ -290,6 +291,10 @@ pub fn rcl_take_subst(
         }
     }
 
+    unsafe {
+        rcl_wait_set_fini(&mut ws);
+    }
+
     Ok(())
 }
 
@@ -361,6 +366,32 @@ mod tests {
         let msg_native = WrappedNativeMsg::<std_msgs::msg::Bool>::from(&msg);
         let msg2 = std_msgs::msg::Bool::from_native(&msg_native);
         assert_eq!(msg,msg2);
+    }
+
+    #[test]
+    fn test_float_sequence() -> () {
+        use trajectory_msgs::msg::*;
+        let native = WrappedNativeMsg::<JointTrajectoryPoint>::new();
+        let mut msg = JointTrajectoryPoint::from_native(&native);
+        msg.positions.push(39.0);
+        msg.positions.push(34.0);
+        let new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
+        let new_msg = JointTrajectoryPoint::from_native(&new_native);
+        println!("{:#?}", new_msg);
+        assert_eq!(msg,new_msg);
+    }
+
+    #[test]
+    fn test_deault() -> () {
+        use trajectory_msgs::msg::*;
+        let mut msg: JointTrajectoryPoint = Default::default();
+        msg.positions.push(39.0);
+        msg.positions.push(34.0);
+        let mut new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
+        unsafe { *((*new_native).positions.data) = 88.9 };
+        let new_msg = JointTrajectoryPoint::from_native(&new_native);
+        println!("{:#?}", new_msg);
+        assert_ne!(msg,new_msg);
     }
 
 }

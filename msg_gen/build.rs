@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use common::*;
 
 fn main() {
+    println!("cargo:rerun-if-changed=../");
+
     let msgs = read_file("../msgs.txt").unwrap();
     let msg_list = parse_msgs(&msgs);
     let msg_map = as_map(&msg_list);
@@ -24,12 +26,17 @@ fn main() {
 
     for msg in msg_list {
 
+        // I *think* these are always just lowercase
         let module = msg.module.to_lowercase();
         let prefix = msg.prefix.to_lowercase();
         let name = msg.name.to_lowercase();
 
-        includes.push_str(&format!("#include <{}/{}/{}.h>\n", &module, &prefix, &name));
-        includes.push_str(&format!("#include <{}/{}/{}__rosidl_typesupport_introspection_c.h>\n", &module, &prefix, &name));
+        // filename is certainly CamelCase -> snake_case. convert
+        use heck::SnakeCase;
+        let include_filename = msg.name.to_snake_case();
+
+        includes.push_str(&format!("#include <{}/{}/{}.h>\n", &module, &prefix, &include_filename));
+        includes.push_str(&format!("#include <{}/{}/{}__rosidl_typesupport_introspection_c.h>\n", &module, &prefix, &include_filename));
 
         let key = &format!("{}__{}__{}", module, prefix, name);
         let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name);
@@ -52,6 +59,7 @@ fn main() {
         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_generator_c__String")
+        .blacklist_type("rosidl_generator_c__double__Sequence") // etc...
         .default_enum_style(bindgen::EnumVariation::Rust { non_exhaustive: false } );
 
     let ament_prefix_var_name = "AMENT_PREFIX_PATH";
