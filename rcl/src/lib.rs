@@ -9,24 +9,6 @@ pub use rcl_bindings::*;
 use std::ffi::CStr;
 use std::ffi::CString;
 
-
-// special treatment to convert to/from rust strings.
-// ros strings are owned by ros, assignment is a copy
-impl rosidl_generator_c__String {
-    pub fn to_str(&self) -> &str {
-        let s = unsafe { CStr::from_ptr(self.data as *mut i8) };
-        s.to_str().unwrap_or("")
-    }
-
-    pub fn assign(&mut self, other: &str) -> () {
-        let q = CString::new(other).unwrap();
-        let to_send_ptr = q.as_ptr() as *const i8;
-        unsafe {
-            rosidl_generator_c__String__assign(self as *mut _, to_send_ptr);
-        }
-    }
-}
-
 impl Default for rmw_message_info_t {
     fn default() -> Self {
         rmw_message_info_t {
@@ -56,8 +38,22 @@ impl Default for rmw_qos_profile_t {
 }
 
 
-// conversions from/to vectors
-// macro:ify this increase maintainability
+// special treatment to convert to/from rust strings.
+// ros strings are owned by ros, assignment is a copy
+impl rosidl_generator_c__String {
+    pub fn to_str(&self) -> &str {
+        let s = unsafe { CStr::from_ptr(self.data as *mut i8) };
+        s.to_str().unwrap_or("")
+    }
+
+    pub fn assign(&mut self, other: &str) -> () {
+        let q = CString::new(other).unwrap();
+        let to_send_ptr = q.as_ptr() as *const i8;
+        unsafe {
+            rosidl_generator_c__String__assign(self as *mut _, to_send_ptr);
+        }
+    }
+}
 
 impl rosidl_generator_c__String__Sequence {
     pub fn update(&mut self, values: &[String]) {
@@ -70,45 +66,52 @@ impl rosidl_generator_c__String__Sequence {
     }
 
     pub fn to_vec(&self) -> Vec<String> {
-        let mut dst = Vec::with_capacity(self.size);
+        let mut target = Vec::with_capacity(self.size);
         let strs = unsafe { std::slice::from_raw_parts(self.data, self.size) };
         for s in strs {
-            dst.push(s.to_str().to_owned());
+            target.push(s.to_str().to_owned());
         }
-        dst
+        target
     }
-
-    // dont think we need fini? surely messages call fini on all their fields...?
-    //
-    // extern "C" {
-    //     pub fn rosidl_generator_c__float64__Sequence__fini(
-    //         sequence: *mut rosidl_generator_c__double__Sequence,
-    //     );
-    // }
 }
 
+// conversions from/to vectors of built in types
 
-impl rosidl_generator_c__double__Sequence {
-    pub fn update(&mut self, values: &[f64]) {
-        // crash here?
-        unsafe { rosidl_generator_c__float64__Sequence__fini(self as *mut _); }
-        unsafe { rosidl_generator_c__float64__Sequence__init(self as *mut _, values.len()); }
-        unsafe { std::ptr::copy(values.as_ptr(), self.data, values.len()); }
+macro_rules! primitive_sequence {
+    ($ctype:ident, $element_type:ident) => {
+        paste::item! {
+            impl [<$ctype __Sequence>] {
+                pub fn update(&mut self, values: &[$element_type]) {
+                    unsafe { [<$ctype __Sequence__fini>] (self as *mut _); }
+                    unsafe { [<$ctype __Sequence__init>] (self as *mut _, values.len()); }
+                    unsafe { std::ptr::copy(values.as_ptr(), self.data, values.len()); }
+                }
+
+                pub fn to_vec(&self) -> Vec<$element_type> {
+                    let mut target = Vec::with_capacity(self.size);
+                    unsafe { target.set_len(self.size); }
+                    unsafe { std::ptr::copy(self.data, target.as_mut_ptr(), self.size); }
+                    target
+                }
+            }
+        }
     }
-
-    pub fn to_vec(&self) -> Vec<f64> {
-        let mut dst = Vec::with_capacity(self.size);
-        unsafe { dst.set_len(self.size); }
-        unsafe { std::ptr::copy(self.data, dst.as_mut_ptr(), self.size); }
-        dst
-    }
-
-    // dont think we need fini? surely messages call fini on all their fields...?
-    //
-    // extern "C" {
-    //     pub fn rosidl_generator_c__float64__Sequence__fini(
-    //         sequence: *mut rosidl_generator_c__double__Sequence,
-    //     );
-    // }
 }
+
+primitive_sequence!(rosidl_generator_c__float32, f32);
+primitive_sequence!(rosidl_generator_c__float64, f64);
+primitive_sequence!(rosidl_generator_c__long_double, u128);
+primitive_sequence!(rosidl_generator_c__char, i8);
+primitive_sequence!(rosidl_generator_c__wchar, u16);
+primitive_sequence!(rosidl_generator_c__boolean, bool);
+primitive_sequence!(rosidl_generator_c__octet, u8);
+primitive_sequence!(rosidl_generator_c__uint8, u8);
+primitive_sequence!(rosidl_generator_c__int8, i8);
+primitive_sequence!(rosidl_generator_c__uint16, u16);
+primitive_sequence!(rosidl_generator_c__int16, i16);
+primitive_sequence!(rosidl_generator_c__uint32, u32);
+primitive_sequence!(rosidl_generator_c__int32, i32);
+primitive_sequence!(rosidl_generator_c__uint64, u64);
+primitive_sequence!(rosidl_generator_c__int64, i64);
+
 

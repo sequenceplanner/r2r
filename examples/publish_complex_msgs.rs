@@ -33,7 +33,7 @@ fn main() -> Result<(), ()> {
     };    
 
     let cb3 = move |raw_c:&WrappedNativeMsg<JointTrajectoryPoint>| {
-        println!("Raw c data: {:?}", (*raw_c).positions);
+        println!("Raw c data: {:?}", raw_c.positions);
     };
 
     let sub1 = rcl_create_subscription(&mut node, "/hopp", Box::new(cb))?;

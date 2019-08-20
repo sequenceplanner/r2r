@@ -429,6 +429,57 @@ mod tests {
     }
 
     #[test]
+    #[should_panic] // we are testing that we cannot have to many elements in a fixed sized field
+    fn test_fixedsizearray() -> () {
+        unsafe {
+            let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__geometry_msgs__msg__AccelWithCovariance();
+            let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+            println!("{:#?}", *members);
+
+            let memberslice = std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
+            for member in memberslice {
+                println!("member: {:#?}", *member);
+            }
+
+            let msg_native = WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::new();
+            let mut msg = geometry_msgs::msg::AccelWithCovariance::from_native(&msg_native);
+            println!("{:#?}", msg);
+            msg.covariance[0] = 10.0;
+            msg.covariance[10] = 10.0;
+            msg.covariance[35] = 99.0;
+            msg.covariance.push(4444.0);
+            let msg_native2 = WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::from(&msg);
+            let msg2 = geometry_msgs::msg::AccelWithCovariance::from_native(&msg_native2);
+            println!("{:#?}", msg2);
+        }
+    }
+
+    #[test]
+    #[should_panic] // we are testing that we cannot have to many elements in a fixed sized field
+    fn test_capped_sequence() -> () {
+        // float64[<=3] dimensions in the .msg translates to a float64 sequence AND an array size field. handle it...
+        unsafe {
+            let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__shape_msgs__msg__SolidPrimitive();
+            let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+            println!("{:#?}", *members);
+
+            let memberslice = std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
+            for member in memberslice {
+                println!("member: {:#?}", *member);
+            }
+
+            let msg_native = WrappedNativeMsg::<shape_msgs::msg::SolidPrimitive>::new();
+            let mut msg = shape_msgs::msg::SolidPrimitive::from_native(&msg_native);
+            println!("{:#?}", msg);
+            msg.dimensions.push(1.0);
+            msg.dimensions.push(1.0);
+            msg.dimensions.push(1.0);
+            msg.dimensions.push(1.0); // only three elements allowed
+            let msg_native2 = WrappedNativeMsg::<shape_msgs::msg::SolidPrimitive>::from(&msg);
+        }
+    }
+
+    #[test]
     fn test_generation_string_use() -> () {
         let msg = std_msgs::msg::String { data: "hej".into() };
         let msg2 = msg.clone();

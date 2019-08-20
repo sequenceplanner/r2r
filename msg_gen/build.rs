@@ -60,7 +60,23 @@ fn main() {
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_generator_c__String")
         .blacklist_type("rosidl_generator_c__String__Sequence")
-        .blacklist_type("rosidl_generator_c__double__Sequence") // etc...
+        .blacklist_type("rosidl_generator_c__float32__Sequence")
+        .blacklist_type("rosidl_generator_c__float__Sequence")
+        .blacklist_type("rosidl_generator_c__float64__Sequence")
+        .blacklist_type("rosidl_generator_c__double__Sequence")
+        .blacklist_type("rosidl_generator_c__long_double__Sequence")
+        .blacklist_type("rosidl_generator_c__char__Sequence")
+        .blacklist_type("rosidl_generator_c__wchar__Sequence")
+        .blacklist_type("rosidl_generator_c__boolean__Sequence")
+        .blacklist_type("rosidl_generator_c__octet__Sequence")
+        .blacklist_type("rosidl_generator_c__uint8__Sequence")
+        .blacklist_type("rosidl_generator_c__int8__Sequence")
+        .blacklist_type("rosidl_generator_c__uint16__Sequence")
+        .blacklist_type("rosidl_generator_c__int16__Sequence")
+        .blacklist_type("rosidl_generator_c__uint32__Sequence")
+        .blacklist_type("rosidl_generator_c__int32__Sequence")
+        .blacklist_type("rosidl_generator_c__uint64__Sequence")
+        .blacklist_type("rosidl_generator_c__int64__Sequence")
         .default_enum_style(bindgen::EnumVariation::Rust { non_exhaustive: false } );
 
     let ament_prefix_var_name = "AMENT_PREFIX_PATH";

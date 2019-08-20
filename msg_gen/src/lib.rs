@@ -15,33 +15,24 @@ use rcl::*;
 use std::ffi::CStr;
 
 fn field_type(t: u8) -> String {
-
-    // rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT = 1,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE = 2,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE = 3,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_CHAR = 4,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR = 5,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN = 6,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_OCTET = 7,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 = 8,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_INT8 = 9,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 = 10,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_INT16 = 11,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 = 12,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_INT32 = 13,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 = 14,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_INT64 = 15,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_STRING = 16,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING = 17,
-    // rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE = 18,
-
-    // todo: add these as needed...
+    // lovely...
+    // move to common
     if t == (rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8) { "std::string::String".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u8) { "bool".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_CHAR as u8) { "i8".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR as u8) { "u16".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_OCTET as u8) { "u8".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 as u8) { "u8".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT8 as u8) { "i8".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 as u8) { "u16".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT16 as u8) { "i16".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 as u8) { "u32".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT32 as u8) { "i32".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 as u8) { "u64".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT64 as u8) { "i64".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u8) { "f32".to_owned() }
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u8) { "f64".to_owned() }
+    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE as u8) { "u128".to_owned() } // f128 does not exist in rust
     else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u8) { "message".to_owned() }
 
     else { panic!("ros native type not implemented: {}", t); }
@@ -67,8 +58,10 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
 
         for member in memberslice {
             let field_name = CStr::from_ptr((*member).name_).to_str().unwrap();
+            let field_name = if field_name == "type" { "type_" } else { field_name };
             let type_id = (*member).type_id_;
-            let is_array = (*member).is_array_; // TODO: use
+            let is_array = (*member).is_array_;
+            let _array_size = (*member).array_size_;
             let rust_field_type = field_type(type_id);
             let rust_field_type = if rust_field_type == "message" {
                 // perform a hack!
@@ -81,13 +74,19 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
                 format!("{module}::{prefix}::{msgname}", module = module, prefix=prefix, msgname = name)
             } else { rust_field_type };
             let s = if is_array {
+                // if array_size > 0 {
+                    // fixed size array
+                    // format!("pub {}: [{};{}usize],\n",field_name, rust_field_type, array_size)
+                    // actually lets use a vector anyway because its more convenient with traits. assert on the fixed size instead!
+                //} else {
+                    // vector type
                 format!("pub {}: Vec<{}>,\n",field_name, rust_field_type)
+                //}
             } else {
                 format!("pub {}: {},\n",field_name, rust_field_type)
             };
             fields.push_str(&s);
         }
-
 
         let mut from_native = String::new();
         from_native.push_str(&format!("fn from_native(msg: &Self::CStruct) -> {} {{\n", name));
@@ -95,13 +94,38 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
 
         for member in memberslice {
             let field_name = CStr::from_ptr((*member).name_).to_str().unwrap();
+            let field_name = if field_name == "type" { "type_" } else { field_name };
             let type_id = (*member).type_id_;
-            let is_array = (*member).is_array_; // TODO: use
+            let is_array = (*member).is_array_;
+            let array_size = (*member).array_size_;
 
             let rust_field_type = field_type(type_id);
 
             if is_array {
-                from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
+                if rust_field_type == "message" {
+
+                    // perform a hack!
+                    let ts = (*member).members_;
+                    let members = (*ts).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+                    let namespace = CStr::from_ptr((*members).message_namespace_).to_str().unwrap();
+                    let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
+                    let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
+                    let (module, prefix) = ( nn[0], nn[1] );
+
+
+                    from_native.push_str(&format!("{field_name} : {{\n", field_name = field_name));
+                    from_native.push_str(&format!("let mut temp = Vec::with_capacity(msg.{field_name}.size);\n",field_name = field_name));
+                    from_native.push_str(&format!("let slice = unsafe {{ std::slice::from_raw_parts(msg.{field_name}.data, msg.{field_name}.size)}};\n",field_name = field_name));
+                    from_native.push_str(&format!("for s in slice {{ temp.push({module}::{prefix}::{msgname}::from_native(s)); }}\n", module = module, prefix=prefix, msgname = name));
+                    from_native.push_str("temp },\n");
+                } else {
+                    if array_size > 0 {
+                        // fixed size array, copy elements (happens to be the same now that we are using vectors...)
+                        from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
+                    } else {
+                        from_native.push_str(&format!("{field_name}: msg.{field_name}.to_vec(),\n", field_name = field_name));
+                    }
+                }
             } else if rust_field_type == "std::string::String" {
                 from_native.push_str(&format!("{field_name}: msg.{field_name}.to_str().to_owned(),\n", field_name = field_name));
             } else if rust_field_type == "message" {
@@ -112,7 +136,7 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
                 let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
                 let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
                 let (module, prefix) = ( nn[0], nn[1] );
-                from_native.push_str(&format!("{field_name}: {module}::{prefix}::{msgname}::from_native(&msg.{field_name}),", field_name = field_name, module = module, prefix=prefix, msgname = name));                
+                from_native.push_str(&format!("{field_name}: {module}::{prefix}::{msgname}::from_native(&msg.{field_name}),\n", field_name = field_name, module = module, prefix=prefix, msgname = name));
             } else {
                 from_native.push_str(&format!("{field_name}: msg.{field_name},\n", field_name = field_name));
             }
@@ -124,18 +148,47 @@ pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> String {
 
         for member in memberslice {
             let field_name = CStr::from_ptr((*member).name_).to_str().unwrap();
+            let field_name = if field_name == "type" { "type_" } else { field_name };
             let type_id = (*member).type_id_;
-            let is_array = (*member).is_array_; // TODO: use
+            let is_array = (*member).is_array_;
+            let array_size = (*member).array_size_;
+            let is_upper_bound = (*member).is_upper_bound_; // not fixed size just bounded sequence
 
             let rust_field_type = field_type(type_id);
 
             // handle other special cases...
             if is_array {
-                copy_to_native.push_str(&format!("msg.{field_name}.update(&self.{field_name});\n", field_name = field_name));
+                if rust_field_type == "message" {
+                    // perform a hack!
+                    let ts = (*member).members_;
+                    let members = (*ts).data as *const rosidl_typesupport_introspection_c__MessageMembers;
+                    let namespace = CStr::from_ptr((*members).message_namespace_).to_str().unwrap();
+                    let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
+                    let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
+                    let (module, prefix) = ( nn[0], nn[1] );
+                    let c_struct = format!("{module}__{prefix}__{msgname}", module = module, prefix=prefix, msgname = name);
+
+                    copy_to_native.push_str(&format!("unsafe {{ {c_struct}__Sequence__fini(&mut msg.{field_name}) }};\n", c_struct = c_struct, field_name = field_name));
+                    copy_to_native.push_str(&format!("unsafe {{ {c_struct}__Sequence__init(&mut msg.{field_name}, self.{field_name}.len()) }};\n", c_struct = c_struct, field_name = field_name));
+                    copy_to_native.push_str(&format!("let slice = unsafe {{ std::slice::from_raw_parts_mut(msg.{field_name}.data, msg.{field_name}.size)}};\n",field_name = field_name));
+                    copy_to_native.push_str(&format!("for (t,s) in slice.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
+                } else {
+                    if array_size > 0 && !is_upper_bound {
+                        // fixed size array, just copy but first check the size!
+                        copy_to_native.push_str(&format!("assert_eq!(self.{field_name}.len(), {array_size}, \"Field {{}} is fixed size of {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = array_size));
+                        copy_to_native.push_str(&format!("msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n", field_name = field_name, array_size = array_size));
+                    } else {
+                        if is_upper_bound {
+                            // extra assertion
+                            copy_to_native.push_str(&format!("assert!(self.{field_name}.len() <= {array_size}, \"Field {{}} is upper bounded by {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = array_size));
+                        }
+                        copy_to_native.push_str(&format!("msg.{field_name}.update(&self.{field_name});\n", field_name = field_name));
+                    }
+                }
             } else if rust_field_type == "std::string::String" {
                 copy_to_native.push_str(&format!("msg.{field_name}.assign(&self.{field_name});\n", field_name = field_name));
             } else if rust_field_type == "message" {
-                copy_to_native.push_str(&format!("self.{field_name}.copy_to_native(&mut msg.{field_name});", field_name = field_name));
+                copy_to_native.push_str(&format!("self.{field_name}.copy_to_native(&mut msg.{field_name});\n", field_name = field_name));
             } else {
                 copy_to_native.push_str(&format!("msg.{field_name} = self.{field_name};\n", field_name = field_name));
             }
@@ -180,4 +233,3 @@ mod tests {
         assert_eq!(generate_rust_msg("std_msgs", "msg", "string"), "hej");
     }
 }
-
