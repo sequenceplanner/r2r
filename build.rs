@@ -20,10 +20,7 @@ fn main() {
             codegen.push_str("    use super::super::*;\n");
 
             for msg in msgs {
-                let module_lc = String::from(*module).to_lowercase();
-                let prefix_lc = String::from(*prefix).to_lowercase();
-                let name_lc = String::from(*msg).to_lowercase();
-                codegen.push_str(&generate_rust_msg(&module_lc, &prefix_lc, &name_lc));
+                codegen.push_str(&generate_rust_msg(module, prefix, msg));
             }
 
             codegen.push_str("  }\n");

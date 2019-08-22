@@ -25,20 +25,16 @@ fn main() {
              let mut m = HashMap::new();\n");
 
     for msg in msg_list {
-
-        // I *think* these are always just lowercase
-        let module = msg.module.to_lowercase();
-        let prefix = msg.prefix.to_lowercase();
-        let name = msg.name.to_lowercase();
-
         // filename is certainly CamelCase -> snake_case. convert
         use heck::SnakeCase;
         let include_filename = msg.name.to_snake_case();
 
-        includes.push_str(&format!("#include <{}/{}/{}.h>\n", &module, &prefix, &include_filename));
-        includes.push_str(&format!("#include <{}/{}/{}__rosidl_typesupport_introspection_c.h>\n", &module, &prefix, &include_filename));
+        includes.push_str(&format!("#include <{}/{}/{}.h>\n",
+                                   &msg.module, &msg.prefix, &include_filename));
+        includes.push_str(&format!("#include <{}/{}/{}__rosidl_typesupport_introspection_c.h>\n",
+                                   &msg.module, &msg.prefix, &include_filename));
 
-        let key = &format!("{}__{}__{}", module, prefix, name);
+        let key = &format!("{}__{}__{}", &msg.module, &msg.prefix, &msg.name);
         let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name);
         introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n",key,val));
     }
