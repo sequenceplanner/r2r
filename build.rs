@@ -2,7 +2,7 @@ use msg_gen::*;
 use common::*;
 
 fn main() {
-    let msgs = read_file("./msgs.txt").unwrap();
+    let msgs = read_file("./msgs.txt").expect("You need to create msgs.txt");
     let msgs = parse_msgs(&msgs);
     let msgs = as_map(&msgs);
 

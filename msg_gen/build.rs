@@ -6,9 +6,9 @@ use std::path::PathBuf;
 use common::*;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../");
+    println!("cargo:rerun-if-changed=../msgs.txt");
 
-    let msgs = read_file("../msgs.txt").unwrap();
+    let msgs = read_file("../msgs.txt").expect("You need to create msgs.txt");
     let msg_list = parse_msgs(&msgs);
     let msg_map = as_map(&msg_list);
 
@@ -48,7 +48,6 @@ fn main() {
     let mut f = File::create("src/introspection_functions.rs").unwrap();
     write!(f, "{}", introspecion_map).unwrap();
 
-    let headers_enabled = env::var_os("CARGO_FEATURE_HEADERS").is_some();
     let mut builder = bindgen::Builder::default()
         .header("src/msg_includes.h")
         .derive_copy(false)
@@ -83,15 +82,12 @@ fn main() {
         println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
     }
 
-    // bindgen takes time so we dont want to do it always... must be a better way
-    if headers_enabled {
-        let bindings = builder.generate().expect("Unable to generate bindings");
+    let bindings = builder.generate().expect("Unable to generate bindings");
 
-        let out_path = PathBuf::from(".");
-        bindings
-            .write_to_file(out_path.join("src/msg_bindings.rs"))
-            .expect("Couldn't write bindings!");
-    }
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("msg_bindings.rs"))
+        .expect("Couldn't write bindings!");
 
 //    assert!(false);
 }

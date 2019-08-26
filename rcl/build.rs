@@ -4,9 +4,6 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../");
-
-    let headers_enabled = env::var_os("CARGO_FEATURE_HEADERS").is_some();
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")
         .derive_copy(false)
@@ -28,13 +25,11 @@ fn main() {
     println!("cargo:rustc-link-lib=dylib=rosidl_typesupport_c");
     println!("cargo:rustc-link-lib=dylib=rosidl_generator_c");
 
-    // bindgen takes time so we dont want to do it always... must be a better way
-    if headers_enabled {
-        let bindings = builder.generate().expect("Unable to generate bindings");
+    let bindings = builder.generate().expect("Unable to generate bindings");
 
-        let out_path = PathBuf::from(".");
-        bindings
-            .write_to_file(out_path.join("src/rcl_bindings.rs"))
-            .expect("Couldn't write bindings!");
-    }
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("rcl_bindings.rs"))
+        .expect("Couldn't write bindings!");
+
 }

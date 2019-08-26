@@ -3,8 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
-pub mod rcl_bindings;
-pub use rcl_bindings::*;
+include!(concat!(env!("OUT_DIR"), "/rcl_bindings.rs"));
 
 use std::ffi::CStr;
 use std::ffi::CString;
