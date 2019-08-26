@@ -4,9 +4,6 @@ version = "0.0.1"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 edition = "2018"
 
-[features]
-headers = []
-
 [dependencies]
 libc = "0.2.0"
 paste = "0.1.6"
