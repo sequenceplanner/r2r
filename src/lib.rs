@@ -276,7 +276,7 @@ impl Node {
                 pubs: Vec::new(),
             })
         } else {
-            eprintln!("{}", res);
+            eprintln!("could not create node{}", res);
             Err(())
         }
     }
@@ -368,7 +368,7 @@ impl Node {
             };
             Ok(p)
         } else {
-            eprintln!("{}", result);
+            eprintln!("could not create publisher {}", result);
             Err(())
         }
     }
@@ -491,7 +491,7 @@ where
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("{}", result);
+            eprintln!("coult not publish {}", result);
             Err(())
         }
     }
@@ -508,7 +508,7 @@ where
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("{}", result);
+            eprintln!("could not publish native {}", result);
             Err(())
         }
     }

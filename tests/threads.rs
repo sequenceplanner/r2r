@@ -12,22 +12,25 @@ fn doesnt_crash() -> Result<(), ()> {
 
     for c in 0..10 {
         let mut ths = Vec::new();
-        for i in 0..10 {
+        for i in 0..30 {
+            // create concurrent nodes that max out the cpu
             let ctx = ctx.clone();
             ths.push(thread::spawn(move || {
                 let mut node = Node::create(ctx, &format!("testnode{}", i), "").unwrap();
-                let p = node
-                    .create_publisher::<std_msgs::msg::String>(&format!("/r2r{}", i))
-                    .unwrap();
 
-                let to_send = std_msgs::msg::String {
-                    data: format!("[node{}]: {}", i, c),
-                };
+                // each with 10 publishers
+                for _j in 0..10 {
+                    let p = node
+                        .create_publisher::<std_msgs::msg::String>(&format!("/r2r{}", i))
+                        .unwrap();
+                    let to_send = std_msgs::msg::String {
+                        data: format!("[node{}]: {}", i, c),
+                    };
 
-                // move publisher to its own thread and publish as fast as we can
-                thread::spawn(move || {
-                    loop {
+                    // move publisher to its own thread and publish as fast as we can
+                    thread::spawn(move || loop {
                         let res = p.publish(&to_send);
+                        thread::sleep(std::time::Duration::from_millis(1));
                         match res {
                             Ok(_) => (),
                             Err(_) => {
@@ -35,11 +38,14 @@ fn doesnt_crash() -> Result<(), ()> {
                                 break;
                             }
                         }
-                    }
-                });
+                    });
+                }
 
-                // wait for 1 sec before dropping
-                std::thread::sleep(Duration::from_millis(1000));
+                // spin to simulate some load
+                for _j in 0..100 {
+                    node.spin_once(std::time::Duration::from_millis(10));
+                }
+
                 // println!("all done {}-{}", c, i);
             }));
         }
