@@ -430,12 +430,7 @@ impl Node {
     }
 
     pub fn create_publisher_untyped(&mut self, topic: &str, topic_type: &str) -> Result<PublisherUntyped, ()> {
-        let ts = if topic_type == "std_msgs/msg/String" {
-            std_msgs::msg::String::get_ts()
-        } else {
-            return Err(());
-        };
-
+        let ts = untyped_ts_helper(topic_type)?;
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
         let topic_c_string = CString::new(topic).unwrap();
 
