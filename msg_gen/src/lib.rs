@@ -4,7 +4,7 @@
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
-include!("./introspection_functions.rs");
+include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 
 #[macro_use]
 extern crate lazy_static;
@@ -63,7 +63,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         let (module, prefix, name, c_struct, members) = introspection(ptr);
         assert_eq!(module, module_);
         assert_eq!(prefix, prefix_);
-        assert_eq!(name, name_);        
+        assert_eq!(name, name_);
 
         let mut fields = String::new();
 
@@ -189,13 +189,95 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
 
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
 
-    #[test]
-    fn test_fn_ptrs() -> () {
-
-        assert_eq!(generate_rust_msg("std_msgs", "msg", "string"), "hej");
+// this is even worse, it was added as an afterthought when I wanted to implement rostopic echo
+pub fn generate_untyped_helpers(msgs: &Vec<common::RosMsg>) -> String {
+    let mut ts_helper = format!("fn untyped_ts_helper(typename: &str) -> Result<&'static rosidl_message_type_support_t, ()> {{");
+    for msg in msgs {
+        ts_helper.push_str(&generate_untyped_ts_helper(&msg.module, &msg.prefix, &msg.name));
     }
+    ts_helper.push_str(&format!("return Err(())\n}}"));
+
+    let mut ds_helper = format!("fn untyped_deserialize_helper(typename: &str) -> Result<fn(native: *const std::os::raw::c_void) -> serde_json::Value, ()> {{");
+    for msg in msgs {
+        ds_helper.push_str(&generate_untyped_deserialize_helper(&msg.module, &msg.prefix, &msg.name));
+    }
+    ds_helper.push_str(&format!("return Err(())\n}}"));
+
+    let mut se_helper = format!("
+fn untyped_serialize_helper(typename: &str) -> Result<fn(json: serde_json::Value) -> Result<*mut std::os::raw::c_void, ()>, ()> {{");
+    for msg in msgs {
+        se_helper.push_str(&generate_untyped_serialize_helper(&msg.module, &msg.prefix, &msg.name));
+    }
+    se_helper.push_str(&format!("return Err(())\n}}"));
+
+    let mut dealloc_helper = format!("fn untyped_dealloc_helper(typename: &str) -> Result<fn(*mut std::os::raw::c_void), ()> {{");
+    for msg in msgs {
+        dealloc_helper.push_str(&generate_untyped_dealloc_helper(&msg.module, &msg.prefix, &msg.name));
+    }
+    dealloc_helper.push_str(&format!("return Err(())\n}}"));
+
+    format!("{} \n\n {} \n\n {} \n\n {} \n\n", ts_helper, ds_helper, se_helper, dealloc_helper)
+}
+
+
+pub fn generate_untyped_ts_helper(module_: &str, prefix_: &str, name_: &str) -> String {
+    let typename = format!("{}/{}/{}", module_, prefix_, name_);
+    let rustname = format!("{}::{}::{}", module_, prefix_, name_);
+
+    format!("
+    if typename == \"{typename}\" {{
+        return Ok({rustname}::get_ts());
+    }}
+", typename = typename, rustname = rustname)
+}
+
+pub fn generate_untyped_deserialize_helper(module_: &str, prefix_: &str, name_: &str) -> String {
+    let typename = format!("{}/{}/{}", module_, prefix_, name_);
+    let rustname = format!("{}::{}::{}", module_, prefix_, name_);
+
+    format!("
+    if typename == \"{typename}\" {{
+        let x = | native: *const std::os::raw::c_void | {{
+            let ptr = native as *const <{rustname} as WrappedTypesupport>::CStruct;
+            let msg = unsafe {{ {rustname}::from_native(&*ptr) }};
+            serde_json::to_value(&msg).unwrap() // should never crash, we serialize from a known struct
+        }};
+        return Ok(x);
+    }}", typename = typename, rustname = rustname)
+}
+
+pub fn generate_untyped_serialize_helper(module_: &str, prefix_: &str, name_: &str) -> String {
+    let typename = format!("{}/{}/{}", module_, prefix_, name_);
+    let rustname = format!("{}::{}::{}", module_, prefix_, name_);
+
+    format!("
+    if typename == \"{typename}\" {{
+        let x = | json: serde_json::Value | {{
+            let msg: Result<{rustname}, _> = serde_json::from_value(json);
+            match msg {{
+                Ok(msg) => {{
+                    let native = {rustname}::create_msg();
+                    unsafe {{ msg.copy_to_native(&mut *native); }}
+                    Ok(native as *mut std::os::raw::c_void)
+                }},
+                Err(_) => Err(())
+            }}
+        }};
+        return Ok(x);
+    }}", typename = typename, rustname = rustname)
+}
+
+pub fn generate_untyped_dealloc_helper(module_: &str, prefix_: &str, name_: &str) -> String {
+    let typename = format!("{}/{}/{}", module_, prefix_, name_);
+    let rustname = format!("{}::{}::{}", module_, prefix_, name_);
+
+    format!("
+    if typename == \"{typename}\" {{
+        let y = | native: *mut std::os::raw::c_void | {{
+            let native_msg = native as *mut <{rustname} as WrappedTypesupport>::CStruct;
+            {rustname}::destroy_msg(native_msg);
+        }};
+        return Ok(y);
+    }}", typename = typename, rustname = rustname)
 }

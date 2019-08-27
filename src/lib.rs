@@ -1,13 +1,15 @@
-include!("./generated_msgs.rs");
+include!(concat!(env!("OUT_DIR"), "/generated_msgs.rs"));
+include!(concat!(env!("OUT_DIR"), "/generated_typehacks.rs"));
 
 use msg_gen::*;
 use rcl::*;
 
 use serde::{Deserialize, Serialize};
-use std::ffi::CString;
+use std::ffi::{CString,CStr};
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
+use std::collections::HashMap;
 
 pub trait WrappedTypesupport {
     type CStruct;
@@ -106,6 +108,13 @@ where
     rcl_msg: WrappedNativeMsg<T>,
 }
 
+struct WrappedSubUntyped {
+    rcl_handle: rcl_subscription_t,
+    callback: Box<dyn FnMut(serde_json::Value) -> ()>,
+    serialize: Box<dyn FnMut(*const std::os::raw::c_void) -> serde_json::Value>,
+    rcl_msg: *mut std::os::raw::c_void,
+}
+
 impl<T> Sub for WrappedSub<T>
 where
     T: WrappedTypesupport,
@@ -156,6 +165,28 @@ where
     }
 }
 
+impl Sub for WrappedSubUntyped
+{
+    fn handle(&self) -> &rcl_subscription_t {
+        &self.rcl_handle
+    }
+
+    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
+        self.rcl_msg
+    }
+
+    fn run_cb(&mut self) -> () {
+        let string = (self.serialize)(self.rcl_msg);
+        (self.callback)(string);
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_subscription_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
 // The publish function is thread safe. ROS2 docs state:
 // =============
 //
@@ -190,6 +221,12 @@ where
 {
     handle: Weak<rcl_publisher_t>,
     type_: PhantomData<T>,
+}
+
+unsafe impl Send for PublisherUntyped {}
+pub struct PublisherUntyped {
+    handle: Weak<rcl_publisher_t>,
+    type_: String,
 }
 
 #[derive(Debug, Clone)]
@@ -281,10 +318,7 @@ impl Node {
         }
     }
 
-    fn create_subscription_helper<T>(&mut self, topic: &str) -> Result<rcl_subscription_t, ()>
-    where
-        T: WrappedTypesupport,
-    {
+    fn create_subscription_helper(&mut self, topic: &str, ts: *const rosidl_message_type_support_t) -> Result<rcl_subscription_t, ()> {
         let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
         let topic_c_string = CString::new(topic).map_err(|_| ())?;
 
@@ -294,7 +328,7 @@ impl Node {
             rcl_subscription_init(
                 &mut subscription_handle,
                 self.node_handle.as_mut(),
-                T::get_ts(),
+                ts,
                 topic_c_string.as_ptr(),
                 &subscription_options,
             )
@@ -314,7 +348,7 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = self.create_subscription_helper::<T>(topic)?;
+        let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
         let ws = WrappedSub {
             rcl_handle: subscription_handle,
             rcl_msg: WrappedNativeMsg::<T>::new(),
@@ -332,7 +366,7 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = self.create_subscription_helper::<T>(topic)?;
+        let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
         let ws = WrappedSubNative {
             rcl_handle: subscription_handle,
             rcl_msg: WrappedNativeMsg::<T>::new(),
@@ -341,6 +375,28 @@ impl Node {
         self.subs.push(Box::new(ws));
         Ok(self.subs.last().unwrap().handle()) // hmm...
     }
+
+    // Its not really untyped since we know the underlying type... But we throw this info away :)
+    pub fn subscribe_untyped(
+        &mut self,
+        topic: &str,
+        topic_type: &str,
+        callback: Box<dyn FnMut(serde_json::Value) -> ()>,
+    ) -> Result<&rcl_subscription_t, ()> {
+        let ts = untyped_ts_helper(topic_type)?;
+        let de = untyped_deserialize_helper(topic_type)?;
+        let subscription_handle = self.create_subscription_helper(topic, ts)?;
+
+        let ws = WrappedSubUntyped {
+            rcl_handle: subscription_handle,
+            rcl_msg: unsafe { std_msgs__msg__String__create() as *mut _ as *mut std::os::raw::c_void },
+            callback: callback,
+            serialize: Box::new(de),
+        };
+        self.subs.push(Box::new(ws));
+        Ok(self.subs.last().unwrap().handle()) // hmm...
+    }
+
 
     pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>, ()>
     where
@@ -365,6 +421,40 @@ impl Node {
             let p = Publisher {
                 handle: Arc::downgrade(self.pubs.last().unwrap()),
                 type_: PhantomData,
+            };
+            Ok(p)
+        } else {
+            eprintln!("could not create publisher {}", result);
+            Err(())
+        }
+    }
+
+    pub fn create_publisher_untyped(&mut self, topic: &str, topic_type: &str) -> Result<PublisherUntyped, ()> {
+        let ts = if topic_type == "std_msgs/msg/String" {
+            std_msgs::msg::String::get_ts()
+        } else {
+            return Err(());
+        };
+
+        let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
+        let topic_c_string = CString::new(topic).unwrap();
+
+        let result = unsafe {
+            let mut publisher_options = rcl_publisher_get_default_options();
+            publisher_options.qos = rmw_qos_profile_t::default();
+            rcl_publisher_init(
+                &mut publisher_handle,
+                self.node_handle.as_mut(),
+                ts,
+                topic_c_string.as_ptr(),
+                &publisher_options,
+            )
+        };
+        if result == RCL_RET_OK as i32 {
+            self.pubs.push(Arc::new(publisher_handle));
+            let p = PublisherUntyped {
+                handle: Arc::downgrade(self.pubs.last().unwrap()),
+                type_: topic_type.to_owned(),
             };
             Ok(p)
         } else {
@@ -433,6 +523,34 @@ impl Node {
             rcl_wait_set_fini(&mut ws);
         }
     }
+
+
+    pub fn get_topic_names_and_types(&self) -> Result<HashMap<String, Vec<String>>, ()> {
+        let mut tnat = unsafe { rmw_get_zero_initialized_names_and_types() };
+        let ret = unsafe {
+            rcl_get_topic_names_and_types(self.node_handle.as_ref(), &mut rcutils_get_default_allocator(), false, &mut tnat)
+        };
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not get topic names and types {}", ret);
+            return Err(());
+        }
+
+        let names = unsafe { std::slice::from_raw_parts(tnat.names.data, tnat.names.size) };
+        let types = unsafe { std::slice::from_raw_parts(tnat.types, tnat.names.size) };
+
+        let mut res = HashMap::new();
+        for (n,t) in names.iter().zip(types) {
+            let topic_name = unsafe {CStr::from_ptr(*n).to_str().unwrap().to_owned() };
+            let topic_types = unsafe { std::slice::from_raw_parts(t, t.size) };
+            let topic_types: Vec<String> = unsafe {
+                topic_types.iter().map(|t| CStr::from_ptr(*((*t).data)).to_str().unwrap().to_owned()).collect()
+            };
+            res.insert(topic_name, topic_types);
+        }
+        unsafe { rmw_names_and_types_fini(&mut tnat); } // TODO: check return value
+        Ok(res)
+    }
+
 }
 
 // Since publishers are temporarily upgraded to owners during the
@@ -509,6 +627,36 @@ where
             Ok(())
         } else {
             eprintln!("could not publish native {}", result);
+            Err(())
+        }
+    }
+}
+
+impl PublisherUntyped {
+    pub fn publish(&self, msg: serde_json::Value) -> Result<(), ()> {
+        // upgrade to actual ref. if still alive
+        let publisher = self.handle.upgrade().ok_or(())?;
+
+        // figure out which serializer to use, publish, then destroy
+        let se = untyped_serialize_helper(&self.type_)?;
+        let dealloc = untyped_dealloc_helper(&self.type_)?;
+
+        // copy rust msg to native and publish it
+        let native_ptr = se(msg)?;
+        let result = unsafe {
+            rcl_publish(
+                publisher.as_ref(),
+                native_ptr,
+                std::ptr::null_mut(),
+            )
+        };
+
+        dealloc(native_ptr);
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            eprintln!("coult not publish {}", result);
             Err(())
         }
     }
