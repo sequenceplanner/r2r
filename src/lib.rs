@@ -112,6 +112,7 @@ struct WrappedSubUntyped {
     rcl_handle: rcl_subscription_t,
     callback: Box<dyn FnMut(serde_json::Value) -> ()>,
     serialize: Box<dyn FnMut(*const std::os::raw::c_void) -> serde_json::Value>,
+    dealloc: Box<dyn FnMut(*mut std::os::raw::c_void) -> ()>,
     rcl_msg: *mut std::os::raw::c_void,
 }
 
@@ -184,6 +185,7 @@ impl Sub for WrappedSubUntyped
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
         }
+        (self.dealloc)(self.rcl_msg); // manually delete message
     }
 }
 
@@ -386,12 +388,14 @@ impl Node {
         let ts = untyped_ts_helper(topic_type)?;
         let de = untyped_deserialize_helper(topic_type)?;
         let subscription_handle = self.create_subscription_helper(topic, ts)?;
+        let dealloc = untyped_dealloc_helper(topic_type)?;
 
         let ws = WrappedSubUntyped {
             rcl_handle: subscription_handle,
-            rcl_msg: unsafe { std_msgs__msg__String__create() as *mut _ as *mut std::os::raw::c_void },
+            rcl_msg: untyped_alloc_helper(topic_type)?,
             callback: callback,
             serialize: Box::new(de),
+            dealloc: Box::new(dealloc),
         };
         self.subs.push(Box::new(ws));
         Ok(self.subs.last().unwrap().handle()) // hmm...

@@ -211,13 +211,20 @@ fn untyped_serialize_helper(typename: &str) -> Result<fn(json: serde_json::Value
     }
     se_helper.push_str(&format!("return Err(())\n}}"));
 
+    let mut alloc_helper = format!("fn untyped_alloc_helper(typename: &str) -> Result<*mut std::os::raw::c_void, ()> {{");
+    for msg in msgs {
+        alloc_helper.push_str(&generate_untyped_alloc_helper(&msg.module, &msg.prefix, &msg.name));
+    }
+    alloc_helper.push_str(&format!("return Err(())\n}}"));
+
+
     let mut dealloc_helper = format!("fn untyped_dealloc_helper(typename: &str) -> Result<fn(*mut std::os::raw::c_void), ()> {{");
     for msg in msgs {
         dealloc_helper.push_str(&generate_untyped_dealloc_helper(&msg.module, &msg.prefix, &msg.name));
     }
     dealloc_helper.push_str(&format!("return Err(())\n}}"));
 
-    format!("{} \n\n {} \n\n {} \n\n {} \n\n", ts_helper, ds_helper, se_helper, dealloc_helper)
+    format!("{} \n\n {} \n\n {} \n\n {} \n\n {} \n\n", ts_helper, ds_helper, se_helper, alloc_helper, dealloc_helper)
 }
 
 
@@ -267,6 +274,19 @@ pub fn generate_untyped_serialize_helper(module_: &str, prefix_: &str, name_: &s
         return Ok(x);
     }}", typename = typename, rustname = rustname)
 }
+
+
+pub fn generate_untyped_alloc_helper(module_: &str, prefix_: &str, name_: &str) -> String {
+    let typename = format!("{}/{}/{}", module_, prefix_, name_);
+    let rustname = format!("{}::{}::{}", module_, prefix_, name_);
+
+    format!("
+    if typename == \"{typename}\" {{
+        return Ok({rustname}::create_msg() as *mut std::os::raw::c_void);
+    }}
+", typename = typename, rustname = rustname)
+}
+
 
 pub fn generate_untyped_dealloc_helper(module_: &str, prefix_: &str, name_: &str) -> String {
     let typename = format!("{}/{}/{}", module_, prefix_, name_);
