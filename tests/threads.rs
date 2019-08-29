@@ -1,11 +1,12 @@
 use std::thread;
 use std::time::Duration;
+use failure::Error;
 
 use r2r::*;
 
 #[test]
 // Let's create and drop a lot of node and publishers for a while to see that we can cope.
-fn doesnt_crash() -> Result<(), ()> {
+fn doesnt_crash() -> Result<(), Error> {
     // a global shared context.
     let ctx = Context::create()?;
 
@@ -29,7 +30,7 @@ fn doesnt_crash() -> Result<(), ()> {
                     // move publisher to its own thread and publish as fast as we can
                     thread::spawn(move || loop {
                         let res = p.publish(&to_send);
-                        thread::sleep(std::time::Duration::from_millis(1));
+                        thread::sleep(Duration::from_millis(1));
                         match res {
                             Ok(_) => (),
                             Err(_) => {
@@ -42,7 +43,7 @@ fn doesnt_crash() -> Result<(), ()> {
 
                 // spin to simulate some load
                 for _j in 0..100 {
-                    node.spin_once(std::time::Duration::from_millis(10));
+                    node.spin_once(Duration::from_millis(10));
                 }
 
                 // println!("all done {}-{}", c, i);

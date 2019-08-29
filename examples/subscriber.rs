@@ -1,8 +1,9 @@
 use r2r::*;
 use std::sync::mpsc;
 use std::thread;
+use failure::Error;
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     let ctx = Context::create()?;
 
     let th = {

@@ -1,9 +1,10 @@
 use std::sync::mpsc;
 use std::thread;
+use failure::Error;
 
 use r2r::*;
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     let ctx = Context::create()?;
     let mut node = Node::create(ctx, "testnode", "")?;
 

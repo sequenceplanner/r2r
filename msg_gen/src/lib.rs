@@ -192,37 +192,36 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
 
 // this is even worse, it was added as an afterthought when I wanted to implement rostopic echo
 pub fn generate_untyped_helpers(msgs: &Vec<common::RosMsg>) -> String {
-    let mut ts_helper = format!("fn untyped_ts_helper(typename: &str) -> Result<&'static rosidl_message_type_support_t, ()> {{");
+    let mut ts_helper = format!("fn untyped_ts_helper(typename: &str) -> Result<&'static rosidl_message_type_support_t> {{");
     for msg in msgs {
         ts_helper.push_str(&generate_untyped_ts_helper(&msg.module, &msg.prefix, &msg.name));
     }
-    ts_helper.push_str(&format!("return Err(())\n}}"));
+    ts_helper.push_str(&format!("return Err(Error::InvalidMessageType{{ msgtype: typename.into() }})\n}}"));
 
-    let mut ds_helper = format!("fn untyped_deserialize_helper(typename: &str) -> Result<fn(native: *const std::os::raw::c_void) -> serde_json::Value, ()> {{");
+    let mut ds_helper = format!("fn untyped_deserialize_helper(typename: &str) -> Result<fn(native: *const std::os::raw::c_void) -> serde_json::Value> {{");
     for msg in msgs {
         ds_helper.push_str(&generate_untyped_deserialize_helper(&msg.module, &msg.prefix, &msg.name));
     }
-    ds_helper.push_str(&format!("return Err(())\n}}"));
+    ds_helper.push_str(&format!("return Err(Error::InvalidMessageType{{ msgtype: typename.into() }})\n}}"));
 
     let mut se_helper = format!("
-fn untyped_serialize_helper(typename: &str) -> Result<fn(json: serde_json::Value) -> Result<*mut std::os::raw::c_void, ()>, ()> {{");
+fn untyped_serialize_helper(typename: &str) -> Result<fn(json: serde_json::Value) -> std::result::Result<*mut std::os::raw::c_void, serde_json::error::Error>> {{");
     for msg in msgs {
         se_helper.push_str(&generate_untyped_serialize_helper(&msg.module, &msg.prefix, &msg.name));
     }
-    se_helper.push_str(&format!("return Err(())\n}}"));
+    se_helper.push_str(&format!("return Err(Error::InvalidMessageType{{ msgtype: typename.into() }})\n}}"));
 
-    let mut alloc_helper = format!("fn untyped_alloc_helper(typename: &str) -> Result<*mut std::os::raw::c_void, ()> {{");
+    let mut alloc_helper = format!("fn untyped_alloc_helper(typename: &str) -> Result<*mut std::os::raw::c_void> {{");
     for msg in msgs {
         alloc_helper.push_str(&generate_untyped_alloc_helper(&msg.module, &msg.prefix, &msg.name));
     }
-    alloc_helper.push_str(&format!("return Err(())\n}}"));
+    alloc_helper.push_str(&format!("return Err(Error::InvalidMessageType{{ msgtype: typename.into() }})\n}}"));
 
-
-    let mut dealloc_helper = format!("fn untyped_dealloc_helper(typename: &str) -> Result<fn(*mut std::os::raw::c_void), ()> {{");
+    let mut dealloc_helper = format!("fn untyped_dealloc_helper(typename: &str) -> Result<fn(*mut std::os::raw::c_void)> {{");
     for msg in msgs {
         dealloc_helper.push_str(&generate_untyped_dealloc_helper(&msg.module, &msg.prefix, &msg.name));
     }
-    dealloc_helper.push_str(&format!("return Err(())\n}}"));
+    dealloc_helper.push_str(&format!("return Err(Error::InvalidMessageType{{ msgtype: typename.into() }})\n}}"));
 
     format!("{} \n\n {} \n\n {} \n\n {} \n\n {} \n\n", ts_helper, ds_helper, se_helper, alloc_helper, dealloc_helper)
 }
@@ -261,15 +260,10 @@ pub fn generate_untyped_serialize_helper(module_: &str, prefix_: &str, name_: &s
     format!("
     if typename == \"{typename}\" {{
         let x = | json: serde_json::Value | {{
-            let msg: Result<{rustname}, _> = serde_json::from_value(json);
-            match msg {{
-                Ok(msg) => {{
+            serde_json::from_value(json).map(|msg: {rustname}| {{
                     let native = {rustname}::create_msg();
                     unsafe {{ msg.copy_to_native(&mut *native); }}
-                    Ok(native as *mut std::os::raw::c_void)
-                }},
-                Err(_) => Err(())
-            }}
+                    native as *mut std::os::raw::c_void }})
         }};
         return Ok(x);
     }}", typename = typename, rustname = rustname)

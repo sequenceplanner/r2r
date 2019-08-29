@@ -2,8 +2,9 @@ use r2r::*;
 use builtin_interfaces::msg::Duration;
 use trajectory_msgs::msg::*;
 use std_msgs::msg::Int32;
+use failure::Error;
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     let ctx = Context::create()?;
     let mut node = Node::create(ctx, "testnode", "")?;
     let publisher = node.create_publisher::<JointTrajectoryPoint>("/hej")?;
@@ -30,7 +31,7 @@ fn main() -> Result<(), ()> {
     let cb2 = move |x:JointTrajectoryPoint| {
         let serialized = serde_json::to_string(&x).unwrap();
         println!("JTP serialized as: {}", serialized);
-    };    
+    };
 
     let cb3 = move |raw_c:&WrappedNativeMsg<JointTrajectoryPoint>| {
         println!("Raw c data: {:?}", raw_c.positions);
@@ -45,7 +46,8 @@ fn main() -> Result<(), ()> {
 
     // run for 10 seconds
     let mut count = 0;
-    while count < 100 {
+    // while count < 100 {
+    loop {
         node.spin_once(std::time::Duration::from_millis(100));
         count += 1;
     }
@@ -54,4 +56,3 @@ fn main() -> Result<(), ()> {
 
     Ok(())
 }
-

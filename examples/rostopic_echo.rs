@@ -2,8 +2,9 @@ use r2r::*;
 use std::thread;
 use std::env;
 use std::collections::HashMap;
+use failure::Error;
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     let ctx = Context::create()?;
     let mut node = Node::create(ctx, "echo", "")?;
 
@@ -25,7 +26,7 @@ fn main() -> Result<(), ()> {
         Some(tn) => tn,
         None => {
             eprintln!("Could not determine the type for the passed topic");
-            return Err(());
+            return Ok(());
         },
     };
 

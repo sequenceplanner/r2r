@@ -1,8 +1,9 @@
 use r2r;
 use std::thread;
 use std::time::Duration;
+use failure::Error;
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     let ctx = r2r::Context::create()?;
     let node = r2r::Node::create(ctx, "testnode", "")?;
 
