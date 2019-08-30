@@ -465,10 +465,8 @@ impl Node {
     }
 
 
-    pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
-    where
-        T: WrappedTypesupport,
-    {
+    pub fn create_publisher_helper(&mut self, topic: &str,
+                                   typesupport: *const rosidl_message_type_support_t) -> Result<rcl_publisher_t> {
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
         let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
 
@@ -478,51 +476,42 @@ impl Node {
             rcl_publisher_init(
                 &mut publisher_handle,
                 self.node_handle.as_mut(),
-                T::get_ts(),
+                typesupport,
                 topic_c_string.as_ptr(),
                 &publisher_options,
             )
         };
         if result == RCL_RET_OK as i32 {
-            self.pubs.push(Arc::new(publisher_handle));
-            let p = Publisher {
-                handle: Arc::downgrade(self.pubs.last().unwrap()),
-                type_: PhantomData,
-            };
-            Ok(p)
+            Ok(publisher_handle)
         } else {
-            eprintln!("could not create publisher {}", result);
             Err(Error::from_rcl_error(result))
         }
     }
 
+
+    pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
+    where
+        T: WrappedTypesupport,
+    {
+        let publisher_handle = self.create_publisher_helper(topic, T::get_ts())?;
+        self.pubs.push(Arc::new(publisher_handle));
+        let p = Publisher {
+            handle: Arc::downgrade(self.pubs.last().unwrap()),
+            type_: PhantomData,
+        };
+        Ok(p)
+    }
+
     pub fn create_publisher_untyped(&mut self, topic: &str, topic_type: &str) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?; // TODO, get ts without allocating msg
-        let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
-        let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let publisher_handle = self.create_publisher_helper(topic, dummy.ts)?;
 
-        let result = unsafe {
-            let mut publisher_options = rcl_publisher_get_default_options();
-            publisher_options.qos = rmw_qos_profile_t::default();
-            rcl_publisher_init(
-                &mut publisher_handle,
-                self.node_handle.as_mut(),
-                dummy.ts,
-                topic_c_string.as_ptr(),
-                &publisher_options,
-            )
+        self.pubs.push(Arc::new(publisher_handle));
+        let p = PublisherUntyped {
+            handle: Arc::downgrade(self.pubs.last().unwrap()),
+            type_: topic_type.to_owned(),
         };
-        if result == RCL_RET_OK as i32 {
-            self.pubs.push(Arc::new(publisher_handle));
-            let p = PublisherUntyped {
-                handle: Arc::downgrade(self.pubs.last().unwrap()),
-                type_: topic_type.to_owned(),
-            };
-            Ok(p)
-        } else {
-            eprintln!("could not create publisher {}", result);
-            Err(Error::from_rcl_error(result))
-        }
+        Ok(p)
     }
 
     pub fn spin_once(&mut self, timeout: Duration) {
