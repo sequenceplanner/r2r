@@ -35,6 +35,70 @@ where
     pub msg: *mut T::CStruct,
 }
 
+#[derive(Debug)]
+pub struct WrappedNativeMsgUntyped {
+    ts: &'static rosidl_message_type_support_t,
+    msg: *mut std::os::raw::c_void,
+    destroy: fn(*mut std::os::raw::c_void),
+    msg_to_json: fn(native: *const std::os::raw::c_void) ->
+        std::result::Result<serde_json::Value, serde_json::error::Error>,
+    msg_from_json: fn(native: *mut std::os::raw::c_void, json: serde_json::Value) ->
+        std::result::Result<(), serde_json::error::Error>,
+}
+
+impl WrappedNativeMsgUntyped {
+    fn new_from(typename: &str) -> Result<Self> {
+        if typename == "std_msgs/msg/String" {
+            Ok(WrappedNativeMsgUntyped::new::<std_msgs::msg::String>())
+        } else
+        { return Err(Error::InvalidMessageType{ msgtype: typename.into() }) }
+    }
+}
+
+impl WrappedNativeMsgUntyped {
+    fn new<T>() -> Self where T: WrappedTypesupport + Serialize + serde::de::DeserializeOwned {
+        let destroy = | native: *mut std::os::raw::c_void | {
+            let native_msg = native as *mut T::CStruct;
+            T::destroy_msg(native_msg);
+        };
+
+        let msg_to_json = | native: *const std::os::raw::c_void | {
+            let msg = unsafe { T::from_native(&*(native as *const T::CStruct)) };
+            serde_json::to_value(&msg)
+        };
+
+        let msg_from_json = | native: *mut std::os::raw::c_void, json: serde_json::Value | {
+            serde_json::from_value(json).map(|msg: T| {
+                unsafe { msg.copy_to_native(&mut *(native as *mut T::CStruct)); }
+            })
+        };
+
+        WrappedNativeMsgUntyped {
+            ts: T::get_ts(),
+            msg: T::create_msg() as *mut std::os::raw::c_void,
+            destroy: destroy,
+            msg_to_json: msg_to_json,
+            msg_from_json: msg_from_json,
+        }
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value> {
+        let json = (self.msg_to_json)(self.msg);
+        json.map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
+    }
+
+    fn from_json(&self, json: serde_json::Value) -> Result<()> {
+        (self.msg_from_json)(self.msg, json).
+            map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
+    }
+}
+
+impl Drop for WrappedNativeMsgUntyped {
+    fn drop(&mut self) {
+        (self.destroy)(self.msg);
+    }
+}
+
 impl<T> WrappedNativeMsg<T>
 where
     T: WrappedTypesupport,
@@ -816,6 +880,12 @@ mod tests {
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
         println!("{:#?}", new_msg);
         assert_ne!(msg, new_msg);
+    }
+
+    #[test]
+    fn refactor_untyped() {
+        let ptr = native as *const <builtin_interfaces::msg::Duration as WrappedTypesupport>::CStruct;
+        let msg = unsafe { builtin_interfaces::msg::Duration::from_native(&*ptr) };
     }
 
 }
