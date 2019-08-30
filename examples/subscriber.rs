@@ -1,24 +1,24 @@
-use r2r::*;
+use r2r;
 use std::sync::mpsc;
 use std::thread;
 use failure::Error;
 
 fn main() -> Result<(), Error> {
-    let ctx = Context::create()?;
+    let ctx = r2r::Context::create()?;
 
     let th = {
-        let mut node = Node::create(ctx, "testnode", "")?;
+        let mut node = r2r::Node::create(ctx, "testnode", "")?;
 
         let (tx, rx) = mpsc::channel::<String>();
 
         let p = node
-            .create_publisher::<std_msgs::msg::String>("/hej")
+            .create_publisher::<r2r::std_msgs::msg::String>("/hej")
             .unwrap();
 
         let th = thread::spawn(move || loop {
             println!("thread looping");
             let des = if let Ok(msg) = rx.recv() {
-                let deserialized: std_msgs::msg::String = serde_json::from_str(&msg).unwrap();
+                let deserialized: r2r::std_msgs::msg::String = serde_json::from_str(&msg).unwrap();
                 println!(
                     "received: {}, deserialized ros msg = {:#?}",
                     msg, deserialized
@@ -34,12 +34,12 @@ fn main() -> Result<(), Error> {
         });
 
         let tx1 = tx.clone();
-        let cb = move |x: std_msgs::msg::String| {
+        let cb = move |x: r2r::std_msgs::msg::String| {
             let serialized = serde_json::to_string(&x).unwrap();
             tx1.send(serialized).unwrap(); // pass msg on to other thread for printing
         };
 
-        let cb2 = move |x: &WrappedNativeMsg<std_msgs::msg::String>| {
+        let cb2 = move |x: &r2r::WrappedNativeMsg<r2r::std_msgs::msg::String>| {
             // use native data!
             let s = x.data.to_str();
             println!("native ros msg: {}", s);

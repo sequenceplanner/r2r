@@ -1,18 +1,18 @@
-use r2r::*;
-use builtin_interfaces::msg::Duration;
-use trajectory_msgs::msg::*;
-use std_msgs::msg::Int32;
+use r2r;
+use r2r::builtin_interfaces::msg::Duration;
+use r2r::trajectory_msgs::msg::*;
+use r2r::std_msgs::msg::Int32;
 use failure::Error;
 
 fn main() -> Result<(), Error> {
-    let ctx = Context::create()?;
-    let mut node = Node::create(ctx, "testnode", "")?;
+    let ctx = r2r::Context::create()?;
+    let mut node = r2r::Node::create(ctx, "testnode", "")?;
     let publisher = node.create_publisher::<JointTrajectoryPoint>("/hej")?;
     let publisher2 = node.create_publisher::<Int32>("/native_count")?;
 
     let mut c = 0;
     let mut positions: Vec<f64> = Vec::new();
-    let cb = move |x:std_msgs::msg::String| {
+    let cb = move |x:r2r::std_msgs::msg::String| {
         println!("at count {} got: {}", c, x.data);
         c = c + 1;
         positions.push(c as f64);
@@ -21,7 +21,7 @@ fn main() -> Result<(), Error> {
             time_from_start : Duration { sec: c, nanosec: 0 },
             ..Default::default()
         };
-        let mut native = WrappedNativeMsg::<Int32>::new();
+        let mut native = r2r::WrappedNativeMsg::<Int32>::new();
         native.data = c;
 
         publisher.publish(&to_send).unwrap();
@@ -33,7 +33,7 @@ fn main() -> Result<(), Error> {
         println!("JTP serialized as: {}", serialized);
     };
 
-    let cb3 = move |raw_c:&WrappedNativeMsg<JointTrajectoryPoint>| {
+    let cb3 = move |raw_c:&r2r::WrappedNativeMsg<JointTrajectoryPoint>| {
         println!("Raw c data: {:?}", raw_c.positions);
     };
 

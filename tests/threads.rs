@@ -2,13 +2,13 @@ use std::thread;
 use std::time::Duration;
 use failure::Error;
 
-use r2r::*;
+use r2r;
 
 #[test]
 // Let's create and drop a lot of node and publishers for a while to see that we can cope.
 fn doesnt_crash() -> Result<(), Error> {
     // a global shared context.
-    let ctx = Context::create()?;
+    let ctx = r2r::Context::create()?;
 
     for c in 0..10 {
         let mut ths = Vec::new();
@@ -16,14 +16,14 @@ fn doesnt_crash() -> Result<(), Error> {
             // create concurrent nodes that max out the cpu
             let ctx = ctx.clone();
             ths.push(thread::spawn(move || {
-                let mut node = Node::create(ctx, &format!("testnode{}", i), "").unwrap();
+                let mut node = r2r::Node::create(ctx, &format!("testnode{}", i), "").unwrap();
 
                 // each with 10 publishers
                 for _j in 0..10 {
                     let p = node
-                        .create_publisher::<std_msgs::msg::String>(&format!("/r2r{}", i))
+                        .create_publisher::<r2r::std_msgs::msg::String>(&format!("/r2r{}", i))
                         .unwrap();
-                    let to_send = std_msgs::msg::String {
+                    let to_send = r2r::std_msgs::msg::String {
                         data: format!("[node{}]: {}", i, c),
                     };
 

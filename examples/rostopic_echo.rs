@@ -1,12 +1,12 @@
-use r2r::*;
+use r2r;
 use std::thread;
 use std::env;
 use std::collections::HashMap;
 use failure::Error;
 
 fn main() -> Result<(), Error> {
-    let ctx = Context::create()?;
-    let mut node = Node::create(ctx, "echo", "")?;
+    let ctx = r2r::Context::create()?;
+    let mut node = r2r::Node::create(ctx, "echo", "")?;
 
     let args: Vec<String> = env::args().collect();
     let topic = args.get(1).expect("provide a topic!");
@@ -36,10 +36,17 @@ fn main() -> Result<(), Error> {
     let echo = &format!("{}_echo", topic);
     let echo_pub = node.create_publisher_untyped(echo, type_name)?;
 
-    let cb = move |msg: serde_json::Value | {
-        let s = serde_json::to_string_pretty(&msg).unwrap();
-        println!("{}\n---\n", &s);
-        echo_pub.publish(msg).unwrap();
+    let cb = move |msg: r2r::Result<serde_json::Value> | {
+        match msg {
+            Ok(msg) => {
+                let s = serde_json::to_string_pretty(&msg).unwrap();
+                println!("{}\n---\n", &s);
+                echo_pub.publish(msg).unwrap();
+            }
+            Err(err) => {
+                println!("Could not parse msg. {}", err);
+            }
+        }
     };
 
     let _subref = node.subscribe_untyped(topic, type_name, Box::new(cb))?;

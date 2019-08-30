@@ -2,11 +2,12 @@ use std::sync::mpsc;
 use std::thread;
 use failure::Error;
 
-use r2r::*;
+use r2r;
+use r2r::std_msgs;
 
 fn main() -> Result<(), Error> {
-    let ctx = Context::create()?;
-    let mut node = Node::create(ctx, "testnode", "")?;
+    let ctx = r2r::Context::create()?;
+    let mut node = r2r::Node::create(ctx, "testnode", "")?;
 
     let publisher = node.create_publisher::<std_msgs::msg::String>("/hej")?;
     let pubint = node.create_publisher::<std_msgs::msg::Int32>("/count")?;

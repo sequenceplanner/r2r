@@ -39,14 +39,14 @@ fn main() {
         codegen.push_str("}\n");
     }
 
-    let codegen_typehacks = generate_untyped_helpers(&msgs_list);
+    let untyped_helper = generate_untyped_helper(&msgs_list);
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     let msgs_fn = out_path.join("generated_msgs.rs");
-    let hacks_fn = out_path.join("generated_typehacks.rs");
+    let untyped_fn = out_path.join("generated_untyped_helper.rs");
 
     let mut f = File::create(msgs_fn).unwrap();
     write!(f, "{}", codegen).unwrap();
-    let mut f = File::create(hacks_fn).unwrap();
-    write!(f, "{}", codegen_typehacks).unwrap();
+    let mut f = File::create(untyped_fn).unwrap();
+    write!(f, "{}", untyped_helper).unwrap();
 }

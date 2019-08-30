@@ -1,5 +1,5 @@
 include!(concat!(env!("OUT_DIR"), "/generated_msgs.rs"));
-include!(concat!(env!("OUT_DIR"), "/generated_typehacks.rs"));
+include!(concat!(env!("OUT_DIR"), "/generated_untyped_helper.rs"));
 
 #[macro_use] extern crate failure_derive;
 use serde::{Deserialize, Serialize};
@@ -15,9 +15,9 @@ use rcl::*;
 mod error;
 use error::*;
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
-pub trait WrappedTypesupport {
+pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned  {
     type CStruct;
 
     fn get_ts() -> &'static rosidl_message_type_support_t;
@@ -47,16 +47,7 @@ pub struct WrappedNativeMsgUntyped {
 }
 
 impl WrappedNativeMsgUntyped {
-    fn new_from(typename: &str) -> Result<Self> {
-        if typename == "std_msgs/msg/String" {
-            Ok(WrappedNativeMsgUntyped::new::<std_msgs::msg::String>())
-        } else
-        { return Err(Error::InvalidMessageType{ msgtype: typename.into() }) }
-    }
-}
-
-impl WrappedNativeMsgUntyped {
-    fn new<T>() -> Self where T: WrappedTypesupport + Serialize + serde::de::DeserializeOwned {
+    fn new<T>() -> Self where T: WrappedTypesupport {
         let destroy = | native: *mut std::os::raw::c_void | {
             let native_msg = native as *mut T::CStruct;
             T::destroy_msg(native_msg);
@@ -87,9 +78,17 @@ impl WrappedNativeMsgUntyped {
         json.map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
     }
 
-    fn from_json(&self, json: serde_json::Value) -> Result<()> {
+    fn from_json(&mut self, json: serde_json::Value) -> Result<()> {
         (self.msg_from_json)(self.msg, json).
             map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
+    }
+
+    pub fn void_ptr(&self) -> *const std::os::raw::c_void {
+        self.msg as *const _ as *const std::os::raw::c_void
+    }
+
+    pub fn void_ptr_mut(&mut self) -> *mut std::os::raw::c_void {
+        self.msg as *mut _ as *mut std::os::raw::c_void
     }
 }
 
@@ -180,10 +179,8 @@ where
 
 struct WrappedSubUntyped {
     rcl_handle: rcl_subscription_t,
-    callback: Box<dyn FnMut(serde_json::Value) -> ()>,
-    serialize: Box<dyn FnMut(*const std::os::raw::c_void) -> serde_json::Value>,
-    dealloc: Box<dyn FnMut(*mut std::os::raw::c_void) -> ()>,
-    rcl_msg: *mut std::os::raw::c_void,
+    rcl_msg: WrappedNativeMsgUntyped,
+    callback: Box<dyn FnMut(Result<serde_json::Value>) -> ()>,
 }
 
 impl<T> Sub for WrappedSub<T>
@@ -243,19 +240,18 @@ impl Sub for WrappedSubUntyped
     }
 
     fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
-        self.rcl_msg
+        self.rcl_msg.void_ptr_mut()
     }
 
     fn run_cb(&mut self) -> () {
-        let string = (self.serialize)(self.rcl_msg);
-        (self.callback)(string);
+        let json = self.rcl_msg.to_json();
+        (self.callback)(json);
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
         }
-        (self.dealloc)(self.rcl_msg); // manually delete message
     }
 }
 
@@ -454,19 +450,15 @@ impl Node {
         &mut self,
         topic: &str,
         topic_type: &str,
-        callback: Box<dyn FnMut(serde_json::Value) -> ()>,
+        callback: Box<dyn FnMut(Result<serde_json::Value>) -> ()>,
     ) -> Result<&rcl_subscription_t> {
-        let ts = untyped_ts_helper(topic_type)?;
-        let de = untyped_deserialize_helper(topic_type)?;
-        let subscription_handle = self.create_subscription_helper(topic, ts)?;
-        let dealloc = untyped_dealloc_helper(topic_type)?;
+        let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
+        let subscription_handle = self.create_subscription_helper(topic, msg.ts)?;
 
         let ws = WrappedSubUntyped {
             rcl_handle: subscription_handle,
-            rcl_msg: untyped_alloc_helper(topic_type)?,
+            rcl_msg: msg,
             callback: callback,
-            serialize: Box::new(de),
-            dealloc: Box::new(dealloc),
         };
         self.subs.push(Box::new(ws));
         Ok(self.subs.last().unwrap().handle()) // hmm...
@@ -505,7 +497,7 @@ impl Node {
     }
 
     pub fn create_publisher_untyped(&mut self, topic: &str, topic_type: &str) -> Result<PublisherUntyped> {
-        let ts = untyped_ts_helper(topic_type)?;
+        let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?; // TODO, get ts without allocating msg
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
         let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
 
@@ -515,7 +507,7 @@ impl Node {
             rcl_publisher_init(
                 &mut publisher_handle,
                 self.node_handle.as_mut(),
-                ts,
+                dummy.ts,
                 topic_c_string.as_ptr(),
                 &publisher_options,
             )
@@ -707,21 +699,16 @@ impl PublisherUntyped {
         // upgrade to actual ref. if still alive
         let publisher = self.handle.upgrade().ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
-        // figure out which serializer to use, publish, then destroy
-        let se = untyped_serialize_helper(&self.type_)?;
-        let dealloc = untyped_dealloc_helper(&self.type_)?;
+        let mut native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
+        native_msg.from_json(msg)?;
 
-        // copy rust msg to native and publish it
-        let native_ptr = se(msg).map_err(|e| Error::SerdeError { err: e.to_string() })?;
         let result = unsafe {
             rcl_publish(
                 publisher.as_ref(),
-                native_ptr,
+                native_msg.void_ptr(),
                 std::ptr::null_mut(),
             )
         };
-
-        dealloc(native_ptr);
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -883,9 +870,20 @@ mod tests {
     }
 
     #[test]
-    fn refactor_untyped() {
-        let ptr = native as *const <builtin_interfaces::msg::Duration as WrappedTypesupport>::CStruct;
-        let msg = unsafe { builtin_interfaces::msg::Duration::from_native(&*ptr) };
+    fn test_untyped_json() -> () {
+        use trajectory_msgs::msg::*;
+        let mut msg: JointTrajectoryPoint = Default::default();
+        msg.positions.push(39.0);
+        msg.positions.push(34.0);
+        let json = serde_json::to_value(msg.clone()).unwrap();
+
+        let mut native = WrappedNativeMsgUntyped::new_from("trajectory_msgs/msg/JointTrajectoryPoint").unwrap();
+        native.from_json(json.clone()).unwrap();
+        let json2 = native.to_json().unwrap();
+        assert_eq!(json, json2);
+
+        let msg2: JointTrajectoryPoint = serde_json::from_value(json2).unwrap();
+        assert_eq!(msg, msg2);
     }
 
 }
