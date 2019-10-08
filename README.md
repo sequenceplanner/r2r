@@ -5,23 +5,28 @@ Minimal bindings for ROS2 that does *not* require hooking in to the ROS2 build i
 
 How to use
 ------------
-You need to source your ROS2 installation before building/running. A couple of examples are included in examples/
+1. Depend on this package: r2r = { git = "https://github.com/sequenceplanner/r2r" }.
+2. You need to source your ROS2 installation before building/running.
+3. The bindings will rebuild automatically if/when you source your workspaces.
+
+A couple of examples are included in examples/
 ```
 . /opt/ros/dashing/setup.sh
 cargo build
 cargo run --example subscriber_with_thread
 ```
-In order to avoid building everything, put the message types you need in `msgs.txt` before building. (Or just `ros2 msg list > msgs.txt` if you want everything).
+
 
 What works?
 --------
-- Only tested with ROS2 Dashing
-- Simple publish/subscribe, see examples.
+- Up to date with ROS2 Dashing
+- Building Rust types
+- Publish/subscribe
 
 TODO
 ------------
 - The code generation is currently just a big hack. Needs cleanup and refactoring.
 - Implement error handling. Now all methods just return Err(()).
-- Expose more of the RCL. 
-
-
+- Expose more of the RCL.
+- Services and action types are currently ignored.
+- QoS settings etc.

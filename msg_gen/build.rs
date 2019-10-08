@@ -8,9 +8,9 @@ use std::path::PathBuf;
 use common::*;
 
 fn main() {
-    println!("cargo:rerun-if-changed=../msgs.txt");
+    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
 
-    let msgs = read_file("../msgs.txt").expect("You need to create msgs.txt");
+    let msgs = get_all_ros_msgs();
     let msg_list = parse_msgs(&msgs);
     let msg_map = as_map(&msg_list);
 

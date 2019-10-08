@@ -6,8 +6,11 @@ use std::io::Write;
 use std::path::PathBuf;
 
 fn main() {
-    let msgs_str = read_file("./msgs.txt").expect("You need to create msgs.txt");
-    let msgs_list = parse_msgs(&msgs_str);
+    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+
+    let msgs = get_all_ros_msgs();
+    let msgs_list = parse_msgs(&msgs);
+
     let msgs = as_map(&msgs_list);
 
     let mut codegen = String::new();

@@ -4,6 +4,8 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")
         .derive_copy(false)
