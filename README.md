@@ -16,7 +16,7 @@ A couple of examples are included in examples/
 cargo build
 cargo run --example subscriber_with_thread
 ```
-
+An example application can be found here <https://github.com/sequenceplanner/r2r-echo>, which can be installed by running cargo install --git https://github.com/sequenceplanner/r2r-echo.
 
 What works?
 --------------------
