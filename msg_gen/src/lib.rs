@@ -3,6 +3,8 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
+#![allow(clippy::cast_ptr_alignment)]
+#![allow(clippy::if_same_then_else)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 
@@ -174,6 +176,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                             field_name = field_name
                         ));
                     } else {
+                        let x = 1;
                         from_native.push_str(&format!(
                             "{field_name}: msg.{field_name}.to_vec(),\n",
                             field_name = field_name
