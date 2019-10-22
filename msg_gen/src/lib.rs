@@ -3,8 +3,6 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
-#![allow(clippy::cast_ptr_alignment)]
-#![allow(clippy::if_same_then_else)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 
@@ -159,7 +157,38 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
             let rust_field_type = field_type(member.type_id_);
 
-            if member.is_array_ {
+            if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
+                // these are plain arrays
+                let ss = format!("// is_upper_bound_: {}\n", member.is_upper_bound_);
+                from_native.push_str(&ss);
+                let ss = format!("// member.array_size_ : {}\n", member.array_size_);
+                from_native.push_str(&ss);
+                if rust_field_type == "message" {
+                    let (module, prefix, name, _, _) = introspection(member.members_);
+                    from_native.push_str(&format!("{field_name} : {{\n", field_name = field_name));
+                    from_native.push_str(&format!(
+                        "let mut temp = Vec::with_capacity(msg.{field_name}.len());\n",
+                        field_name = field_name
+                    ));
+                    from_native.push_str(&format!("for s in &msg.{field_name} {{ temp.push({module}::{prefix}::{msgname}::from_native(s)); }}\n", field_name = field_name, module = module, prefix=prefix, msgname = name));
+                    from_native.push_str("temp },\n");
+                } else if rust_field_type == "std::string::String" {
+                    from_native.push_str(&format!(
+                        "{field_name}: msg.{field_name}.iter().map(|s|s.to_str().to_owned()).collect(),\n",
+                        field_name = field_name
+                    ));
+                } else {
+                    from_native.push_str(&format!(
+                        "{field_name}: msg.{field_name}.to_vec(),\n",
+                        field_name = field_name
+                    ));
+                }
+            } else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
+                // these are __Sequence:s
+                let ss = format!("// is_upper_bound_: {}\n", member.is_upper_bound_);
+                from_native.push_str(&ss);
+                let ss = format!("// member.array_size_ : {}\n", member.array_size_);
+                from_native.push_str(&ss);
                 if rust_field_type == "message" {
                     let (module, prefix, name, _, _) = introspection(member.members_);
                     from_native.push_str(&format!("{field_name} : {{\n", field_name = field_name));
@@ -171,19 +200,10 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                     from_native.push_str(&format!("for s in slice {{ temp.push({module}::{prefix}::{msgname}::from_native(s)); }}\n", module = module, prefix=prefix, msgname = name));
                     from_native.push_str("temp },\n");
                 } else {
-                    if member.array_size_ > 0 {
-                        // fixed size array, copy elements (happens to be the same now that we are using vectors...)
-                        from_native.push_str(&format!(
-                            "{field_name}: msg.{field_name}.to_vec(),\n",
-                            field_name = field_name
-                        ));
-                    } else {
-                        let x = 1;
-                        from_native.push_str(&format!(
-                            "{field_name}: msg.{field_name}.to_vec(),\n",
-                            field_name = field_name
-                        ));
-                    }
+                    from_native.push_str(&format!(
+                        "{field_name}: msg.{field_name}.to_vec(),\n",
+                        field_name = field_name
+                    ));
                 }
             } else if rust_field_type == "std::string::String" {
                 from_native.push_str(&format!(
@@ -209,7 +229,21 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             let field_name = field_name(CStr::from_ptr((*member).name_).to_str().unwrap());
             let rust_field_type = field_type(member.type_id_);
 
-            if member.is_array_ {
+            if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
+                // these are plain arrays
+                // fixed size array, just copy but first check the size!
+                copy_to_native.push_str(&format!("assert_eq!(self.{field_name}.len(), {array_size}, \"Field {{}} is fixed size of {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
+                if rust_field_type == "message" {
+                    copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
+                }
+                else if rust_field_type == "std::string::String" {
+                    copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ t.assign(&s);}}\n", field_name=field_name));
+                } else {
+                    copy_to_native.push_str(&format!("msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n", field_name = field_name, array_size = member.array_size_));
+                }
+            }
+            else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
+                // these are __Sequence:s
                 if rust_field_type == "message" {
                     let (_, _, _, c_struct, _) = introspection(member.members_);
                     copy_to_native.push_str(&format!(
@@ -221,20 +255,14 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                     copy_to_native.push_str(&format!("let slice = unsafe {{ std::slice::from_raw_parts_mut(msg.{field_name}.data, msg.{field_name}.size)}};\n",field_name = field_name));
                     copy_to_native.push_str(&format!("for (t,s) in slice.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
                 } else {
-                    if member.array_size_ > 0 && !member.is_upper_bound_ {
-                        // fixed size array, just copy but first check the size!
-                        copy_to_native.push_str(&format!("assert_eq!(self.{field_name}.len(), {array_size}, \"Field {{}} is fixed size of {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
-                        copy_to_native.push_str(&format!("msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n", field_name = field_name, array_size = member.array_size_));
-                    } else {
-                        if member.is_upper_bound_ {
-                            // extra assertion
-                            copy_to_native.push_str(&format!("assert!(self.{field_name}.len() <= {array_size}, \"Field {{}} is upper bounded by {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
-                        }
-                        copy_to_native.push_str(&format!(
-                            "msg.{field_name}.update(&self.{field_name});\n",
-                            field_name = field_name
-                        ));
+                    // extra assertion
+                    if member.is_upper_bound_ {
+                        copy_to_native.push_str(&format!("assert!(self.{field_name}.len() <= {array_size}, \"Field {{}} is upper bounded by {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
                     }
+                    copy_to_native.push_str(&format!(
+                        "msg.{field_name}.update(&self.{field_name});\n",
+                        field_name = field_name
+                    ));
                 }
             } else if rust_field_type == "std::string::String" {
                 copy_to_native.push_str(&format!(
@@ -276,17 +304,29 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             copy_to_native = copy_to_native
         );
 
+        let impl_default = format!(
+            "
+                          impl Default for {msgname} {{
+                              fn default() -> Self {{
+                                  let msg_native = WrappedNativeMsg::<{msgname}>::new();
+                                  {msgname}::from_native(&msg_native)
+                              }}
+                          }}
+             ", msgname = name);
+
         let module_str = format!(
             "
-                          #[derive(Clone,Debug,Default,PartialEq,Serialize,Deserialize)]
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
                           pub struct {msgname} {{\n
                               {fields}
                           }}\n
-                          {typesupport}\n\n
+                          {typesupport}\n
+                          {default}\n\n
                     ",
             msgname = name,
             fields = fields,
-            typesupport = typesupport
+            typesupport = typesupport,
+            default = impl_default
         );
 
         module_str

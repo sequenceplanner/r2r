@@ -34,6 +34,8 @@ fn main() {
 
             for msg in msgs {
                 codegen.push_str(&generate_rust_msg(module, prefix, msg));
+
+                println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
             }
 
             codegen.push_str("  }\n");

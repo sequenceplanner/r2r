@@ -860,8 +860,7 @@ mod tests {
 
     #[test]
     fn test_untyped_json() -> () {
-        use trajectory_msgs::msg::*;
-        let mut msg: JointTrajectoryPoint = Default::default();
+        let mut msg = trajectory_msgs::msg::JointTrajectoryPoint::default();
         msg.positions.push(39.0);
         msg.positions.push(34.0);
         let json = serde_json::to_value(msg.clone()).unwrap();
@@ -871,8 +870,45 @@ mod tests {
         let json2 = native.to_json().unwrap();
         assert_eq!(json, json2);
 
-        let msg2: JointTrajectoryPoint = serde_json::from_value(json2).unwrap();
+        let msg2: trajectory_msgs::msg::JointTrajectoryPoint = serde_json::from_value(json2).unwrap();
         assert_eq!(msg, msg2);
+    }
+
+    #[cfg(r2r__test_msgs__msg__Arrays)]
+    #[test]
+    fn test_test_msgs_array() -> () {
+        let mut msg = test_msgs::msg::Arrays::default();
+        println!("msg: {:?}", msg.string_values);
+        msg.string_values = vec![
+            "hej".to_string(), "hopp".to_string(), "stropp".to_string()
+        ];
+
+        let msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
+        let msg2 = test_msgs::msg::Arrays::from_native(&msg_native);
+
+        assert_eq!(msg, msg2);
+    }
+
+    #[cfg(r2r__test_msgs__msg__Arrays)]
+    #[test]
+    #[should_panic]
+    fn test_test_msgs_array_too_few_elems() -> () {
+        let mut msg = test_msgs::msg::Arrays::default();
+        println!("msg: {:?}", msg.string_values);
+        msg.string_values = vec![ "hej".to_string(), "hopp".to_string() ];
+        let _msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
+    }
+
+    #[cfg(r2r__test_msgs__msg__WStrings)]
+    #[test]
+    fn test_test_msgs_wstring() -> () {
+        let mut msg = test_msgs::msg::WStrings::default();
+        let rust_str = "ハローワールド";
+        msg.wstring_value = rust_str.to_string();
+        let native = WrappedNativeMsg::<test_msgs::msg::WStrings>::from(&msg);
+        println!("msg: {:?}", msg);
+        let msg2 = test_msgs::msg::WStrings::from_native(&native);
+        assert_eq!(msg.wstring_value, msg2.wstring_value);
     }
 
 }

@@ -151,5 +151,3 @@ primitive_sequence!(rosidl_generator_c__uint32, u32);
 primitive_sequence!(rosidl_generator_c__int32, i32);
 primitive_sequence!(rosidl_generator_c__uint64, u64);
 primitive_sequence!(rosidl_generator_c__int64, i64);
-
-
