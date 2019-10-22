@@ -71,6 +71,8 @@ fn main() {
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_generator_c__String")
         .blacklist_type("rosidl_generator_c__String__Sequence")
+        .blacklist_type("rosidl_generator_c__U16String")
+        .blacklist_type("rosidl_generator_c__U16String__Sequence")
         .blacklist_type("rosidl_generator_c__float32__Sequence")
         .blacklist_type("rosidl_generator_c__float__Sequence")
         .blacklist_type("rosidl_generator_c__float64__Sequence")

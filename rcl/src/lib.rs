@@ -54,6 +54,45 @@ impl rosidl_generator_c__String {
     }
 }
 
+use widestring::U16String;
+impl rosidl_generator_c__U16String {
+    pub fn to_str(&self) -> String {
+        let s = unsafe { U16String::from_ptr(self.data, self.size) };
+        // U16Str = U16String::from_ptr(buffer, strlen as usize);
+        // let s = unsafe { CStr::from_ptr(self.data as *mut i8) };
+        //s.to_str().unwrap_or("")
+        s.to_string_lossy()
+    }
+
+    pub fn assign(&mut self, other: &str) -> () {
+        let wstr = U16String::from_str(other);
+        let to_send_ptr = wstr.as_ptr() as *const uint_least16_t;
+        unsafe {
+            rosidl_generator_c__U16String__assignn(self as *mut _, to_send_ptr, wstr.len());
+        }
+    }
+}
+
+impl rosidl_generator_c__U16String__Sequence {
+    pub fn update(&mut self, values: &[String]) {
+        unsafe { rosidl_generator_c__U16String__Sequence__fini(self as *mut _); }
+        unsafe { rosidl_generator_c__U16String__Sequence__init(self as *mut _, values.len()); }
+        let strs = unsafe { std::slice::from_raw_parts_mut(self.data, values.len()) };
+        for (target, source) in strs.iter_mut().zip(values) {
+            target.assign(&source);
+        }
+    }
+
+    pub fn to_vec(&self) -> Vec<String> {
+        let mut target = Vec::with_capacity(self.size);
+        let strs = unsafe { std::slice::from_raw_parts(self.data, self.size) };
+        for s in strs {
+            target.push(s.to_str().to_owned());
+        }
+        target
+    }
+}
+
 impl rosidl_generator_c__String__Sequence {
     pub fn update(&mut self, values: &[String]) {
         unsafe { rosidl_generator_c__String__Sequence__fini(self as *mut _); }

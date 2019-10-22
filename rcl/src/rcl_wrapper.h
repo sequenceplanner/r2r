@@ -11,6 +11,9 @@
 #include <rosidl_generator_c/string.h>
 #include <rosidl_generator_c/string_functions.h>
 
+#include <rosidl_generator_c/u16string.h>
+#include <rosidl_generator_c/u16string_functions.h>
+
 #include <rosidl_generator_c/primitives_sequence.h>
 #include <rosidl_generator_c/primitives_sequence_functions.h>
 

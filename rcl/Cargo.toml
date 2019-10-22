@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 libc = "0.2.0"
 paste = "0.1.6"
+widestring = "0.4.0"
 
 [build-dependencies]
 bindgen = "0.50.0"

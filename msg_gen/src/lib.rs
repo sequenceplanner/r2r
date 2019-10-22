@@ -21,6 +21,8 @@ fn field_type(t: u8) -> String {
     // move to common
     if t == (rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8) {
         "std::string::String".to_owned()
+    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING as u8) {
+        "std::string::String".to_owned()
     } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u8) {
         "bool".to_owned()
     } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_CHAR as u8) {
