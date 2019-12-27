@@ -12,7 +12,7 @@ How to use
 
 A couple of examples are included in examples/
 ```
-. /opt/ros/dashing/setup.sh
+. /opt/ros/eloquent/setup.sh
 cargo build
 cargo run --example subscriber_with_thread
 ```
@@ -20,12 +20,12 @@ An example application can be found here <https://github.com/sequenceplanner/r2r
 
 What works?
 --------------------
-- Up to date with ROS2 Dashing
+- Up to date with ROS2 ~Dashing~ Eloquent
 - Building Rust types
 - Publish/subscribe
 
 TODO
 --------------------
 - The code generation is currently just a big hack. Needs cleanup and refactoring.
-- Expose more of the RCL like QoS settings.
+- Expose more of the RCL like QoS settings and logging.
 - Services and action types...
