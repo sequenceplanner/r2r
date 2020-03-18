@@ -1,5 +1,5 @@
-include!(concat!(env!("OUT_DIR"), "/generated_msgs.rs"));
-include!(concat!(env!("OUT_DIR"), "/generated_untyped_helper.rs"));
+include!(concat!(env!("OUT_DIR"), "/_r2r_generated_msgs.rs"));
+include!(concat!(env!("OUT_DIR"), "/_r2r_generated_untyped_helper.rs"));
 
 #[macro_use] extern crate failure_derive;
 use serde::{Deserialize, Serialize};

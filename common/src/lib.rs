@@ -102,7 +102,8 @@ std_msgs/msg/Bool
 x/y
 std_msgs/msg/String
 ";
-        let parsed = parse_msgs(msgs);
+        let msgs = msgs.lines().map(|l|l.to_string()).collect();
+        let parsed = parse_msgs(&msgs);
         assert_eq!(parsed[0].module, "std_msgs");
         assert_eq!(parsed[0].prefix, "msg");
         assert_eq!(parsed[0].name, "Bool");
@@ -118,7 +119,8 @@ std_msgs/msg/Bool
 x/y
 std_msgs/msg/String
 ";
-        let parsed = parse_msgs(msgs);
+        let msgs: Vec<String> = msgs.lines().map(|l|l.to_string()).collect();
+        let parsed = parse_msgs(&msgs);
         let map = as_map(&parsed);
 
         assert_eq!(map.get("std_msgs").unwrap().get("msg").unwrap()[0], "Bool");

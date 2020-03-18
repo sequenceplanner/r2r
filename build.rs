@@ -13,7 +13,7 @@ fn main() {
 
     let msgs = as_map(&msgs_list);
 
-    let mut codegen = String::new();
+    let mut modules = String::new();
 
     for (module, prefixes) in &msgs {
         println!(
@@ -26,8 +26,10 @@ fn main() {
         );
         println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
 
-        codegen.push_str(&format!("pub mod {} {{\n", module));
 
+        modules.push_str(&format!("pub mod {};\n", module));
+
+        let mut codegen = String::new();
         for (prefix, msgs) in prefixes {
             codegen.push_str(&format!("  pub mod {} {{\n", prefix));
             codegen.push_str("    use super::super::*;\n");
@@ -40,18 +42,20 @@ fn main() {
 
             codegen.push_str("  }\n");
         }
-
-        codegen.push_str("}\n");
+        let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+        let mod_fn = out_path.join(&format!("{}.rs", module));
+        let mut f = File::create(mod_fn).unwrap();
+        write!(f, "{}", codegen).unwrap();
     }
 
     let untyped_helper = generate_untyped_helper(&msgs_list);
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let msgs_fn = out_path.join("generated_msgs.rs");
-    let untyped_fn = out_path.join("generated_untyped_helper.rs");
+    let msgs_fn = out_path.join("_r2r_generated_msgs.rs");
+    let untyped_fn = out_path.join("_r2r_generated_untyped_helper.rs");
 
     let mut f = File::create(msgs_fn).unwrap();
-    write!(f, "{}", codegen).unwrap();
+    write!(f, "{}", modules).unwrap();
     let mut f = File::create(untyped_fn).unwrap();
     write!(f, "{}", untyped_helper).unwrap();
 }
