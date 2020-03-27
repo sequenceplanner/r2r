@@ -26,8 +26,8 @@ fn main() {
         );
         println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
 
-
-        modules.push_str(&format!("pub mod {};\n", module));
+        modules.push_str(&format!(r#"pub mod {module}{{include!(concat!(env!("OUT_DIR"), "/{module}.rs"));}}{lf}"#, module=module, lf="\n"));
+        //modules.push_str(&format!("pub mod {};\n", module));
 
         let mut codegen = String::new();
         for (prefix, msgs) in prefixes {
