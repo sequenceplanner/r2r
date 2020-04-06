@@ -911,4 +911,23 @@ mod tests {
         assert_eq!(msg.wstring_value, msg2.wstring_value);
     }
 
+    #[cfg(r2r__example_interfaces__srv__AddTwoInts)]
+    #[test]
+    fn test_service_msgs() {
+        use example_interfaces::srv::AddTwoInts;
+        let mut req = AddTwoInts::Request::default();
+        req.a = 5;
+        let rn = WrappedNativeMsg::<_>::from(&req);
+        let req2 = AddTwoInts::Request::from_native(&rn);
+        println!("req2 {:?}", req2);
+        assert_eq!(req, req2);
+
+        let mut resp = AddTwoInts::Response::default();
+        resp.sum = 5;
+        let rn = WrappedNativeMsg::<_>::from(&resp);
+        let resp2 = AddTwoInts::Response::from_native(&rn);
+        println!("resp {:?}", resp2);
+        assert_eq!(resp, resp2);
+    }
+
 }

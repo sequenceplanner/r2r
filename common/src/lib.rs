@@ -50,6 +50,14 @@ pub fn get_all_ros_msgs() -> Vec<String> {
                                 msgs.push(msg_name);
                             }
                         }
+                        if l.starts_with("srv/") && (l.ends_with(".idl") || l.ends_with(".srv")) {
+                            if let Some(file_name_str) = file_name.to_str() {
+                                let substr = &l[4..l.len()-4];
+                                let srv_name = format!("{}/srv/{}", file_name_str, substr);
+                                println!("srv_name: {}", srv_name);
+                                msgs.push(srv_name);
+                            }
+                        }
                     });
                 }
             }

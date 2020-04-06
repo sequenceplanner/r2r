@@ -110,10 +110,19 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         .expect(&format!("code generation error: {}", name_));
     let ptr = *ptr as *const i32 as *const rosidl_message_type_support_t;
     unsafe {
-        let (module, prefix, name, c_struct, members) = introspection(ptr);
+        let (module, prefix, mut name, c_struct, members) = introspection(ptr);
         assert_eq!(module, module_);
         assert_eq!(prefix, prefix_);
         assert_eq!(name, name_);
+
+        if prefix == "srv" {
+            // for srv, the message name is both the service name and _Request or _Respone
+            // we only want to keep the last part.
+            let mut nn = name.splitn(2, "_");
+            let _mod_name = nn.next().expect(&format!("malformed service name {}", name));
+            let msg_name = nn.next().expect(&format!("malformed service name {}", name));
+            name = msg_name.to_owned();
+        }
 
         let mut fields = String::new();
 
@@ -353,6 +362,9 @@ impl WrappedNativeMsgUntyped {
 
     let mut lines = String::new();
     for msg in msgs {
+        // for now don't generate untyped services
+        if msg.prefix == "srv" { continue; }
+
         let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
         let rustname = format!("{}::{}::{}", msg.module, msg.prefix, msg.name);
 
