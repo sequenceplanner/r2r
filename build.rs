@@ -32,22 +32,21 @@ fn main() {
         for (prefix, msgs) in prefixes {
             codegen.push_str(&format!("  pub mod {} {{\n", prefix));
 
-            for msg in msgs {
-                if prefix == &"srv" {
+            if prefix == &"srv" {
+                for msg in msgs {
                     codegen.push_str("#[allow(non_snake_case)]\n");
                     codegen.push_str(&format!("    pub mod {} {{\n", msg));
+                    codegen.push_str("    use super::super::super::*;\n");
                     for s in &["Request", "Response"] {
                         let msgname = format!("{}_{}", msg, s);
-                        codegen.push_str("#[allow(unused_imports)]\n");
-                        codegen.push_str("    use super::super::super::*;\n");
                         codegen.push_str(&generate_rust_msg(module, prefix, &msgname));
                         println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                     }
                     codegen.push_str("    }\n");
-                } else {
-                    // the need to allow unused seems to be a compiler bug...
-                    codegen.push_str("#[allow(unused_imports)]\n");
-                    codegen.push_str("    use super::super::*;\n");
+                }
+            } else {
+                codegen.push_str("    use super::super::*;\n");
+                for msg in msgs {
                     codegen.push_str(&generate_rust_msg(module, prefix, msg));
                     println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                 }
