@@ -17,7 +17,7 @@ use error::*;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned  {
+pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned + Default {
     type CStruct;
 
     fn get_ts() -> &'static rosidl_message_type_support_t;
@@ -26,6 +26,14 @@ pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned  {
     fn from_native(msg: &Self::CStruct) -> Self;
     fn copy_to_native(&self, msg: &mut Self::CStruct);
 }
+
+pub trait WrappedServiceTypeSupport {
+    type Request: WrappedTypesupport;
+    type Response: WrappedTypesupport;
+
+    fn get_ts() -> &'static rosidl_service_type_support_t;
+}
+
 
 #[derive(Debug)]
 pub struct WrappedNativeMsg<T>
@@ -255,6 +263,64 @@ impl Sub for WrappedSubUntyped
     }
 }
 
+
+// services
+struct WrappedService<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    rcl_handle: rcl_service_t,
+    rcl_request: rmw_request_id_t,
+    callback: Box<dyn FnMut(T::Request) -> T::Response>,
+    rcl_request_msg: WrappedNativeMsg<T::Request>,
+}
+
+pub trait Service {
+    fn handle(&self) -> &rcl_service_t;
+    fn run_cb(&mut self) -> ();
+    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t;
+    fn rcl_request_msg(&mut self) -> *mut std::os::raw::c_void;
+    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+}
+
+impl<T> Service for WrappedService<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    fn handle(&self) -> &rcl_service_t {
+        &self.rcl_handle
+    }
+
+    fn rcl_request_msg(&mut self) -> *mut std::os::raw::c_void {
+        self.rcl_request_msg.void_ptr_mut()
+    }
+
+    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t {
+        &mut self.rcl_request
+    }
+
+    fn run_cb(&mut self) -> () {
+        // copy native msg to rust type and run callback
+        let request = T::Request::from_native(&self.rcl_request_msg);
+        let response = (self.callback)(request);
+        let mut native_response = WrappedNativeMsg::<T::Response>::from(&response);
+        let res = unsafe {
+            rcl_send_response(&self.rcl_handle, &mut self.rcl_request, native_response.void_ptr_mut())
+        };
+
+        // TODO
+        if res != RCL_RET_OK as i32 {
+            panic!("service error {}", res);
+        }
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_service_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
 // The publish function is thread safe. ROS2 docs state:
 // =============
 //
@@ -347,6 +413,8 @@ pub struct Node {
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subs: Vec<Box<dyn Sub>>,
+    // servies,
+    services: Vec<Box<dyn Service>>,
     // and the publishers, whom we allow to be shared.. hmm.
     pubs: Vec<Arc<rcl_publisher_t>>,
 }
@@ -379,6 +447,7 @@ impl Node {
                 context: ctx,
                 node_handle: node_handle,
                 subs: Vec::new(),
+                services: Vec::new(),
                 pubs: Vec::new(),
             })
         } else {
@@ -464,11 +533,54 @@ impl Node {
         Ok(self.subs.last().unwrap().handle()) // hmm...
     }
 
+    pub fn create_service_helper(&mut self, service_name: &str,
+                                 service_ts: *const rosidl_service_type_support_t)
+                                 -> Result<rcl_service_t> {
+        let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
+        let service_name_c_string = CString::new(service_name)
+            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+
+        let result = unsafe {
+            let service_options = rcl_service_get_default_options();
+            rcl_service_init(&mut service_handle, self.node_handle.as_mut(),
+                             service_ts, service_name_c_string.as_ptr(), &service_options)
+        };
+        if result == RCL_RET_OK as i32 {
+            Ok(service_handle)
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
+    pub fn create_service<T: 'static>(
+        &mut self,
+        service_name: &str,
+        callback: Box<dyn FnMut(T::Request) -> T::Response>,
+    ) -> Result<&rcl_service_t>
+    where
+        T: WrappedServiceTypeSupport,
+    {
+        let service_handle = self.create_service_helper(service_name, T::get_ts())?;
+        let ws = WrappedService::<T> {
+            rcl_handle: service_handle,
+            rcl_request: rmw_request_id_t {
+                writer_guid: [0; 16usize],
+                sequence_number: 0,
+            },
+            rcl_request_msg: WrappedNativeMsg::<T::Request>::new(),
+            callback: callback,
+        };
+
+        self.services.push(Box::new(ws));
+        Ok(self.services.last().unwrap().handle()) // hmm...
+    }
+
 
     pub fn create_publisher_helper(&mut self, topic: &str,
                                    typesupport: *const rosidl_message_type_support_t) -> Result<rcl_publisher_t> {
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
-        let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let topic_c_string = CString::new(topic)
+            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let mut publisher_options = rcl_publisher_get_default_options();
@@ -534,7 +646,7 @@ impl Node {
                     0,
                     0,
                     0,
-                    0,
+                    self.services.len(),
                     0,
                     ctx.as_mut(),
                     rcutils_get_default_allocator(),
@@ -551,6 +663,12 @@ impl Node {
             }
         }
 
+        for s in self.services.iter() {
+            unsafe {
+                rcl_wait_set_add_service(&mut ws, s.handle(), std::ptr::null_mut());
+            }
+        }
+
         unsafe {
             rcl_wait(&mut ws, timeout);
         }
@@ -563,6 +681,21 @@ impl Node {
             if ws_s != &std::ptr::null() {
                 let ret = unsafe {
                     rcl_take(s.handle(), s.rcl_msg(), &mut msg_info, std::ptr::null_mut())
+                };
+                if ret == RCL_RET_OK as i32 {
+                    s.run_cb();
+                }
+            }
+        }
+
+
+        let ws_services =
+            unsafe { std::slice::from_raw_parts(ws.services, ws.size_of_services) };
+        assert_eq!(ws_services.len(), self.services.len());
+        for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
+            if ws_s != &std::ptr::null() {
+                let ret = unsafe {
+                    rcl_take_request(s.handle(), s.rcl_request_id(), s.rcl_request_msg())
                 };
                 if ret == RCL_RET_OK as i32 {
                     s.run_cb();

@@ -37,6 +37,9 @@ fn main() {
                     codegen.push_str("#[allow(non_snake_case)]\n");
                     codegen.push_str(&format!("    pub mod {} {{\n", msg));
                     codegen.push_str("    use super::super::super::*;\n");
+
+                    codegen.push_str(&generate_rust_service(module, prefix, msg));
+
                     for s in &["Request", "Response"] {
                         let msgname = format!("{}_{}", msg, s);
                         codegen.push_str(&generate_rust_msg(module, prefix, &msgname));

@@ -102,6 +102,24 @@ fn field_name(field_name: &str) -> String {
     }
 }
 
+pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> String {
+    format!(
+            "
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {{
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {{
+                unsafe {{
+                    &*rosidl_typesupport_c__get_service_type_support_handle__{}__{}__{}()
+                }}
+            }}
+        }}
+
+            ", module_, prefix_, name_)
+}
+
+
 // TODO: this is a terrible hack :)
 pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
     let key = format!("{}__{}__{}", module_, prefix_, name_);
