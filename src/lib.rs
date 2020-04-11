@@ -4,6 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/_r2r_generated_untyped_helper.rs"));
 #[macro_use] extern crate failure_derive;
 use serde::{Deserialize, Serialize};
 use std::ffi::{CString,CStr};
+use std::mem::MaybeUninit;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
@@ -415,6 +416,8 @@ pub struct Node {
     subs: Vec<Box<dyn Sub>>,
     // servies,
     services: Vec<Box<dyn Service>>,
+    // timers,
+    timers: Vec<Timer>,
     // and the publishers, whom we allow to be shared.. hmm.
     pubs: Vec<Arc<rcl_publisher_t>>,
 }
@@ -448,6 +451,7 @@ impl Node {
                 node_handle: node_handle,
                 subs: Vec::new(),
                 services: Vec::new(),
+                timers: Vec::new(),
                 pubs: Vec::new(),
             })
         } else {
@@ -644,7 +648,7 @@ impl Node {
                     &mut ws,
                     self.subs.len(),
                     0,
-                    0,
+                    self.timers.len(),
                     0,
                     self.services.len(),
                     0,
@@ -663,14 +667,27 @@ impl Node {
             }
         }
 
+        for s in self.timers.iter() {
+            unsafe {
+                rcl_wait_set_add_timer(&mut ws, &s.timer_handle, std::ptr::null_mut());
+            }
+        }
+
         for s in self.services.iter() {
             unsafe {
                 rcl_wait_set_add_service(&mut ws, s.handle(), std::ptr::null_mut());
             }
         }
 
-        unsafe {
-            rcl_wait(&mut ws, timeout);
+        let ret = unsafe {
+            rcl_wait(&mut ws, timeout)
+        };
+
+        if ret == RCL_RET_TIMEOUT as i32 {
+            unsafe {
+                rcl_wait_set_fini(&mut ws);
+            }
+            return;
         }
 
         let ws_subs =
@@ -684,6 +701,32 @@ impl Node {
                 };
                 if ret == RCL_RET_OK as i32 {
                     s.run_cb();
+                }
+            }
+        }
+
+        let ws_timers =
+            unsafe { std::slice::from_raw_parts(ws.timers, ws.size_of_timers) };
+        assert_eq!(ws_timers.len(), self.timers.len());
+        for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
+            if ws_s != &std::ptr::null() {
+                let mut is_ready = false;
+                let ret = unsafe {
+                    rcl_timer_is_ready(&s.timer_handle, &mut is_ready)
+                };
+                if ret == RCL_RET_OK as i32 {
+                    if is_ready {
+                        let mut nanos = 0i64;
+                        // todo: error handling
+                        let ret = unsafe { rcl_timer_get_time_since_last_call(&s.timer_handle,
+                                                                              &mut nanos) };
+                        if ret == RCL_RET_OK as i32 {
+                            let ret = unsafe { rcl_timer_call(&mut s.timer_handle) };
+                            if ret == RCL_RET_OK as i32 {
+                                (s.callback)(Duration::from_nanos(nanos as u64));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -735,6 +778,51 @@ impl Node {
         Ok(res)
     }
 
+
+    pub fn create_wall_timer(
+        &mut self,
+        period: Duration,
+        callback: Box<dyn FnMut(Duration) -> ()>) -> Result<&Timer> {
+
+        let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
+
+        let ret = unsafe {
+            rcl_steady_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+        };
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not create steady clock: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        let mut clock_handle = Box::new(unsafe { clock_handle.assume_init() });
+        let mut timer_handle = unsafe { rcl_get_zero_initialized_timer() };
+
+        {
+            let mut ctx = self.context.context_handle.lock().unwrap();
+            let ret = unsafe {
+                rcl_timer_init(&mut timer_handle, clock_handle.as_mut(),
+                               ctx.as_mut(), period.as_nanos() as i64,
+                               None, rcutils_get_default_allocator())
+            };
+
+            if ret != RCL_RET_OK as i32 {
+                eprintln!("could not create timer: {}", ret);
+                return Err(Error::from_rcl_error(ret));
+            }
+        }
+
+        let timer = Timer { timer_handle, clock_handle, callback };
+        self.timers.push(timer);
+
+        Ok(&self.timers[self.timers.len()-1])
+    }
+
+}
+
+pub struct Timer {
+    timer_handle: rcl_timer_t,
+    clock_handle: Box<rcl_clock_t>,
+    callback: Box<dyn FnMut(Duration) -> ()>,
 }
 
 // Since publishers are temporarily upgraded to owners during the
@@ -758,6 +846,15 @@ impl Drop for Node {
     fn drop(&mut self) {
         for s in &mut self.subs {
             s.destroy(&mut self.node_handle);
+        }
+        for s in &mut self.services {
+            s.destroy(&mut self.node_handle);
+        }
+        for t in &mut self.timers {
+            // TODO: check return values
+            let _ret = unsafe { rcl_timer_fini(&mut t.timer_handle) };
+            // TODO: allow other types of clocks...
+            let _ret = unsafe { rcl_steady_clock_fini(t.clock_handle.as_mut()) };
         }
         while let Some(p) = self.pubs.pop() {
             let mut p = wait_until_unwrapped(p);
