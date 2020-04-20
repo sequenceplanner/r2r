@@ -48,9 +48,17 @@ fn main() {
             &msg.module, &msg.prefix, &include_filename
         ));
 
-        let key = &format!("{}__{}__{}", &msg.module, &msg.prefix, &msg.name);
-        let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name);
-        introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
+        if msg.prefix == "srv" {
+            for s in &["Request", "Response"] {
+                let key = &format!("{}__{}__{}_{}", &msg.module, &msg.prefix, &msg.name, s);
+                let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}_{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name, s);
+                introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
+            }
+        } else {
+            let key = &format!("{}__{}__{}", &msg.module, &msg.prefix, &msg.name);
+            let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name);
+            introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
+        }
     }
     introspecion_map.push_str("m \n }; }\n\n");
 
@@ -69,6 +77,7 @@ fn main() {
         .derive_copy(false)
         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
+        .blacklist_type("rosidl_service_type_support_t")
         .blacklist_type("rosidl_generator_c__String")
         .blacklist_type("rosidl_generator_c__String__Sequence")
         .blacklist_type("rosidl_generator_c__U16String")

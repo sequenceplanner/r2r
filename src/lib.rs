@@ -4,6 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/_r2r_generated_untyped_helper.rs"));
 #[macro_use] extern crate failure_derive;
 use serde::{Deserialize, Serialize};
 use std::ffi::{CString,CStr};
+use std::mem::MaybeUninit;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
@@ -17,7 +18,7 @@ use error::*;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned  {
+pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned + Default {
     type CStruct;
 
     fn get_ts() -> &'static rosidl_message_type_support_t;
@@ -26,6 +27,14 @@ pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned  {
     fn from_native(msg: &Self::CStruct) -> Self;
     fn copy_to_native(&self, msg: &mut Self::CStruct);
 }
+
+pub trait WrappedServiceTypeSupport {
+    type Request: WrappedTypesupport;
+    type Response: WrappedTypesupport;
+
+    fn get_ts() -> &'static rosidl_service_type_support_t;
+}
+
 
 #[derive(Debug)]
 pub struct WrappedNativeMsg<T>
@@ -255,6 +264,64 @@ impl Sub for WrappedSubUntyped
     }
 }
 
+
+// services
+struct WrappedService<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    rcl_handle: rcl_service_t,
+    rcl_request: rmw_request_id_t,
+    callback: Box<dyn FnMut(T::Request) -> T::Response>,
+    rcl_request_msg: WrappedNativeMsg<T::Request>,
+}
+
+pub trait Service {
+    fn handle(&self) -> &rcl_service_t;
+    fn run_cb(&mut self) -> ();
+    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t;
+    fn rcl_request_msg(&mut self) -> *mut std::os::raw::c_void;
+    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+}
+
+impl<T> Service for WrappedService<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    fn handle(&self) -> &rcl_service_t {
+        &self.rcl_handle
+    }
+
+    fn rcl_request_msg(&mut self) -> *mut std::os::raw::c_void {
+        self.rcl_request_msg.void_ptr_mut()
+    }
+
+    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t {
+        &mut self.rcl_request
+    }
+
+    fn run_cb(&mut self) -> () {
+        // copy native msg to rust type and run callback
+        let request = T::Request::from_native(&self.rcl_request_msg);
+        let response = (self.callback)(request);
+        let mut native_response = WrappedNativeMsg::<T::Response>::from(&response);
+        let res = unsafe {
+            rcl_send_response(&self.rcl_handle, &mut self.rcl_request, native_response.void_ptr_mut())
+        };
+
+        // TODO
+        if res != RCL_RET_OK as i32 {
+            panic!("service error {}", res);
+        }
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_service_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
 // The publish function is thread safe. ROS2 docs state:
 // =============
 //
@@ -347,6 +414,10 @@ pub struct Node {
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subs: Vec<Box<dyn Sub>>,
+    // servies,
+    services: Vec<Box<dyn Service>>,
+    // timers,
+    timers: Vec<Timer>,
     // and the publishers, whom we allow to be shared.. hmm.
     pubs: Vec<Arc<rcl_publisher_t>>,
 }
@@ -379,6 +450,8 @@ impl Node {
                 context: ctx,
                 node_handle: node_handle,
                 subs: Vec::new(),
+                services: Vec::new(),
+                timers: Vec::new(),
                 pubs: Vec::new(),
             })
         } else {
@@ -464,11 +537,54 @@ impl Node {
         Ok(self.subs.last().unwrap().handle()) // hmm...
     }
 
+    pub fn create_service_helper(&mut self, service_name: &str,
+                                 service_ts: *const rosidl_service_type_support_t)
+                                 -> Result<rcl_service_t> {
+        let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
+        let service_name_c_string = CString::new(service_name)
+            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+
+        let result = unsafe {
+            let service_options = rcl_service_get_default_options();
+            rcl_service_init(&mut service_handle, self.node_handle.as_mut(),
+                             service_ts, service_name_c_string.as_ptr(), &service_options)
+        };
+        if result == RCL_RET_OK as i32 {
+            Ok(service_handle)
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
+    pub fn create_service<T: 'static>(
+        &mut self,
+        service_name: &str,
+        callback: Box<dyn FnMut(T::Request) -> T::Response>,
+    ) -> Result<&rcl_service_t>
+    where
+        T: WrappedServiceTypeSupport,
+    {
+        let service_handle = self.create_service_helper(service_name, T::get_ts())?;
+        let ws = WrappedService::<T> {
+            rcl_handle: service_handle,
+            rcl_request: rmw_request_id_t {
+                writer_guid: [0; 16usize],
+                sequence_number: 0,
+            },
+            rcl_request_msg: WrappedNativeMsg::<T::Request>::new(),
+            callback: callback,
+        };
+
+        self.services.push(Box::new(ws));
+        Ok(self.services.last().unwrap().handle()) // hmm...
+    }
+
 
     pub fn create_publisher_helper(&mut self, topic: &str,
                                    typesupport: *const rosidl_message_type_support_t) -> Result<rcl_publisher_t> {
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
-        let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let topic_c_string = CString::new(topic)
+            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let mut publisher_options = rcl_publisher_get_default_options();
@@ -532,9 +648,9 @@ impl Node {
                     &mut ws,
                     self.subs.len(),
                     0,
+                    self.timers.len(),
                     0,
-                    0,
-                    0,
+                    self.services.len(),
                     0,
                     ctx.as_mut(),
                     rcutils_get_default_allocator(),
@@ -551,8 +667,27 @@ impl Node {
             }
         }
 
-        unsafe {
-            rcl_wait(&mut ws, timeout);
+        for s in self.timers.iter() {
+            unsafe {
+                rcl_wait_set_add_timer(&mut ws, &s.timer_handle, std::ptr::null_mut());
+            }
+        }
+
+        for s in self.services.iter() {
+            unsafe {
+                rcl_wait_set_add_service(&mut ws, s.handle(), std::ptr::null_mut());
+            }
+        }
+
+        let ret = unsafe {
+            rcl_wait(&mut ws, timeout)
+        };
+
+        if ret == RCL_RET_TIMEOUT as i32 {
+            unsafe {
+                rcl_wait_set_fini(&mut ws);
+            }
+            return;
         }
 
         let ws_subs =
@@ -563,6 +698,47 @@ impl Node {
             if ws_s != &std::ptr::null() {
                 let ret = unsafe {
                     rcl_take(s.handle(), s.rcl_msg(), &mut msg_info, std::ptr::null_mut())
+                };
+                if ret == RCL_RET_OK as i32 {
+                    s.run_cb();
+                }
+            }
+        }
+
+        let ws_timers =
+            unsafe { std::slice::from_raw_parts(ws.timers, ws.size_of_timers) };
+        assert_eq!(ws_timers.len(), self.timers.len());
+        for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
+            if ws_s != &std::ptr::null() {
+                let mut is_ready = false;
+                let ret = unsafe {
+                    rcl_timer_is_ready(&s.timer_handle, &mut is_ready)
+                };
+                if ret == RCL_RET_OK as i32 {
+                    if is_ready {
+                        let mut nanos = 0i64;
+                        // todo: error handling
+                        let ret = unsafe { rcl_timer_get_time_since_last_call(&s.timer_handle,
+                                                                              &mut nanos) };
+                        if ret == RCL_RET_OK as i32 {
+                            let ret = unsafe { rcl_timer_call(&mut s.timer_handle) };
+                            if ret == RCL_RET_OK as i32 {
+                                (s.callback)(Duration::from_nanos(nanos as u64));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        let ws_services =
+            unsafe { std::slice::from_raw_parts(ws.services, ws.size_of_services) };
+        assert_eq!(ws_services.len(), self.services.len());
+        for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
+            if ws_s != &std::ptr::null() {
+                let ret = unsafe {
+                    rcl_take_request(s.handle(), s.rcl_request_id(), s.rcl_request_msg())
                 };
                 if ret == RCL_RET_OK as i32 {
                     s.run_cb();
@@ -602,6 +778,51 @@ impl Node {
         Ok(res)
     }
 
+
+    pub fn create_wall_timer(
+        &mut self,
+        period: Duration,
+        callback: Box<dyn FnMut(Duration) -> ()>) -> Result<&Timer> {
+
+        let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
+
+        let ret = unsafe {
+            rcl_steady_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+        };
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not create steady clock: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        let mut clock_handle = Box::new(unsafe { clock_handle.assume_init() });
+        let mut timer_handle = unsafe { rcl_get_zero_initialized_timer() };
+
+        {
+            let mut ctx = self.context.context_handle.lock().unwrap();
+            let ret = unsafe {
+                rcl_timer_init(&mut timer_handle, clock_handle.as_mut(),
+                               ctx.as_mut(), period.as_nanos() as i64,
+                               None, rcutils_get_default_allocator())
+            };
+
+            if ret != RCL_RET_OK as i32 {
+                eprintln!("could not create timer: {}", ret);
+                return Err(Error::from_rcl_error(ret));
+            }
+        }
+
+        let timer = Timer { timer_handle, clock_handle, callback };
+        self.timers.push(timer);
+
+        Ok(&self.timers[self.timers.len()-1])
+    }
+
+}
+
+pub struct Timer {
+    timer_handle: rcl_timer_t,
+    clock_handle: Box<rcl_clock_t>,
+    callback: Box<dyn FnMut(Duration) -> ()>,
 }
 
 // Since publishers are temporarily upgraded to owners during the
@@ -625,6 +846,15 @@ impl Drop for Node {
     fn drop(&mut self) {
         for s in &mut self.subs {
             s.destroy(&mut self.node_handle);
+        }
+        for s in &mut self.services {
+            s.destroy(&mut self.node_handle);
+        }
+        for t in &mut self.timers {
+            // TODO: check return values
+            let _ret = unsafe { rcl_timer_fini(&mut t.timer_handle) };
+            // TODO: allow other types of clocks...
+            let _ret = unsafe { rcl_steady_clock_fini(t.clock_handle.as_mut()) };
         }
         while let Some(p) = self.pubs.pop() {
             let mut p = wait_until_unwrapped(p);
@@ -909,6 +1139,25 @@ mod tests {
         println!("msg: {:?}", msg);
         let msg2 = test_msgs::msg::WStrings::from_native(&native);
         assert_eq!(msg.wstring_value, msg2.wstring_value);
+    }
+
+    #[cfg(r2r__example_interfaces__srv__AddTwoInts)]
+    #[test]
+    fn test_service_msgs() {
+        use example_interfaces::srv::AddTwoInts;
+        let mut req = AddTwoInts::Request::default();
+        req.a = 5;
+        let rn = WrappedNativeMsg::<_>::from(&req);
+        let req2 = AddTwoInts::Request::from_native(&rn);
+        println!("req2 {:?}", req2);
+        assert_eq!(req, req2);
+
+        let mut resp = AddTwoInts::Response::default();
+        resp.sum = 5;
+        let rn = WrappedNativeMsg::<_>::from(&resp);
+        let resp2 = AddTwoInts::Response::from_native(&rn);
+        println!("resp {:?}", resp2);
+        assert_eq!(resp, resp2);
     }
 
 }

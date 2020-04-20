@@ -23,6 +23,7 @@ What works?
 - Up to date with ROS2 ~Dashing~ Eloquent
 - Building Rust types
 - Publish/subscribe
+- Services (servers, not clients yet)
 
 TODO
 --------------------
