@@ -20,3 +20,6 @@
 #include <rosidl_generator_c/message_type_support_struct.h>
 #include <rosidl_typesupport_introspection_c/message_introspection.h>
 #include <rosidl_typesupport_introspection_c/field_types.h>
+
+// parameters
+#include <rcl_yaml_param_parser/parser.h>

@@ -375,11 +375,16 @@ unsafe impl Send for Context {}
 impl Context {
     pub fn create() -> Result<Context> {
         let mut ctx: Box<rcl_context_t> = unsafe { Box::new(rcl_get_zero_initialized_context()) };
+        // argc/v
+        let args = std::env::args().map(|arg| CString::new(arg).unwrap() ).collect::<Vec<CString>>();
+        let mut c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const ::std::os::raw::c_char>>();
+        c_args.push(std::ptr::null());
+
         let is_valid = unsafe {
             let allocator = rcutils_get_default_allocator();
             let mut init_options = rcl_get_zero_initialized_init_options();
             rcl_init_options_init(&mut init_options, allocator);
-            rcl_init(0, std::ptr::null(), &init_options, ctx.as_mut());
+            rcl_init((c_args.len() - 1) as ::std::os::raw::c_int, c_args.as_ptr(), &init_options, ctx.as_mut());
             rcl_init_options_fini(&mut init_options as *mut _);
             rcl_context_is_valid(ctx.as_mut())
         };
@@ -409,8 +414,86 @@ impl Drop for ContextHandle {
     }
 }
 
+#[derive(Debug)]
+pub enum ParameterValue {
+    NotSet,
+    Bool(bool),
+    Integer(i64),
+    Double(f64),
+    String(String),
+    BoolArray(Vec<bool>),
+    ByteArray(Vec<u8>),
+    IntegerArray(Vec<i64>),
+    DoubleArray(Vec<f64>),
+    StringArray(Vec<String>),
+}
+
+impl ParameterValue {
+    fn from_rcl(v: &rcl_variant_t) -> Self {
+        if v.bool_value != std::ptr::null_mut() {
+            ParameterValue::Bool(unsafe { *v.bool_value })
+        } else if v.integer_value != std::ptr::null_mut() {
+            ParameterValue::Integer(unsafe { *v.integer_value })
+        } else if v.double_value != std::ptr::null_mut() {
+            ParameterValue::Double(unsafe { *v.double_value })
+        } else if v.string_value != std::ptr::null_mut() {
+            let s = unsafe { CStr::from_ptr(v.string_value as *mut i8) };
+            let string = s.to_str().unwrap_or("").to_owned();
+            ParameterValue::String(string)
+        } else if v.byte_array_value != std::ptr::null_mut() {
+            let vals = unsafe {
+                std::slice::from_raw_parts(
+                    (*v.byte_array_value).values,
+                    (*v.byte_array_value).size)
+            };
+            ParameterValue::ByteArray(vals.iter().cloned().collect())
+        }
+        else if v.bool_array_value != std::ptr::null_mut() {
+            let vals = unsafe {
+                std::slice::from_raw_parts(
+                    (*v.bool_array_value).values,
+                    (*v.bool_array_value).size)
+            };
+            ParameterValue::BoolArray(vals.iter().cloned().collect())
+        }
+        else if v.integer_array_value != std::ptr::null_mut() {
+            let vals = unsafe {
+                std::slice::from_raw_parts(
+                    (*v.integer_array_value).values,
+                    (*v.integer_array_value).size)
+            };
+            ParameterValue::IntegerArray(vals.iter().cloned().collect())
+        }
+        else if v.double_array_value != std::ptr::null_mut() {
+            let vals = unsafe {
+                std::slice::from_raw_parts(
+                    (*v.double_array_value).values,
+                    (*v.double_array_value).size)
+            };
+            ParameterValue::DoubleArray(vals.iter().cloned().collect())
+        }
+        else if v.string_array_value != std::ptr::null_mut() {
+            let vals = unsafe {
+                std::slice::from_raw_parts(
+                    (*v.string_array_value).data,
+                    (*v.string_array_value).size)
+            };
+            let s = vals.iter().map(|cs| {
+                let s = unsafe { CStr::from_ptr(*cs as *mut i8) };
+                s.to_str().unwrap_or("").to_owned()
+            }).collect();
+            ParameterValue::StringArray(s)
+        }
+
+        else {
+            ParameterValue::NotSet
+        }
+    }
+}
+
 pub struct Node {
     context: Context,
+    pub params: HashMap<String, ParameterValue>,
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subs: Vec<Box<dyn Sub>>,
@@ -423,6 +506,85 @@ pub struct Node {
 }
 
 impl Node {
+    pub fn name(&self) -> Result<String> {
+        let cstr = unsafe { rcl_node_get_name(self.node_handle.as_ref()) };
+        if cstr == std::ptr::null() {
+            return Err(Error::RCL_RET_NODE_INVALID);
+        }
+        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        Ok(s.to_str().unwrap_or("").to_owned())
+    }
+
+    pub fn fully_qualified_name(&self) -> Result<String> {
+        let cstr = unsafe { rcl_node_get_fully_qualified_name(self.node_handle.as_ref()) };
+        if cstr == std::ptr::null() {
+            return Err(Error::RCL_RET_NODE_INVALID);
+        }
+        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        Ok(s.to_str().unwrap_or("").to_owned())
+    }
+
+    fn load_params(&mut self) -> Result<()> {
+        let ctx = self.context.context_handle.lock().unwrap();
+        let mut params: Box<*mut rcl_params_t> = Box::new(std::ptr::null_mut());
+
+        let ret = unsafe {
+            rcl_arguments_get_param_overrides(&ctx.global_arguments, params.as_mut())
+        };
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not read parameters: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        if *params == std::ptr::null_mut() {
+            return Ok(());
+        }
+
+        let node_names = unsafe {
+            std::slice::from_raw_parts(
+                (*(*params.as_ref())).node_names, (*(*params.as_ref())).num_nodes)
+        };
+
+        let node_params = unsafe {
+            std::slice::from_raw_parts(
+                (*(*params.as_ref())).params, (*(*params.as_ref())).num_nodes)
+        };
+
+        let qualified_name = self.fully_qualified_name()?;
+
+        for (nn, np) in node_names.iter().zip(node_params) {
+            let node_name_cstr = unsafe { CStr::from_ptr(*nn as *mut i8) };
+            let node_name = node_name_cstr.to_str().unwrap_or("");
+
+            // This is copied from rclcpp, but there is a comment there suggesting
+            // that more wildcards will be added in the future. Take note and mimic
+            // their behavior.
+            if !(node_name == "/**" || qualified_name == node_name) {
+                continue;
+            }
+
+            // make key value pairs.
+            let param_names = unsafe {
+                std::slice::from_raw_parts(np.parameter_names,np.num_params)
+            };
+
+            let param_values = unsafe {
+                std::slice::from_raw_parts(np.parameter_values,np.num_params)
+            };
+
+            for (s,v) in param_names.iter().zip(param_values) {
+                let s = unsafe { CStr::from_ptr(*s as *mut i8) };
+                let key = s.to_str().unwrap_or("");
+                let val = ParameterValue::from_rcl(&*v);
+                self.params.insert(key.to_owned(), val);
+            }
+        }
+
+        unsafe { rcl_yaml_node_struct_fini(*params) } ;
+        Ok(())
+    }
+
+
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
         // cleanup default options.
         let (res, node_handle) = {
@@ -446,14 +608,17 @@ impl Node {
         };
 
         if res == RCL_RET_OK as i32 {
-            Ok(Node {
+            let mut node = Node {
+                params: HashMap::new(),
                 context: ctx,
                 node_handle: node_handle,
                 subs: Vec::new(),
                 services: Vec::new(),
                 timers: Vec::new(),
                 pubs: Vec::new(),
-            })
+            };
+            node.load_params()?;
+            Ok(node)
         } else {
             eprintln!("could not create node{}", res);
             Err(Error::from_rcl_error(res))
@@ -1159,5 +1324,4 @@ mod tests {
         println!("resp {:?}", resp2);
         assert_eq!(resp, resp2);
     }
-
 }

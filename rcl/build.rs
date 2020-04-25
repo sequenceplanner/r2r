@@ -25,6 +25,7 @@ fn main() {
     // println!("cargo:rustc-link-lib=dylib=rcl_logging_noop");
     // default logging seem to be changed to spdlog
     println!("cargo:rustc-link-lib=dylib=rcl_logging_spdlog");
+    println!("cargo:rustc-link-lib=dylib=rcl_yaml_param_parser");
     println!("cargo:rustc-link-lib=dylib=rcutils");
     println!("cargo:rustc-link-lib=dylib=rmw");
     println!("cargo:rustc-link-lib=dylib=rmw_implementation");

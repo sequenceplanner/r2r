@@ -24,6 +24,7 @@ What works?
 - Building Rust types
 - Publish/subscribe
 - Services (servers, not clients yet)
+- Parameters
 
 TODO
 --------------------
