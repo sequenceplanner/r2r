@@ -350,6 +350,7 @@ where
 unsafe impl<T> Send for Publisher<T> where T: WrappedTypesupport {}
 
 use std::sync::{Arc, Mutex, Weak};
+#[derive(Debug, Clone)]
 pub struct Publisher<T>
 where
     T: WrappedTypesupport,
@@ -359,6 +360,7 @@ where
 }
 
 unsafe impl Send for PublisherUntyped {}
+#[derive(Debug, Clone)]
 pub struct PublisherUntyped {
     handle: Weak<rcl_publisher_t>,
     type_: String,

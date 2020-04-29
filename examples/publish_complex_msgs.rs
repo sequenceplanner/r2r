@@ -46,8 +46,7 @@ fn main() -> Result<(), Error> {
 
     // run for 10 seconds
     let mut count = 0;
-    // while count < 100 {
-    loop {
+    while count < 100 {
         node.spin_once(std::time::Duration::from_millis(100));
         count += 1;
     }
