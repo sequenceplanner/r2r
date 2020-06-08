@@ -5,14 +5,15 @@ Minimal bindings for ROS2 that do *not* require hooking in to the ROS2 build inf
 
 How to use
 --------------------
-1. Depend on this package: r2r = { git = "https://github.com/sequenceplanner/r2r" }.
-2. You need to source your ROS2 installation before building/running.
-3. The bindings will rebuild automatically if/when you source your workspace(s).
-4. If you make changes to existing message types, run cargo clean -p msg_gen to force recompilation of the rust message types on the next build.
+1. Make sure you have libclang installed. (e.g. libclang-dev on ubuntu)
+2. Depend on this package: r2r = { git = "https://github.com/sequenceplanner/r2r" }.
+3. You need to source your ROS2 installation before building/running.
+4. The bindings will rebuild automatically if/when you source your workspace(s).
+5. If you make changes to existing message types, run cargo clean -p msg_gen to force recompilation of the rust message types on the next build.
 
 A couple of examples are included in examples/
 ```
-. /opt/ros/eloquent/setup.sh
+. /opt/ros/foxy/setup.sh
 cargo build
 cargo run --example subscriber_with_thread
 ```
@@ -20,7 +21,7 @@ An example application can be found here <https://github.com/sequenceplanner/r2r
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ Eloquent
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy
 - Building Rust types
 - Publish/subscribe
 - Services (servers, not clients yet)

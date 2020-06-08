@@ -30,7 +30,7 @@ fn main() {
     println!("cargo:rustc-link-lib=dylib=rmw");
     println!("cargo:rustc-link-lib=dylib=rmw_implementation");
     println!("cargo:rustc-link-lib=dylib=rosidl_typesupport_c");
-    println!("cargo:rustc-link-lib=dylib=rosidl_generator_c");
+    println!("cargo:rustc-link-lib=dylib=rosidl_runtime_c");
 
     let bindings = builder.generate().expect("Unable to generate bindings");
 

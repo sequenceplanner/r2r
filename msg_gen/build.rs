@@ -44,7 +44,7 @@ fn main() {
             &msg.module, &msg.prefix, &include_filename
         ));
         includes.push_str(&format!(
-            "#include <{}/{}/{}__rosidl_typesupport_introspection_c.h>\n",
+            "#include <{}/{}/detail/{}__rosidl_typesupport_introspection_c.h>\n",
             &msg.module, &msg.prefix, &include_filename
         ));
 
@@ -78,27 +78,27 @@ fn main() {
         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_service_type_support_t")
-        .blacklist_type("rosidl_generator_c__String")
-        .blacklist_type("rosidl_generator_c__String__Sequence")
-        .blacklist_type("rosidl_generator_c__U16String")
-        .blacklist_type("rosidl_generator_c__U16String__Sequence")
-        .blacklist_type("rosidl_generator_c__float32__Sequence")
-        .blacklist_type("rosidl_generator_c__float__Sequence")
-        .blacklist_type("rosidl_generator_c__float64__Sequence")
-        .blacklist_type("rosidl_generator_c__double__Sequence")
-        .blacklist_type("rosidl_generator_c__long_double__Sequence")
-        .blacklist_type("rosidl_generator_c__char__Sequence")
-        .blacklist_type("rosidl_generator_c__wchar__Sequence")
-        .blacklist_type("rosidl_generator_c__boolean__Sequence")
-        .blacklist_type("rosidl_generator_c__octet__Sequence")
-        .blacklist_type("rosidl_generator_c__uint8__Sequence")
-        .blacklist_type("rosidl_generator_c__int8__Sequence")
-        .blacklist_type("rosidl_generator_c__uint16__Sequence")
-        .blacklist_type("rosidl_generator_c__int16__Sequence")
-        .blacklist_type("rosidl_generator_c__uint32__Sequence")
-        .blacklist_type("rosidl_generator_c__int32__Sequence")
-        .blacklist_type("rosidl_generator_c__uint64__Sequence")
-        .blacklist_type("rosidl_generator_c__int64__Sequence")
+        .blacklist_type("rosidl_runtime_c__String")
+        .blacklist_type("rosidl_runtime_c__String__Sequence")
+        .blacklist_type("rosidl_runtime_c__U16String")
+        .blacklist_type("rosidl_runtime_c__U16String__Sequence")
+        .blacklist_type("rosidl_runtime_c__float32__Sequence")
+        .blacklist_type("rosidl_runtime_c__float__Sequence")
+        .blacklist_type("rosidl_runtime_c__float64__Sequence")
+        .blacklist_type("rosidl_runtime_c__double__Sequence")
+        .blacklist_type("rosidl_runtime_c__long_double__Sequence")
+        .blacklist_type("rosidl_runtime_c__char__Sequence")
+        .blacklist_type("rosidl_runtime_c__wchar__Sequence")
+        .blacklist_type("rosidl_runtime_c__boolean__Sequence")
+        .blacklist_type("rosidl_runtime_c__octet__Sequence")
+        .blacklist_type("rosidl_runtime_c__uint8__Sequence")
+        .blacklist_type("rosidl_runtime_c__int8__Sequence")
+        .blacklist_type("rosidl_runtime_c__uint16__Sequence")
+        .blacklist_type("rosidl_runtime_c__int16__Sequence")
+        .blacklist_type("rosidl_runtime_c__uint32__Sequence")
+        .blacklist_type("rosidl_runtime_c__int32__Sequence")
+        .blacklist_type("rosidl_runtime_c__uint64__Sequence")
+        .blacklist_type("rosidl_runtime_c__int64__Sequence")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });

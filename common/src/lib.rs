@@ -54,7 +54,6 @@ pub fn get_all_ros_msgs() -> Vec<String> {
                             if let Some(file_name_str) = file_name.to_str() {
                                 let substr = &l[4..l.len()-4];
                                 let srv_name = format!("{}/srv/{}", file_name_str, substr);
-                                println!("srv_name: {}", srv_name);
                                 msgs.push(srv_name);
                             }
                         }
@@ -85,9 +84,15 @@ fn test_msg_list() {
 
 pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {
     let v: Vec<Vec<&str>> = msgs.iter().map(|l| l.split("/").into_iter().take(3).collect()).collect();
-    v.iter().filter(|v|v.len() == 3).
-        map(|v| RosMsg { module: v[0].into(), prefix: v[1].into(), name: v[2].into()}).collect()
+    let v: Vec<_> = v.iter().filter(|v|v.len() == 3).
+        map(|v| RosMsg { module: v[0].into(), prefix: v[1].into(), name: v[2].into()}).collect();
 
+    // hack because I don't have time to find out the root cause of this at the moment.
+    // for some reason the library files generated to this are called
+    // liblibstatistics_collector_test_msgs__..., but I don't know where test_msgs come from.
+    // (this seems to be a useless package anyway)
+    // also affects message generation below.
+    v.into_iter().filter(|v| v.module != "libstatistics_collector").collect()
 }
 
 pub fn as_map(included_msgs: &[RosMsg]) -> HashMap<&str, HashMap<&str, Vec<&str>>> {
