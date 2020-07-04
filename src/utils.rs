@@ -1,5 +1,5 @@
 use std::ffi::{CString};
-use std::sync::Mutex;
+use std::sync::{Mutex,MutexGuard};
 use rcl::*;
 
 use lazy_static::lazy_static;
@@ -8,54 +8,40 @@ lazy_static! {
     static ref LOG_GUARD: Mutex<()> = Mutex::new(());
 }
 
-pub(crate) fn log_guard() -> std::sync::MutexGuard<'static, ()> {
+pub(crate) fn log_guard() -> MutexGuard<'static, ()> {
     LOG_GUARD.lock().unwrap()
 }
 
-fn check_init() -> bool {
-    let _guard = log_guard();
-    unsafe { g_rcutils_logging_initialized }
-}
-
-// TODO: cleanup
-// fn shutdown() {
-//     if check_init() {
-//         unsafe { rcutils_logging_shutdown(); }
-//     }
-// }
-
 /// Don't call this directly, use the macros below instead.
 pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSeverity) {
-    if !check_init() {
-        let ret = unsafe {
-            let _guard = log_guard();
-            rcutils_logging_initialize()
-        };
+    let _guard = log_guard();
+    let is_init = unsafe { g_rcutils_logging_initialized };
+    if !is_init {
+        let ret = unsafe { rcutils_logging_initialize() };
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not create logging system (Err: {})", ret);
             return;
         }
     }
     // currently not possible to get function name in rust.
-    let function_name = CString::new("").unwrap().as_ptr();
-    let file_name = CString::new(file).unwrap().as_ptr();
+    // see https://github.com/rust-lang/rfcs/pull/2818
+    let function = CString::new("").unwrap();
+    let file = CString::new(file).unwrap();
     let location = rcutils_log_location_t {
-        function_name,
-        file_name,
+        function_name: function.as_ptr(),
+        file_name: file.as_ptr(),
         line_number: line as usize,
     };
-    let logger_name = CString::new(logger_name).unwrap();
     let format = CString::new("%s").unwrap();
+    let logger_name = CString::new(logger_name).unwrap();
     let message = CString::new(msg).unwrap();
     let severity = severity.to_native();
     unsafe {
-        let _guard = log_guard();
         rcutils_log(&location,
                     severity as i32,
                     logger_name.as_ptr(),
                     format.as_ptr(),
-                    message.as_ptr(),
-        );
+                    message.as_ptr());
     }
 }
 

@@ -8,24 +8,23 @@ use failure::Error;
 fn main() -> Result<(), Error> {
     r2r::log_debug!("before_init", "debug msg");
     let ctx = r2r::Context::create()?;
-
-
     let node = r2r::Node::create(ctx, "logger_node", "")?;
+    let nl = node.logger();
 
     let mut i = 0;
     loop {
-        r2r::log_debug!(node.logger(), "debug msg: {}", i as f64 / 2.5);
-        std::thread::sleep_ms(10);
-        r2r::log_info!(node.logger(), "info msg {}", i % 2);
-        std::thread::sleep_ms(10);
-        r2r::log_warn!(node.logger(), "warn msg {:?}", i.to_string());
-        std::thread::sleep_ms(10);
-        r2r::log_error!(node.logger(), "error msg {:?}", i.to_string().as_bytes());
-        std::thread::sleep_ms(10);
-        r2r::log_fatal!(node.logger(), "fatal msg {}", i);
+        match i % 5 {
+            0 => r2r::log_debug!(nl, "debug msg: {}", i as f64 / 2.5),
+            1 => r2r::log_info!(nl, "info msg {}", i % 2),
+            2 => r2r::log_warn!(nl, "warn msg {:?}", i.to_string()),
+            3 => r2r::log_error!(nl, "error msg {:?}",
+                                 i.to_string().as_bytes()),
+            _ => r2r::log_fatal!(nl, "fatal msg {:#X}", i),
+        }
 
-        std::thread::sleep_ms(1000);
+        std::thread::sleep(std::time::Duration::from_millis(1000));
 
+        // non-node logger only outputs to stdout
         r2r::log_debug!("other_logger", "i = {}", i);
         i+=1;
     }
