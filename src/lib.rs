@@ -16,6 +16,9 @@ use rcl::*;
 mod error;
 use error::*;
 
+mod utils;
+pub use utils::*;
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned + Default {
@@ -391,7 +394,14 @@ impl Context {
             rcl_context_is_valid(ctx.as_mut())
         };
 
-        if is_valid {
+        let logging_ok = unsafe {
+            let _guard = log_guard();
+            let ret = rcl_logging_configure(&ctx.as_ref().global_arguments,
+                                            &rcutils_get_default_allocator());
+            ret == RCL_RET_OK as i32
+        };
+
+        if is_valid && logging_ok {
             Ok(Context {
                 context_handle: Arc::new(Mutex::new(ctx)),
             })
@@ -982,6 +992,15 @@ impl Node {
         self.timers.push(timer);
 
         Ok(&self.timers[self.timers.len()-1])
+    }
+
+    pub fn logger<'a>(&'a self) -> &'a str {
+        let ptr = unsafe { rcl_node_get_logger_name(self.node_handle.as_ref()) };
+        if ptr == std::ptr::null() {
+            return "";
+        }
+        let s = unsafe { CStr::from_ptr(ptr) };
+        s.to_str().unwrap_or("")
     }
 
 }

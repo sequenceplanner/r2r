@@ -4,6 +4,9 @@
 // query the network
 #include <rcl/graph.h>
 
+// logging
+#include <rcl/logging.h>
+
 // errors
 #include <rcutils/error_handling.h>
 
