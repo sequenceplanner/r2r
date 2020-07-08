@@ -562,7 +562,8 @@ impl Node {
                 (*(*params.as_ref())).params, (*(*params.as_ref())).num_nodes)
         };
 
-        let qualified_name = self.fully_qualified_name()?;
+        let qualified_name = self.fully_qualified_name()?; 
+        let name = self.name()?; 
 
         for (nn, np) in node_names.iter().zip(node_params) {
             let node_name_cstr = unsafe { CStr::from_ptr(*nn as *mut i8) };
@@ -571,7 +572,12 @@ impl Node {
             // This is copied from rclcpp, but there is a comment there suggesting
             // that more wildcards will be added in the future. Take note and mimic
             // their behavior.
-            if !(node_name == "/**" || qualified_name == node_name) {
+            if !(
+                node_name == "/**" || 
+                node_name == "**" || 
+                qualified_name == node_name ||
+                name == node_name
+            ) {
                 continue;
             }
 
