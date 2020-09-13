@@ -10,6 +10,7 @@ fn main() -> Result<(), Error> {
 
     println!("node name: {}", node.name()?);
     println!("node fully qualified name: {}", node.fully_qualified_name()?);
+    println!("node namespace: {}", node.namespace()?);
 
     println!("node parameters");
     node.params.iter().for_each(|(k,v)| {

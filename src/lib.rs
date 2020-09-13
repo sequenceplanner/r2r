@@ -605,6 +605,15 @@ impl Node {
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
+    pub fn namespace(&self) -> Result<String> {
+        let cstr = unsafe { rcl_node_get_namespace(self.node_handle.as_ref()) };
+        if cstr == std::ptr::null() {
+            return Err(Error::RCL_RET_NODE_INVALID);
+        }
+        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        Ok(s.to_str().unwrap_or("").to_owned())
+    }
+
     fn load_params(&mut self) -> Result<()> {
         let ctx = self.context.context_handle.lock().unwrap();
         let mut params: Box<*mut rcl_params_t> = Box::new(std::ptr::null_mut());
@@ -632,6 +641,7 @@ impl Node {
         };
 
         let qualified_name = self.fully_qualified_name()?;
+        let name = self.name()?;
 
         for (nn, np) in node_names.iter().zip(node_params) {
             let node_name_cstr = unsafe { CStr::from_ptr(*nn as *mut i8) };
@@ -640,7 +650,12 @@ impl Node {
             // This is copied from rclcpp, but there is a comment there suggesting
             // that more wildcards will be added in the future. Take note and mimic
             // their behavior.
-            if !(node_name == "/**" || qualified_name == node_name) {
+            if !(
+                node_name == "/**" ||
+                node_name == "**" ||
+                qualified_name == node_name ||
+                name == node_name
+            ) {
                 continue;
             }
 
