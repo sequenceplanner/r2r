@@ -1128,7 +1128,6 @@ impl Node {
         Ok(res)
     }
 
-
     pub fn create_wall_timer(
         &mut self,
         period: Duration,
@@ -1327,6 +1326,53 @@ impl PublisherUntyped {
         } else {
             eprintln!("coult not publish {}", result);
             Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+pub struct RosClock {
+    clock_handle: Box<rcl_clock_t>,
+}
+
+impl RosClock {
+    pub fn create() -> Result<Self> {
+        let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
+
+        let ret = unsafe {
+            rcl_ros_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+        };
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not create steady clock: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        let clock_handle = Box::new(unsafe { clock_handle.assume_init() });
+        Ok(RosClock { clock_handle })
+    }
+
+    pub fn get_now(&mut self) -> Result<Duration> {
+        let mut tp: rcutils_time_point_value_t = 0;
+        let ret = unsafe {
+            rcl_clock_get_now(&mut *self.clock_handle,
+                              &mut tp)
+        };
+
+        if ret != RCL_RET_OK as i32 {
+            eprintln!("could not create steady clock: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        let dur = Duration::from_nanos(tp as u64);
+
+        Ok(dur)
+    }
+
+    pub fn to_builtin_time(d: &Duration) -> builtin_interfaces::msg::Time {
+        let sec = d.as_secs() as i32;
+        let nanosec = d.subsec_nanos();
+        builtin_interfaces::msg::Time {
+            sec,
+            nanosec,
         }
     }
 }
