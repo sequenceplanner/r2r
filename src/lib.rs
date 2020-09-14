@@ -1330,6 +1330,8 @@ impl PublisherUntyped {
     }
 }
 
+// TODO: check safety of this.
+unsafe impl Send for RosClock {}
 pub struct RosClock {
     clock_handle: Box<rcl_clock_t>,
 }
