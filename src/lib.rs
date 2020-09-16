@@ -1344,6 +1344,8 @@ pub enum ClockType {
     SteadyTime,
 }
 
+unsafe impl Send for Clock {}
+
 pub struct Clock {
     clock_handle: Box<rcl_clock_t>,
 }
