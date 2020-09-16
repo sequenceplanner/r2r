@@ -364,11 +364,18 @@ where
     fn run_cb(&mut self) -> () {
         // copy native msg to rust type and run callback
         let req_id = self.rcl_request.sequence_number;
-        let idx = self.callbacks.iter().position(|(id, _)| id == &req_id)
-            .expect("no such sequence number registered");
-        let (_, cb_to_run) = self.callbacks.swap_remove(idx);
-        let response = T::Response::from_native(&self.rcl_response_msg);
-        (cb_to_run)(response);
+        if let Some(idx) = self.callbacks.iter().position(|(id, _)| id == &req_id) {
+            let (_, cb_to_run) = self.callbacks.swap_remove(idx);
+            let response = T::Response::from_native(&self.rcl_response_msg);
+            (cb_to_run)(response);
+        } else {
+            // I don't think this should be able to occur? Let's panic so we
+            // find out...
+            let we_have: String = self.callbacks.iter()
+                .map(|(id, _)| id.to_string())
+                .collect::<Vec<_>>().join(",");
+            panic!("no such req id: {}, we have [{}]", req_id, we_have);
+        }
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -1330,29 +1337,47 @@ impl PublisherUntyped {
     }
 }
 
-// TODO: check safety of this.
-unsafe impl Send for RosClock {}
-pub struct RosClock {
+#[derive(Debug)]
+pub enum ClockType {
+    RosTime,
+    SystemTime,
+    SteadyTime,
+}
+
+pub struct Clock {
     clock_handle: Box<rcl_clock_t>,
 }
 
-impl RosClock {
-    pub fn create() -> Result<Self> {
+impl Clock {
+    fn clock_type_to_rcl(ct: &ClockType) -> rcl_clock_type_t {
+        match ct {
+            ClockType::RosTime => rcl_clock_type_t::RCL_ROS_TIME,
+            ClockType::SystemTime => rcl_clock_type_t::RCL_SYSTEM_TIME,
+            ClockType::SteadyTime => rcl_clock_type_t::RCL_STEADY_TIME,
+        }
+    }
+
+    pub fn create(ct: ClockType) -> Result<Self> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
 
+        let rcl_ct = Clock::clock_type_to_rcl(&ct);
         let ret = unsafe {
-            rcl_ros_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+            rcl_clock_init(rcl_ct, clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
         };
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not create steady clock: {}", ret);
+            eprintln!("could not create {:?} clock: {}", ct, ret);
             return Err(Error::from_rcl_error(ret));
         }
 
         let clock_handle = Box::new(unsafe { clock_handle.assume_init() });
-        Ok(RosClock { clock_handle })
+        Ok(Clock { clock_handle })
     }
 
     pub fn get_now(&mut self) -> Result<Duration> {
+        let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
+        if !valid {
+            return Err(Error::from_rcl_error(RCL_RET_INVALID_ARGUMENT as i32));
+        }
         let mut tp: rcutils_time_point_value_t = 0;
         let ret = unsafe {
             rcl_clock_get_now(&mut *self.clock_handle,
@@ -1375,6 +1400,14 @@ impl RosClock {
         builtin_interfaces::msg::Time {
             sec,
             nanosec,
+        }
+    }
+}
+
+impl Drop for Clock {
+    fn drop(&mut self) {
+        unsafe {
+            rcl_clock_fini(&mut *self.clock_handle);
         }
     }
 }
