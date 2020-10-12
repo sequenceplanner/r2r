@@ -314,7 +314,7 @@ where
 
         // TODO
         if res != RCL_RET_OK as i32 {
-            panic!("service error {}", res);
+            eprintln!("service error {}", res);
         }
     }
 
@@ -374,7 +374,7 @@ where
             let we_have: String = self.callbacks.iter()
                 .map(|(id, _)| id.to_string())
                 .collect::<Vec<_>>().join(",");
-            panic!("no such req id: {}, we have [{}]", req_id, we_have);
+            eprintln!("no such req id: {}, we have [{}], ignoring", req_id, we_have);
         }
     }
 
