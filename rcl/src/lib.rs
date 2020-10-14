@@ -43,15 +43,14 @@ impl Default for rmw_qos_profile_t {
 // ros strings are owned by ros, assignment is a copy
 impl rosidl_runtime_c__String {
     pub fn to_str(&self) -> &str {
-        let s = unsafe { CStr::from_ptr(self.data as *mut i8) };
+        let s = unsafe { CStr::from_ptr(self.data) };
         s.to_str().unwrap_or("")
     }
 
     pub fn assign(&mut self, other: &str) -> () {
         let q = CString::new(other).unwrap();
-        let to_send_ptr = q.as_ptr() as *const i8;
         unsafe {
-            rosidl_runtime_c__String__assign(self as *mut _, to_send_ptr);
+            rosidl_runtime_c__String__assign(self as *mut _, q.as_ptr());
         }
     }
 }

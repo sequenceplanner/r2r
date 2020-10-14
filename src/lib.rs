@@ -523,7 +523,7 @@ impl ParameterValue {
         } else if v.double_value != std::ptr::null_mut() {
             ParameterValue::Double(unsafe { *v.double_value })
         } else if v.string_value != std::ptr::null_mut() {
-            let s = unsafe { CStr::from_ptr(v.string_value as *mut i8) };
+            let s = unsafe { CStr::from_ptr(v.string_value) };
             let string = s.to_str().unwrap_or("").to_owned();
             ParameterValue::String(string)
         } else if v.byte_array_value != std::ptr::null_mut() {
@@ -565,7 +565,7 @@ impl ParameterValue {
                     (*v.string_array_value).size)
             };
             let s = vals.iter().map(|cs| {
-                let s = unsafe { CStr::from_ptr(*cs as *mut i8) };
+                let s = unsafe { CStr::from_ptr(*cs) };
                 s.to_str().unwrap_or("").to_owned()
             }).collect();
             ParameterValue::StringArray(s)
@@ -599,7 +599,7 @@ impl Node {
         if cstr == std::ptr::null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
-        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        let s = unsafe { CStr::from_ptr(cstr) };
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
@@ -608,7 +608,7 @@ impl Node {
         if cstr == std::ptr::null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
-        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        let s = unsafe { CStr::from_ptr(cstr) };
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
@@ -617,7 +617,7 @@ impl Node {
         if cstr == std::ptr::null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
-        let s = unsafe { CStr::from_ptr(cstr as *const i8) };
+        let s = unsafe { CStr::from_ptr(cstr) };
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
@@ -651,7 +651,7 @@ impl Node {
         let name = self.name()?;
 
         for (nn, np) in node_names.iter().zip(node_params) {
-            let node_name_cstr = unsafe { CStr::from_ptr(*nn as *mut i8) };
+            let node_name_cstr = unsafe { CStr::from_ptr(*nn) };
             let node_name = node_name_cstr.to_str().unwrap_or("");
 
             // This is copied from rclcpp, but there is a comment there suggesting
@@ -676,7 +676,7 @@ impl Node {
             };
 
             for (s,v) in param_names.iter().zip(param_values) {
-                let s = unsafe { CStr::from_ptr(*s as *mut i8) };
+                let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
                 let val = ParameterValue::from_rcl(&*v);
                 self.params.insert(key.to_owned(), val);
