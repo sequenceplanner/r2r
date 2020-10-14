@@ -1209,6 +1209,9 @@ where
 
 impl Drop for Node {
     fn drop(&mut self) {
+        // fini functions are not thread safe so lock the context.
+        let _ctx_handle = self.context.context_handle.lock().unwrap();
+
         for s in &mut self.subs {
             s.destroy(&mut self.node_handle);
         }
