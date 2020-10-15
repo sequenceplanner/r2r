@@ -10,31 +10,27 @@ use std::ffi::CString;
 
 impl Default for rmw_message_info_t {
     fn default() -> Self {
-        rmw_message_info_t {
-            source_timestamp: 0,
-            received_timestamp: 0,
-            publisher_gid: rmw_gid_t {
-                implementation_identifier: std::ptr::null(),
-                data: [0; 24],
-            },
-            from_intra_process: false,
-        }
+        unsafe { rmw_get_zero_initialized_message_info() }
     }
 }
 
 impl Default for rmw_qos_profile_t {
     fn default() -> Self {
-        rmw_qos_profile_t {
-            history: rmw_qos_history_policy_t::RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT,
-            depth: 10,
-            reliability: rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT,
-            durability: rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT,
-            avoid_ros_namespace_conventions: false,
-            deadline: rmw_time_t { sec: 0, nsec: 0 },
-            lifespan: rmw_time_t { sec: 0, nsec: 0 },
-            liveliness: rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
-            liveliness_lease_duration: rmw_time_t { sec: 0, nsec: 0 },
-        }
+        let mut profile: rmw_qos_profile_t = unsafe { std::mem::zeroed() };
+        profile.history =
+            rmw_qos_history_policy_t::RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT;
+        profile.depth = 10;
+        profile.reliability =
+            rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT;
+        profile.durability =
+            rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT;
+        profile.avoid_ros_namespace_conventions = false;
+        profile.deadline = rmw_time_t { sec: 0, nsec: 0 };
+        profile.lifespan = rmw_time_t { sec: 0, nsec: 0 };
+        profile.liveliness =
+            rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT;
+        profile.liveliness_lease_duration = rmw_time_t { sec: 0, nsec: 0 };
+        profile
     }
 }
 
