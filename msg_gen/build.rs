@@ -99,6 +99,7 @@ fn main() {
         .blacklist_type("rosidl_runtime_c__int32__Sequence")
         .blacklist_type("rosidl_runtime_c__uint64__Sequence")
         .blacklist_type("rosidl_runtime_c__int64__Sequence")
+        .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
