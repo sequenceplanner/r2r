@@ -9,6 +9,7 @@ fn main() {
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")
         .derive_copy(false)
+        .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
