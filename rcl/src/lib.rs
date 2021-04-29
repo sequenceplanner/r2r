@@ -135,7 +135,13 @@ macro_rules! primitive_sequence {
 
 primitive_sequence!(rosidl_runtime_c__float32, f32);
 primitive_sequence!(rosidl_runtime_c__float64, f64);
+
+#[cfg(target_arch = "aarch64")]
+primitive_sequence!(rosidl_runtime_c__long_double, f64);
+
+#[cfg(not(target_arch = "aarch64"))]
 primitive_sequence!(rosidl_runtime_c__long_double, u128);
+
 primitive_sequence!(rosidl_runtime_c__char, i8);
 primitive_sequence!(rosidl_runtime_c__wchar, u16);
 primitive_sequence!(rosidl_runtime_c__boolean, bool);

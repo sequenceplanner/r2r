@@ -12,7 +12,10 @@ fn doesnt_crash() -> Result<(), Error> {
 
     for c in 0..10 {
         let mut ths = Vec::new();
-        for i in 0..30 {
+        // I have lowered this from 30 to 10 because cyclonedds can only handle a hard-coded number of
+        // publishers in threads. See
+        // https://github.com/eclipse-cyclonedds/cyclonedds/blob/cd2136d9321212bd52fdc613f07bbebfddd90dec/src/core/ddsc/src/dds_init.c#L115
+        for i in 0..10 {
             // create concurrent nodes that max out the cpu
             let ctx = ctx.clone();
             ths.push(thread::spawn(move || {

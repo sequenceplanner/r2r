@@ -23,17 +23,16 @@ fn main() {
     }
 
     println!("cargo:rustc-link-lib=dylib=rcl");
-    // println!("cargo:rustc-link-lib=dylib=rcl_logging_noop");
-    // default logging seem to be changed to spdlog
     println!("cargo:rustc-link-lib=dylib=rcl_logging_spdlog");
     println!("cargo:rustc-link-lib=dylib=rcl_yaml_param_parser");
     println!("cargo:rustc-link-lib=dylib=rcutils");
     println!("cargo:rustc-link-lib=dylib=rmw");
-    println!("cargo:rustc-link-lib=dylib=rmw_implementation");
     println!("cargo:rustc-link-lib=dylib=rosidl_typesupport_c");
     println!("cargo:rustc-link-lib=dylib=rosidl_runtime_c");
 
-    let bindings = builder.generate().expect("Unable to generate bindings");
+    let bindings = builder
+        .no_debug("_OSUnaligned.*")
+        .generate().expect("Unable to generate bindings");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bindings
