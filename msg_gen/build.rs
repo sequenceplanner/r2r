@@ -1,18 +1,39 @@
-extern crate bindgen;
-
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
-
-use common::*;
+use std::path::{Path,PathBuf};
+use bindgen;
+use common;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+    common::print_cargo_watches();
 
-    let msgs = get_all_ros_msgs();
-    let msg_list = parse_msgs(&msgs);
-    let msg_map = as_map(&msg_list);
+    let mut builder = bindgen::Builder::default();
+
+    let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+        let packages = cmake_includes.split(":").flat_map(|i| Path::new(i).parent()).collect::<Vec<_>>();
+        for p in cmake_includes.split(":") {
+            builder = builder.clang_arg(format!("-I{}", p));
+            println!("adding include path: {}", p);
+        }
+        let deps = env::var("CMAKE_RECURSIVE_DEPENDENCIES").unwrap_or(String::default());
+        let deps = deps.split(":").collect::<Vec<_>>();
+        let msgs = common::get_ros_msgs(&packages);
+        common::parse_msgs(&msgs).into_iter()
+            .filter(|msg| deps.contains(&msg.module.as_str())).collect::<Vec<_>>()
+    } else {
+        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
+        for p in ament_prefix_var.split(":") {
+            builder = builder.clang_arg(format!("-I{}/include", p));
+            println!("cargo:rustc-link-search=native={}/lib", p);
+        }
+
+        let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
+        let msgs = common::get_ros_msgs(&paths);
+        common::parse_msgs(&msgs)
+    };
+
+    let msg_map = common::as_map(&msg_list);
 
     for module in msg_map.keys() {
         println!(
@@ -72,7 +93,7 @@ fn main() {
     let mut f = File::create(introspection_fn).unwrap();
     write!(f, "{}", introspecion_map).unwrap();
 
-    let mut builder = bindgen::Builder::default()
+    builder = builder
         .header(msg_includes_fn.to_str().unwrap())
         .derive_copy(false)
         // blacklist types that are handled by rcl bindings
@@ -104,14 +125,6 @@ fn main() {
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
-
-    let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-    let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
-
-    for ament_prefix_path in ament_prefix_var.split(":") {
-        builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
-        println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
-    }
 
     let bindings = builder.generate().expect("Unable to generate bindings");
 

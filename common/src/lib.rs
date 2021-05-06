@@ -1,8 +1,14 @@
 use std::collections::HashMap;
-use std::env;
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::Path;
+
+pub fn print_cargo_watches() {
+    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+    println!("cargo:rerun-if-env-changed=CMAKE_INCLUDE_DIRS");
+    println!("cargo:rerun-if-env-changed=CMAKE_LIBRARIES");
+    println!("cargo:rerun-if-env-changed=CMAKE_RECURSIVE_DEPENDENCIES");
+}
 
 #[derive(Debug)]
 pub struct RosMsg {
@@ -11,62 +17,67 @@ pub struct RosMsg {
     pub name: String, // e.g. "String"
 }
 
-// TODO: actions and srv are similiar
-pub fn get_all_ros_msgs() -> Vec<String> {
+fn get_msgs_from_package(package: &Path) -> Vec<String> {
     let resource_index_subfolder = "share/ament_index/resource_index";
     let resource_type = "rosidl_interfaces";
-    let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-    let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
 
-    let mut msgs: Vec<String> = Vec::new();
+    let path = package.to_owned();
+    let path = path.join(resource_index_subfolder);
+    let path = path.join(resource_type);
 
-    for ament_prefix_path in ament_prefix_var.split(":") {
-        // println!("prefix: {}", ament_prefix_path);
+    let mut msgs = vec![];
 
-        let path = PathBuf::from(ament_prefix_path);
-        let path = path.join(resource_index_subfolder);
-        let path = path.join(resource_type);
+    if let Ok(paths) = fs::read_dir(path) {
 
-        if let Ok(paths) = fs::read_dir(path) {
+        for path in paths {
+            // println!("PATH Name: {}", path.unwrap().path().display());
 
-            for path in paths {
-                // println!("PATH Name: {}", path.unwrap().path().display());
+            let path = path.unwrap().path();
+            let path2 = path.clone();
+            let file_name = path2.file_name().unwrap();
 
-                let path = path.unwrap().path();
-                let path2 = path.clone();
-                let file_name = path2.file_name().unwrap();
+            // println!("Messages for: {:?}", file_name);
+            if let Ok(mut file) = File::open(path) {
+                let mut s = String::new();
+                file.read_to_string(&mut s).unwrap();
+                let lines = s.lines();
 
-                // println!("Messages for: {:?}", file_name);
-                if let Ok(mut file) = File::open(path) {
-                    let mut s = String::new();
-                    file.read_to_string(&mut s).unwrap();
-                    let lines = s.lines();
-
-                    lines.for_each(|l| {
-                        if l.starts_with("msg/") && (l.ends_with(".idl") || l.ends_with(".msg")) {
-                            if let Some(file_name_str) = file_name.to_str() {
-                                let substr = &l[4..l.len()-4];
-                                let msg_name = format!("{}/msg/{}", file_name_str, substr);
-                                msgs.push(msg_name);
-                            }
+                lines.for_each(|l| {
+                    if l.starts_with("msg/") && (l.ends_with(".idl") || l.ends_with(".msg")) {
+                        if let Some(file_name_str) = file_name.to_str() {
+                            let substr = &l[4..l.len()-4];
+                            let msg_name = format!("{}/msg/{}", file_name_str, substr);
+                            msgs.push(msg_name);
                         }
-                        if l.starts_with("srv/") && (l.ends_with(".idl") || l.ends_with(".srv")) {
-                            if let Some(file_name_str) = file_name.to_str() {
-                                let substr = &l[4..l.len()-4];
-                                let srv_name = format!("{}/srv/{}", file_name_str, substr);
-                                msgs.push(srv_name);
-                            }
+                    }
+                    if l.starts_with("srv/") && (l.ends_with(".idl") || l.ends_with(".srv")) {
+                        if let Some(file_name_str) = file_name.to_str() {
+                            let substr = &l[4..l.len()-4];
+                            let srv_name = format!("{}/srv/{}", file_name_str, substr);
+                            msgs.push(srv_name);
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }
-
     msgs.sort();
     msgs.dedup();
+    msgs
+}
 
-    return msgs;
+pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
+    let mut msgs: Vec<String> = Vec::new();
+
+    for p in paths {
+        println!("looking at prefix: {:?}", p);
+        let package_msgs = get_msgs_from_package(p);
+        println!("... found {:?}", package_msgs);
+        msgs.extend(package_msgs)
+    }
+    msgs.sort();
+    msgs.dedup();
+    msgs
 }
 
 #[test]

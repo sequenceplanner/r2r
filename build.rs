@@ -1,17 +1,27 @@
-use common::*;
-use msg_gen::*;
+use common;
+use msg_gen;
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path,PathBuf};
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+    common::print_cargo_watches();
 
-    let msgs = get_all_ros_msgs();
-    let msgs_list = parse_msgs(&msgs);
-
-    let msgs = as_map(&msgs_list);
+    let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+        let packages = cmake_includes.split(":").flat_map(|i| Path::new(i).parent()).collect::<Vec<_>>();
+        let deps = env::var("CMAKE_RECURSIVE_DEPENDENCIES").unwrap_or(String::default());
+        let deps = deps.split(":").collect::<Vec<_>>();
+        let msgs = common::get_ros_msgs(&packages);
+        common::parse_msgs(&msgs).into_iter()
+            .filter(|msg| deps.contains(&msg.module.as_str())).collect::<Vec<_>>()
+    } else {
+        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
+        let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
+        let msgs = common::get_ros_msgs(&paths);
+        common::parse_msgs(&msgs)
+    };
+    let msgs = common::as_map(&msg_list);
 
     let mut modules = String::new();
 
@@ -38,11 +48,11 @@ fn main() {
                     codegen.push_str(&format!("    pub mod {} {{\n", msg));
                     codegen.push_str("    use super::super::super::*;\n");
 
-                    codegen.push_str(&generate_rust_service(module, prefix, msg));
+                    codegen.push_str(&msg_gen::generate_rust_service(module, prefix, msg));
 
                     for s in &["Request", "Response"] {
                         let msgname = format!("{}_{}", msg, s);
-                        codegen.push_str(&generate_rust_msg(module, prefix, &msgname));
+                        codegen.push_str(&msg_gen::generate_rust_msg(module, prefix, &msgname));
                         println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                     }
                     codegen.push_str("    }\n");
@@ -50,7 +60,7 @@ fn main() {
             } else {
                 codegen.push_str("    use super::super::*;\n");
                 for msg in msgs {
-                    codegen.push_str(&generate_rust_msg(module, prefix, msg));
+                    codegen.push_str(&msg_gen::generate_rust_msg(module, prefix, msg));
                     println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                 }
             }
@@ -63,7 +73,7 @@ fn main() {
         write!(f, "{}", codegen).unwrap();
     }
 
-    let untyped_helper = generate_untyped_helper(&msgs_list);
+    let untyped_helper = msg_gen::generate_untyped_helper(&msg_list);
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     let msgs_fn = out_path.join("_r2r_generated_msgs.rs");

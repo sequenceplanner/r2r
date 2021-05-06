@@ -2,9 +2,11 @@ extern crate bindgen;
 
 use std::env;
 use std::path::PathBuf;
+use itertools::Itertools;
+use common;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
+    common::print_cargo_watches();
 
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")
@@ -14,12 +16,47 @@ fn main() {
             non_exhaustive: false,
         });
 
-    let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-    let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
+    if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+        // we are running from cmake, do special thing.
+        let cmake_libs = env::var("CMAKE_LIBRARIES").unwrap_or(String::new());
 
-    for ament_prefix_path in ament_prefix_var.split(":") {
-        builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
-        println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
+        let mut includes = cmake_includes.split(":").collect::<Vec<_>>();
+        includes.sort();
+        includes.dedup();
+        includes.iter().for_each(|l| println!("CMAKE_INCLUDE: {}", l));
+
+        for x in &includes {
+            let clang_arg = format!("-I{}", x);
+            println!("adding clang arg: {}", clang_arg);
+            builder = builder.clang_arg(clang_arg);
+        }
+
+        let libs = cmake_libs.split(":")
+            .into_iter()
+            .filter(|s| s.contains(".so"))
+            .unique()
+            .collect::<Vec<_>>();
+
+        libs.iter().for_each(|l| {
+            let path = PathBuf::from(l);
+            let pp = path.parent().and_then(|p| p.to_str()).unwrap();
+            println!("cargo:rustc-link-search=native={}", pp);
+            // we could potentially do the below instead of hardcoding which libs we rely on.
+            // let filename = path.file_stem().and_then(|f| f.to_str()).unwrap();
+            // let without_lib = filename.strip_prefix("lib").unwrap();
+            // println!("cargo:rustc-link-lib=dylib={}", without_lib);
+        }
+        );
+    } else {
+        let ament_prefix_var_name = "AMENT_PREFIX_PATH";
+        let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
+
+        for ament_prefix_path in ament_prefix_var.split(":") {
+            builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
+            println!("added include search dir: {}" , format!("-I{}/include", ament_prefix_path));
+            println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
+        }
+
     }
 
     println!("cargo:rustc-link-lib=dylib=rcl");

@@ -10,3 +10,5 @@ widestring = "0.4.3"
 
 [build-dependencies]
 bindgen = "0.57.0"
+itertools = "0.10.0"
+common = { path = "../common", version = "0.0.2" }
