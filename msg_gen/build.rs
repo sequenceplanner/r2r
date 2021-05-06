@@ -16,7 +16,7 @@ fn main() {
             builder = builder.clang_arg(format!("-I{}", p));
             println!("adding include path: {}", p);
         }
-        let deps = env::var("CMAKE_RECURSIVE_DEPENDENCIES").unwrap_or(String::default());
+        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
         let deps = deps.split(":").collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&packages);
         common::parse_msgs(&msgs).into_iter()

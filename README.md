@@ -3,6 +3,8 @@ R2R - Minimal ROS2 Rust bindings
 
 Minimal bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure. If you want a more ROS-oriented approach, see <https://github.com/ros2-rust/ros2_rust>. In these bindings, convenience Rust types are created by calling into the c introspection libraries to circumvent the .msg/.idl pipeline. The convenience types can be ignored when you need to trade convenience for performance, e.g. treating large chunks of data manually.
 
+When integration with other ROS2 software is desired, instead of the default mode of r2r, which is to build bindings to RCL and messages depending on what is currently sourced, a CMakeLists.txt file can be used to limit the binding to only include specific dependencies. This is done through additional environment variables. See the minimal example at <https://github.com/m-dahl/r2r_minimal_node/>.
+
 Manual is available on github pages <https://sequenceplanner.github.io/r2r/>
 
 How to use
