@@ -1,7 +1,7 @@
 extern crate bindgen;
 
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path,PathBuf};
 use itertools::Itertools;
 use common;
 
@@ -18,12 +18,9 @@ fn main() {
 
     if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
         // we are running from cmake, do special thing.
-        let cmake_libs = env::var("CMAKE_LIBRARIES").unwrap_or(String::new());
-
         let mut includes = cmake_includes.split(":").collect::<Vec<_>>();
         includes.sort();
         includes.dedup();
-        includes.iter().for_each(|l| println!("CMAKE_INCLUDE: {}", l));
 
         for x in &includes {
             let clang_arg = format!("-I{}", x);
@@ -31,22 +28,18 @@ fn main() {
             builder = builder.clang_arg(clang_arg);
         }
 
-        let libs = cmake_libs.split(":")
+        env::var("CMAKE_LIBRARIES").unwrap_or(String::new()).split(":")
             .into_iter()
-            .filter(|s| s.contains(".so"))
+            .filter(|s| s.contains(".so") || s.contains(".dylib"))
+            .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
             .unique()
-            .collect::<Vec<_>>();
-
-        libs.iter().for_each(|l| {
-            let path = PathBuf::from(l);
-            let pp = path.parent().and_then(|p| p.to_str()).unwrap();
-            println!("cargo:rustc-link-search=native={}", pp);
-            // we could potentially do the below instead of hardcoding which libs we rely on.
-            // let filename = path.file_stem().and_then(|f| f.to_str()).unwrap();
-            // let without_lib = filename.strip_prefix("lib").unwrap();
-            // println!("cargo:rustc-link-lib=dylib={}", without_lib);
-        }
-        );
+            .for_each(|pp| {
+                println!("cargo:rustc-link-search=native={}", pp)
+                // we could potentially do the below instead of hardcoding which libs we rely on.
+                // let filename = path.file_stem().and_then(|f| f.to_str()).unwrap();
+                // let without_lib = filename.strip_prefix("lib").unwrap();
+                // println!("cargo:rustc-link-lib=dylib={}", without_lib);
+            });
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");

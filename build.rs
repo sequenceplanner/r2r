@@ -26,16 +26,6 @@ fn main() {
     let mut modules = String::new();
 
     for (module, prefixes) in &msgs {
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
-            module
-        );
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
-            module
-        );
-        println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
-
         modules.push_str(&format!(r#"pub mod {module}{{include!(concat!(env!("OUT_DIR"), "/{module}.rs"));}}{lf}"#, module=module, lf="\n"));
 
         let mut codegen = String::new();

@@ -14,7 +14,6 @@ fn main() {
         let packages = cmake_includes.split(":").flat_map(|i| Path::new(i).parent()).collect::<Vec<_>>();
         for p in cmake_includes.split(":") {
             builder = builder.clang_arg(format!("-I{}", p));
-            println!("adding include path: {}", p);
         }
         let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
         let deps = deps.split(":").collect::<Vec<_>>();
@@ -25,7 +24,6 @@ fn main() {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
         for p in ament_prefix_var.split(":") {
             builder = builder.clang_arg(format!("-I{}/include", p));
-            println!("cargo:rustc-link-search=native={}/lib", p);
         }
 
         let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
@@ -96,7 +94,7 @@ fn main() {
     builder = builder
         .header(msg_includes_fn.to_str().unwrap())
         .derive_copy(false)
-        // blacklist types that are handled by rcl bindings
+         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_service_type_support_t")
         .blacklist_type("rosidl_runtime_c__String")
