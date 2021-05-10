@@ -1,16 +1,16 @@
 [package]
 name = "msg_gen"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 lazy_static = "1.4.0"
-rcl = { path = "../rcl", version = "0.0.2" }
-common = { path = "../common", version = "0.0.2" }
+rcl = { path = "../rcl", version = "0.0.3" }
+common = { path = "../common", version = "0.0.3" }
 
 [build-dependencies]
 bindgen = "0.57.0"
-rcl = { path = "../rcl", version = "0.0.2" }
-common = { path = "../common", version = "0.0.2" }
+rcl = { path = "../rcl", version = "0.0.3" }
+common = { path = "../common", version = "0.0.3" }
 heck = "0.3.2"

@@ -1,9 +1,8 @@
 
 [package]
 name = "common"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Minimal ros2 bindings."
 license = "Apache-2.0/MIT"
 edition = "2018"
-
