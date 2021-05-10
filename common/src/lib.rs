@@ -80,19 +80,6 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
     msgs
 }
 
-#[test]
-fn test_msg_list() {
-
-    let msgs = get_all_ros_msgs();
-    for m in &msgs {
-        println!("{}", m);
-    }
-
-    assert!(msgs.contains(&"std_msgs/msg/String".to_string()));
-    assert!(msgs.contains(&"builtin_interfaces/msg/Time".to_string()));
-
-}
-
 pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {
     let v: Vec<Vec<&str>> = msgs.iter().map(|l| l.split("/").into_iter().take(3).collect()).collect();
     let v: Vec<_> = v.iter().filter(|v|v.len() == 3).
