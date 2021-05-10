@@ -57,6 +57,18 @@ fn get_msgs_from_package(package: &Path) -> Vec<String> {
                             msgs.push(srv_name);
                         }
                     }
+                    if l.starts_with("action/") && (l.ends_with(".idl") || l.ends_with(".action")) {
+                        if let Some(file_name_str) = file_name.to_str() {
+                            let substr = if l.ends_with(".action") {
+                                &l[7..l.len()-7]
+                            } else {
+                                &l[7..l.len()-4] // .idl
+                            };
+                            let action_name = format!("{}/action/{}", file_name_str, substr);
+                            println!("found action: {}", action_name);
+                            msgs.push(action_name);
+                        }
+                    }
                 });
             }
         }
@@ -78,19 +90,6 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
     msgs.sort();
     msgs.dedup();
     msgs
-}
-
-#[test]
-fn test_msg_list() {
-
-    let msgs = get_all_ros_msgs();
-    for m in &msgs {
-        println!("{}", m);
-    }
-
-    assert!(msgs.contains(&"std_msgs/msg/String".to_string()));
-    assert!(msgs.contains(&"builtin_interfaces/msg/Time".to_string()));
-
 }
 
 pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {

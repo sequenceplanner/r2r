@@ -38,6 +38,14 @@ pub trait WrappedServiceTypeSupport {
     fn get_ts() -> &'static rosidl_service_type_support_t;
 }
 
+pub trait WrappedActionTypeSupport {
+    type Goal: WrappedTypesupport;
+    type Result: WrappedTypesupport;
+    type Feedback: WrappedTypesupport;
+
+    fn get_ts() -> &'static rosidl_action_type_support_t;
+}
+
 
 #[derive(Debug)]
 pub struct WrappedNativeMsg<T>
@@ -1637,5 +1645,31 @@ mod tests {
         let resp2 = AddTwoInts::Response::from_native(&rn);
         println!("resp {:?}", resp2);
         assert_eq!(resp, resp2);
+    }
+
+    #[cfg(r2r__example_interfaces__action__Fibonacci)]
+    #[test]
+    fn test_action_msgs() {
+        use example_interfaces::action::Fibonacci;
+        let mut goal = Fibonacci::Goal::default();
+        goal.order = 5;
+        let gn = WrappedNativeMsg::<_>::from(&goal);
+        let goal2 = Fibonacci::Goal::from_native(&gn);
+        println!("goal2 {:?}", goal2);
+        assert_eq!(goal, goal2);
+
+        let mut res = Fibonacci::Result::default();
+        res.sequence = vec![1,2,3];
+        let rn = WrappedNativeMsg::<_>::from(&res);
+        let res2 = Fibonacci::Result::from_native(&rn);
+        println!("res2 {:?}", res2);
+        assert_eq!(res, res2);
+
+        let mut fb = Fibonacci::Feedback::default();
+        fb.sequence = vec![4,3,6];
+        let fbn = WrappedNativeMsg::<_>::from(&fb);
+        let fb2 = Fibonacci::Feedback::from_native(&fbn);
+        println!("feedback2 {:?}", fb2);
+        assert_eq!(fb, fb2);
     }
 }

@@ -119,6 +119,24 @@ pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> Strin
             ", module_, prefix_, name_)
 }
 
+pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String {
+    format!(
+            "
+        pub struct Action();
+        impl WrappedActionTypeSupport for Action {{
+            type Goal = Goal;
+            type Result = Result;
+            type Feedback = Feedback;
+            fn get_ts() -> &'static rosidl_action_type_support_t {{
+                unsafe {{
+                    &*rosidl_typesupport_c__get_action_type_support_handle__{}__{}__{}()
+                }}
+            }}
+        }}
+
+            ", module_, prefix_, name_)
+}
+
 
 // TODO: this is a terrible hack :)
 pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
@@ -133,9 +151,11 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         assert_eq!(prefix, prefix_);
         assert_eq!(name, name_);
 
-        if prefix == "srv" {
+        if prefix == "srv" || prefix == "action" {
             // for srv, the message name is both the service name and _Request or _Respone
             // we only want to keep the last part.
+            // same for actions with _Goal, _Result, _Feedback
+            // TODO: refactor...
             let mut nn = name.splitn(2, "_");
             let _mod_name = nn.next().expect(&format!("malformed service name {}", name));
             let msg_name = nn.next().expect(&format!("malformed service name {}", name));
@@ -380,8 +400,8 @@ impl WrappedNativeMsgUntyped {
 
     let mut lines = String::new();
     for msg in msgs {
-        // for now don't generate untyped services
-        if msg.prefix == "srv" { continue; }
+        // for now don't generate untyped services or actions
+        if msg.prefix == "srv" || msg.prefix == "action" { continue; }
 
         let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
         let rustname = format!("{}::{}::{}", msg.module, msg.prefix, msg.name);

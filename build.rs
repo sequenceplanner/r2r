@@ -32,7 +32,22 @@ fn main() {
         for (prefix, msgs) in prefixes {
             codegen.push_str(&format!("  pub mod {} {{\n", prefix));
 
-            if prefix == &"srv" {
+            if prefix == &"action" {
+                for msg in msgs {
+                    codegen.push_str("#[allow(non_snake_case)]\n");
+                    codegen.push_str(&format!("    pub mod {} {{\n", msg));
+                    codegen.push_str("    use super::super::super::*;\n");
+
+                    codegen.push_str(&msg_gen::generate_rust_action(module, prefix, msg));
+
+                    for s in &["Goal", "Result", "Feedback"] {
+                        let msgname = format!("{}_{}", msg, s);
+                        codegen.push_str(&msg_gen::generate_rust_msg(module, prefix, &msgname));
+                        println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
+                    }
+                    codegen.push_str("    }\n");
+                }
+            } else if prefix == &"srv" {
                 for msg in msgs {
                     codegen.push_str("#[allow(non_snake_case)]\n");
                     codegen.push_str(&format!("    pub mod {} {{\n", msg));
@@ -47,12 +62,14 @@ fn main() {
                     }
                     codegen.push_str("    }\n");
                 }
-            } else {
+            } else if prefix == &"msg" {
                 codegen.push_str("    use super::super::*;\n");
                 for msg in msgs {
                     codegen.push_str(&msg_gen::generate_rust_msg(module, prefix, msg));
                     println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                 }
+            } else {
+                panic!("unknown prefix type: {}", prefix);
             }
 
             codegen.push_str("  }\n");
