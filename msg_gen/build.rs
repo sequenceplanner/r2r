@@ -25,7 +25,6 @@ fn main() {
         for p in ament_prefix_var.split(":") {
             builder = builder.clang_arg(format!("-I{}/include", p));
         }
-
         let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&paths);
         common::parse_msgs(&msgs)
