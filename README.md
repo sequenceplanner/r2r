@@ -20,7 +20,10 @@ A couple of examples are included in examples/
 . /opt/ros/foxy/setup.sh
 cargo build
 cargo run --example subscriber_with_thread
+# In other shell
+ros2 topic pub /hi std_msgs/msg/String "data: 'Hello, world!'"
 ```
+
 An example application can be found here <https://github.com/sequenceplanner/r2r-echo>, which can be installed by running cargo install --git https://github.com/sequenceplanner/r2r-echo.
 
 What works?

@@ -9,17 +9,21 @@ fn main() -> Result<(), Error> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
 
-    let publisher = node.create_publisher::<std_msgs::msg::String>("/hej")?;
+    let publisher = node.create_publisher::<std_msgs::msg::String>("/hello")?;
     let pubint = node.create_publisher::<std_msgs::msg::Int32>("/count")?;
 
     let (tx, rx) = mpsc::channel::<String>();
     thread::spawn(move || loop {
-        let msg = rx.recv().unwrap();
-        let deserialized: std_msgs::msg::String = serde_json::from_str(&msg).unwrap();
-        println!(
-            "received: {}, deserialized ros msg = {:?}",
-            msg, deserialized
-        );
+        if let Ok(msg) = rx.recv() {
+            let deserialized: std_msgs::msg::String = serde_json::from_str(&msg).unwrap();
+            println!(
+                "received: {}, deserialized ros msg = {:?}",
+                msg, deserialized
+            );
+        } else {
+            println!("stopping");
+            break;
+        }
     });
 
     let mut c = 0;
@@ -34,7 +38,7 @@ fn main() -> Result<(), Error> {
         pubint.publish(&to_send).unwrap();
     };
 
-    let _ws2 = node.subscribe("/hopp", Box::new(cb))?;
+    let _ws2 = node.subscribe("/hi", Box::new(cb))?;
 
     // run for 10 seconds
     let mut count = 0;
