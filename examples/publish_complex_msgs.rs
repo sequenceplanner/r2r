@@ -2,9 +2,8 @@ use r2r;
 use r2r::builtin_interfaces::msg::Duration;
 use r2r::trajectory_msgs::msg::*;
 use r2r::std_msgs::msg::Int32;
-use failure::Error;
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
     let publisher = node.create_publisher::<JointTrajectoryPoint>("/hej")?;

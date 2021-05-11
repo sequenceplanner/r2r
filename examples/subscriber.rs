@@ -1,9 +1,8 @@
 use r2r;
 use std::sync::mpsc;
 use std::thread;
-use failure::Error;
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
 
     let th = {

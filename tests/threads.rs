@@ -1,12 +1,11 @@
 use std::thread;
 use std::time::Duration;
-use failure::Error;
 
 use r2r;
 
 #[test]
 // Let's create and drop a lot of node and publishers for a while to see that we can cope.
-fn doesnt_crash() -> Result<(), Error> {
+fn doesnt_crash() -> Result<(), Box<dyn std::error::Error>> {
     // a global shared context.
     let ctx = r2r::Context::create()?;
 

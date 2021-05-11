@@ -1,11 +1,10 @@
 use std::sync::mpsc;
 use std::thread;
-use failure::Error;
 
 use r2r;
 use r2r::std_msgs;
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
 

@@ -1,6 +1,4 @@
 use r2r;
-use failure::Error;
-
 use r2r::example_interfaces::srv::AddTwoInts;
 
 fn handle_service(request: AddTwoInts::Request) -> AddTwoInts::Response {
@@ -10,7 +8,7 @@ fn handle_service(request: AddTwoInts::Request) -> AddTwoInts::Response {
     }
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
     node.create_service::<AddTwoInts::Service>("/add_two_ints", Box::new(handle_service))?;

@@ -1,11 +1,10 @@
 use r2r;
-use failure::Error;
 
 /// try to run like this
 /// cargo run --example logging -- --ros-args --log-level DEBUG
 /// The logs produced with the node logger should show up in /rosout
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     r2r::log_debug!("before_init", "debug msg");
     let ctx = r2r::Context::create()?;
     let node = r2r::Node::create(ctx, "logger_node", "")?;

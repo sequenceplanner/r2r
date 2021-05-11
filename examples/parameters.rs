@@ -1,10 +1,9 @@
 use r2r;
-use failure::Error;
 
 // try to run like this
 // cargo run --example parameters -- --ros-args -p param_key:=[hej,hopp] -p key2:=5.5 key2=true -r __ns:=/demo -r __node:=my_node
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let node = r2r::Node::create(ctx, "testnode", "")?;
 
