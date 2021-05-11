@@ -442,7 +442,7 @@ where
 
 #[derive(Debug, Clone)]
 pub struct Context {
-    context_handle: Arc<Mutex<Box<rcl_context_t>>>,
+    context_handle: Arc<Mutex<ContextHandle>>,
 }
 
 // Not 100% about this one. From our end the context is rarely used
@@ -477,25 +477,42 @@ impl Context {
 
         if is_valid && logging_ok {
             Ok(Context {
-                context_handle: Arc::new(Mutex::new(ctx)),
+                context_handle: Arc::new(Mutex::new(ContextHandle(ctx))),
             })
         } else {
             Err(Error::RCL_RET_ERROR) // TODO
         }
     }
+
+    pub fn is_valid(&self) -> bool {
+        let ctx = self.context_handle.lock().unwrap();
+        unsafe { rcl_context_is_valid(ctx.as_ref()) }
+    }
 }
 
-#[derive(Debug, Clone)]
-pub struct ContextHandle(Arc<Mutex<Box<rcl_context_t>>>);
+#[derive(Debug)]
+pub struct ContextHandle(Box<rcl_context_t>);
+
+impl Deref for ContextHandle {
+    type Target = Box<rcl_context_t>;
+
+    fn deref<'a>(&'a self) -> &'a Box<rcl_context_t> {
+        &self.0
+    }
+}
+
+impl DerefMut for ContextHandle {
+    fn deref_mut<'a>(&'a mut self) -> &'a mut Box<rcl_context_t> {
+        &mut self.0
+    }
+}
 
 impl Drop for ContextHandle {
     fn drop(&mut self) {
-        println!("DROPPING CONTEXT HANDLE!");
-        let mut ctx_handle = self.0.lock().unwrap();
         // TODO: error handling? atleast probably need rcl_reset_error
         unsafe {
-            rcl::rcl_shutdown(ctx_handle.as_mut());
-            rcl::rcl_context_fini(ctx_handle.as_mut());
+            rcl::rcl_shutdown(self.0.as_mut());
+            rcl::rcl_context_fini(self.0.as_mut());
         }
     }
 }
@@ -1420,6 +1437,18 @@ impl Drop for Clock {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_context_drop() -> () {
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+    }
 
     #[test]
     fn test_ros_str() -> () {
