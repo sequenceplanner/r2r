@@ -17,18 +17,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut c = 0;
     loop {
-        let req = AddTwoInts::Request { a: 10*c, b: c };
+        let req = AddTwoInts::Request { a: 10 * c, b: c };
 
         let cb_req = req.clone();
-        let cb = Box::new(move |r: AddTwoInts::Response|
-                          println!("{} + {} = {}", cb_req.a, cb_req.b, r.sum));
+        let cb = Box::new(move |r: AddTwoInts::Response| {
+            println!("{} + {} = {}", cb_req.a, cb_req.b, r.sum)
+        });
 
         client.request(&req, cb)?;
 
         node.spin_once(std::time::Duration::from_millis(1000));
 
         std::thread::sleep(std::time::Duration::from_millis(1000));
-        c+=1;
+        c += 1;
     }
-
 }

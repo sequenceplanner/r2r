@@ -16,8 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             0 => r2r::log_debug!(nl, "debug msg: {}", i as f64 / 2.5),
             1 => r2r::log_info!(nl, "info msg {}", i % 2),
             2 => r2r::log_warn!(nl, "warn msg {:?}", i.to_string()),
-            3 => r2r::log_error!(nl, "error msg {:?}",
-                                 i.to_string().as_bytes()),
+            3 => r2r::log_error!(nl, "error msg {:?}", i.to_string().as_bytes()),
             _ => r2r::log_fatal!(nl, "fatal msg {:#X}", i),
         }
 
@@ -25,6 +24,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // non-node logger only outputs to stdout
         r2r::log_debug!("other_logger", "i = {}", i);
-        i+=1;
+        i += 1;
     }
 }

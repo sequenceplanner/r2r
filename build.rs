@@ -3,21 +3,29 @@ use msg_gen;
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path,PathBuf};
+use std::path::{Path, PathBuf};
 
 fn main() {
     common::print_cargo_watches();
 
     let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
-        let packages = cmake_includes.split(":").flat_map(|i| Path::new(i).parent()).collect::<Vec<_>>();
+        let packages = cmake_includes
+            .split(":")
+            .flat_map(|i| Path::new(i).parent())
+            .collect::<Vec<_>>();
         let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
         let deps = deps.split(":").collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&packages);
-        common::parse_msgs(&msgs).into_iter()
-            .filter(|msg| deps.contains(&msg.module.as_str())).collect::<Vec<_>>()
+        common::parse_msgs(&msgs)
+            .into_iter()
+            .filter(|msg| deps.contains(&msg.module.as_str()))
+            .collect::<Vec<_>>()
     } else {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
-        let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
+        let paths = ament_prefix_var
+            .split(":")
+            .map(|i| Path::new(i))
+            .collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&paths);
         common::parse_msgs(&msgs)
     };
@@ -26,7 +34,11 @@ fn main() {
     let mut modules = String::new();
 
     for (module, prefixes) in &msgs {
-        modules.push_str(&format!(r#"pub mod {module}{{include!(concat!(env!("OUT_DIR"), "/{module}.rs"));}}{lf}"#, module=module, lf="\n"));
+        modules.push_str(&format!(
+            r#"pub mod {module}{{include!(concat!(env!("OUT_DIR"), "/{module}.rs"));}}{lf}"#,
+            module = module,
+            lf = "\n"
+        ));
 
         let mut codegen = String::new();
         for (prefix, msgs) in prefixes {

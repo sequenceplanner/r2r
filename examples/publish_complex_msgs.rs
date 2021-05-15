@@ -1,7 +1,7 @@
 use r2r;
 use r2r::builtin_interfaces::msg::Duration;
-use r2r::trajectory_msgs::msg::*;
 use r2r::std_msgs::msg::Int32;
+use r2r::trajectory_msgs::msg::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
@@ -11,13 +11,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut c = 0;
     let mut positions: Vec<f64> = Vec::new();
-    let cb = move |x:r2r::std_msgs::msg::String| {
+    let cb = move |x: r2r::std_msgs::msg::String| {
         println!("at count {} got: {}", c, x.data);
         c = c + 1;
         positions.push(c as f64);
         let to_send = JointTrajectoryPoint {
             positions: positions.clone(),
-            time_from_start : Duration { sec: c, nanosec: 0 },
+            time_from_start: Duration { sec: c, nanosec: 0 },
             ..Default::default()
         };
         let mut native = r2r::WrappedNativeMsg::<Int32>::new();
@@ -27,12 +27,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         publisher2.publish_native(&native).unwrap();
     };
 
-    let cb2 = move |x:JointTrajectoryPoint| {
+    let cb2 = move |x: JointTrajectoryPoint| {
         let serialized = serde_json::to_string(&x).unwrap();
         println!("JTP serialized as: {}", serialized);
     };
 
-    let cb3 = move |raw_c:&r2r::WrappedNativeMsg<JointTrajectoryPoint>| {
+    let cb3 = move |raw_c: &r2r::WrappedNativeMsg<JointTrajectoryPoint>| {
         println!("Raw c data: {:?}", raw_c.positions);
     };
 

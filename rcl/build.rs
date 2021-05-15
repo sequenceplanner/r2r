@@ -1,9 +1,9 @@
 extern crate bindgen;
 
-use std::env;
-use std::path::{Path,PathBuf};
-use itertools::Itertools;
 use common;
+use itertools::Itertools;
+use std::env;
+use std::path::{Path, PathBuf};
 
 fn main() {
     common::print_cargo_watches();
@@ -28,7 +28,9 @@ fn main() {
             builder = builder.clang_arg(clang_arg);
         }
 
-        env::var("CMAKE_LIBRARIES").unwrap_or(String::new()).split(":")
+        env::var("CMAKE_LIBRARIES")
+            .unwrap_or(String::new())
+            .split(":")
             .into_iter()
             .filter(|s| s.contains(".so") || s.contains(".dylib"))
             .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
@@ -46,10 +48,12 @@ fn main() {
 
         for ament_prefix_path in ament_prefix_var.split(":") {
             builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
-            println!("added include search dir: {}" , format!("-I{}/include", ament_prefix_path));
+            println!(
+                "added include search dir: {}",
+                format!("-I{}/include", ament_prefix_path)
+            );
             println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
         }
-
     }
 
     println!("cargo:rustc-link-lib=dylib=rcl");
@@ -62,7 +66,8 @@ fn main() {
 
     let bindings = builder
         .no_debug("_OSUnaligned.*")
-        .generate().expect("Unable to generate bindings");
+        .generate()
+        .expect("Unable to generate bindings");
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     bindings

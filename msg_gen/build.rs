@@ -1,9 +1,9 @@
+use bindgen;
+use common;
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path,PathBuf};
-use bindgen;
-use common;
+use std::path::{Path, PathBuf};
 
 fn main() {
     common::print_cargo_watches();
@@ -11,22 +11,30 @@ fn main() {
     let mut builder = bindgen::Builder::default();
 
     let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
-        let packages = cmake_includes.split(":").flat_map(|i| Path::new(i).parent()).collect::<Vec<_>>();
+        let packages = cmake_includes
+            .split(":")
+            .flat_map(|i| Path::new(i).parent())
+            .collect::<Vec<_>>();
         for p in cmake_includes.split(":") {
             builder = builder.clang_arg(format!("-I{}", p));
         }
         let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
         let deps = deps.split(":").collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&packages);
-        common::parse_msgs(&msgs).into_iter()
-            .filter(|msg| deps.contains(&msg.module.as_str())).collect::<Vec<_>>()
+        common::parse_msgs(&msgs)
+            .into_iter()
+            .filter(|msg| deps.contains(&msg.module.as_str()))
+            .collect::<Vec<_>>()
     } else {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
         for p in ament_prefix_var.split(":") {
             builder = builder.clang_arg(format!("-I{}/include", p));
         }
 
-        let paths = ament_prefix_var.split(":").map(|i| Path::new(i)).collect::<Vec<_>>();
+        let paths = ament_prefix_var
+            .split(":")
+            .map(|i| Path::new(i))
+            .collect::<Vec<_>>();
         let msgs = common::get_ros_msgs(&paths);
         common::parse_msgs(&msgs)
     };
@@ -94,7 +102,7 @@ fn main() {
     builder = builder
         .header(msg_includes_fn.to_str().unwrap())
         .derive_copy(false)
-         // blacklist types that are handled by rcl bindings
+        // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_service_type_support_t")
         .blacklist_type("rosidl_runtime_c__String")

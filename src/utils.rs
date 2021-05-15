@@ -1,6 +1,6 @@
-use std::ffi::{CString};
-use std::sync::{Mutex,MutexGuard};
 use rcl::*;
+use std::ffi::CString;
+use std::sync::{Mutex, MutexGuard};
 
 use lazy_static::lazy_static;
 
@@ -37,11 +37,13 @@ pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSev
     let message = CString::new(msg).unwrap();
     let severity = severity.to_native();
     unsafe {
-        rcutils_log(&location,
-                    severity as i32,
-                    logger_name.as_ptr(),
-                    format.as_ptr(),
-                    message.as_ptr());
+        rcutils_log(
+            &location,
+            severity as i32,
+            logger_name.as_ptr(),
+            format.as_ptr(),
+            message.as_ptr(),
+        );
     }
 }
 
@@ -52,7 +54,7 @@ pub enum LogSeverity {
     Info,
     Warn,
     Error,
-    Fatal
+    Fatal,
 }
 
 impl LogSeverity {
@@ -74,8 +76,14 @@ impl LogSeverity {
 #[macro_export]
 macro_rules! __impl_log {
     ($logger_name:expr, $msg:expr, $file:expr, $line:expr, $severity:expr) => {{
-        $crate::log(&std::fmt::format($msg), $logger_name, $file, $line, $severity);
-    }}
+        $crate::log(
+            &std::fmt::format($msg),
+            $logger_name,
+            $file,
+            $line,
+            $severity,
+        );
+    }};
 }
 
 #[macro_export]
@@ -117,7 +125,6 @@ macro_rules! log_fatal {
                             file!(), line!(), $crate::LogSeverity::Fatal)
     }}
 }
-
 
 #[test]
 fn test_log() {

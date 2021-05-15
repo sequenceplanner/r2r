@@ -15,5 +15,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}: {:?}", k, nt[k]);
         }
         thread::sleep(Duration::from_millis(500));
-    };
+    }
 }

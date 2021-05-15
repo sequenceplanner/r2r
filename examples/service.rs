@@ -4,7 +4,7 @@ use r2r::example_interfaces::srv::AddTwoInts;
 fn handle_service(request: AddTwoInts::Request) -> AddTwoInts::Response {
     println!("request: {} + {}", request.a, request.b);
     AddTwoInts::Response {
-        sum: request.a + request.b
+        sum: request.a + request.b,
     }
 }
 
