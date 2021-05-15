@@ -484,8 +484,8 @@ impl Context {
     }
 
     pub fn is_valid(&self) -> bool {
-        let ctx = self.context_handle.lock().unwrap();
-        unsafe { rcl_context_is_valid(ctx.as_ref()) }
+        let mut ctx = self.context_handle.lock().unwrap();
+        unsafe { rcl_context_is_valid(ctx.as_mut()) }
     }
 }
 
