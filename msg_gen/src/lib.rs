@@ -104,7 +104,7 @@ fn field_name(field_name: &str) -> String {
 
 pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> String {
     format!(
-            "
+        "
         pub struct Service();
         impl WrappedServiceTypeSupport for Service {{
             type Request = Request;
@@ -116,12 +116,14 @@ pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> Strin
             }}
         }}
 
-            ", module_, prefix_, name_)
+            ",
+        module_, prefix_, name_
+    )
 }
 
 pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String {
     format!(
-            "
+        "
         pub struct Action();
         impl WrappedActionTypeSupport for Action {{
             type Goal = Goal;
@@ -134,9 +136,10 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String
             }}
         }}
 
-            ", module_, prefix_, name_)
+            ",
+        module_, prefix_, name_
+    )
 }
-
 
 // TODO: this is a terrible hack :)
 pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
@@ -157,8 +160,12 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             // same for actions with _Goal, _Result, _Feedback
             // TODO: refactor...
             let mut nn = name.splitn(2, "_");
-            let _mod_name = nn.next().expect(&format!("malformed service name {}", name));
-            let msg_name = nn.next().expect(&format!("malformed service name {}", name));
+            let _mod_name = nn
+                .next()
+                .expect(&format!("malformed service name {}", name));
+            let msg_name = nn
+                .next()
+                .expect(&format!("malformed service name {}", name));
             name = msg_name.to_owned();
         }
 
@@ -282,14 +289,16 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                 copy_to_native.push_str(&format!("assert_eq!(self.{field_name}.len(), {array_size}, \"Field {{}} is fixed size of {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
                 if rust_field_type == "message" {
                     copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
-                }
-                else if rust_field_type == "std::string::String" {
+                } else if rust_field_type == "std::string::String" {
                     copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ t.assign(&s);}}\n", field_name=field_name));
                 } else {
-                    copy_to_native.push_str(&format!("msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n", field_name = field_name, array_size = member.array_size_));
+                    copy_to_native.push_str(&format!(
+                        "msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n",
+                        field_name = field_name,
+                        array_size = member.array_size_
+                    ));
                 }
-            }
-            else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
+            } else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
                 // these are __Sequence:s
                 if rust_field_type == "message" {
                     let (_, _, _, c_struct, _) = introspection(member.members_);
@@ -359,7 +368,9 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                                   {msgname}::from_native(&msg_native)
                               }}
                           }}
-             ", msgname = name);
+             ",
+            msgname = name
+        );
 
         let module_str = format!(
             "
@@ -401,7 +412,9 @@ impl WrappedNativeMsgUntyped {
     let mut lines = String::new();
     for msg in msgs {
         // for now don't generate untyped services or actions
-        if msg.prefix == "srv" || msg.prefix == "action" { continue; }
+        if msg.prefix == "srv" || msg.prefix == "action" {
+            continue;
+        }
 
         let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
         let rustname = format!("{}::{}::{}", msg.module, msg.prefix, msg.name);

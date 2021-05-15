@@ -1,8 +1,6 @@
 use r2r;
-use failure::Error;
 
-
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut clock = r2r::Clock::create(r2r::ClockType::RosTime)?;
         let now = clock.get_now()?;

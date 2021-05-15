@@ -1,14 +1,16 @@
 include!(concat!(env!("OUT_DIR"), "/_r2r_generated_msgs.rs"));
-include!(concat!(env!("OUT_DIR"), "/_r2r_generated_untyped_helper.rs"));
+include!(concat!(
+    env!("OUT_DIR"),
+    "/_r2r_generated_untyped_helper.rs"
+));
 
-#[macro_use] extern crate failure_derive;
 use serde::{Deserialize, Serialize};
-use std::ffi::{CString,CStr};
-use std::mem::MaybeUninit;
+use std::collections::HashMap;
+use std::ffi::{CStr, CString};
 use std::marker::PhantomData;
+use std::mem::MaybeUninit;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
-use std::collections::HashMap;
 
 use msg_gen::*;
 use rcl::*;
@@ -46,7 +48,6 @@ pub trait WrappedActionTypeSupport {
     fn get_ts() -> &'static rosidl_action_type_support_t;
 }
 
-
 #[derive(Debug)]
 pub struct WrappedNativeMsg<T>
 where
@@ -60,27 +61,33 @@ pub struct WrappedNativeMsgUntyped {
     ts: &'static rosidl_message_type_support_t,
     msg: *mut std::os::raw::c_void,
     destroy: fn(*mut std::os::raw::c_void),
-    msg_to_json: fn(native: *const std::os::raw::c_void) ->
-        std::result::Result<serde_json::Value, serde_json::error::Error>,
-    msg_from_json: fn(native: *mut std::os::raw::c_void, json: serde_json::Value) ->
-        std::result::Result<(), serde_json::error::Error>,
+    msg_to_json: fn(
+        native: *const std::os::raw::c_void,
+    ) -> std::result::Result<serde_json::Value, serde_json::error::Error>,
+    msg_from_json: fn(
+        native: *mut std::os::raw::c_void,
+        json: serde_json::Value,
+    ) -> std::result::Result<(), serde_json::error::Error>,
 }
 
 impl WrappedNativeMsgUntyped {
-    fn new<T>() -> Self where T: WrappedTypesupport {
-        let destroy = | native: *mut std::os::raw::c_void | {
+    fn new<T>() -> Self
+    where
+        T: WrappedTypesupport,
+    {
+        let destroy = |native: *mut std::os::raw::c_void| {
             let native_msg = native as *mut T::CStruct;
             T::destroy_msg(native_msg);
         };
 
-        let msg_to_json = | native: *const std::os::raw::c_void | {
+        let msg_to_json = |native: *const std::os::raw::c_void| {
             let msg = unsafe { T::from_native(&*(native as *const T::CStruct)) };
             serde_json::to_value(&msg)
         };
 
-        let msg_from_json = | native: *mut std::os::raw::c_void, json: serde_json::Value | {
-            serde_json::from_value(json).map(|msg: T| {
-                unsafe { msg.copy_to_native(&mut *(native as *mut T::CStruct)); }
+        let msg_from_json = |native: *mut std::os::raw::c_void, json: serde_json::Value| {
+            serde_json::from_value(json).map(|msg: T| unsafe {
+                msg.copy_to_native(&mut *(native as *mut T::CStruct));
             })
         };
 
@@ -95,12 +102,15 @@ impl WrappedNativeMsgUntyped {
 
     fn to_json(&self) -> Result<serde_json::Value> {
         let json = (self.msg_to_json)(self.msg);
-        json.map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
+        json.map_err(|serde_err| Error::SerdeError {
+            err: serde_err.to_string(),
+        })
     }
 
     fn from_json(&mut self, json: serde_json::Value) -> Result<()> {
-        (self.msg_from_json)(self.msg, json).
-            map_err(|serde_err|Error::SerdeError { err: serde_err.to_string() })
+        (self.msg_from_json)(self.msg, json).map_err(|serde_err| Error::SerdeError {
+            err: serde_err.to_string(),
+        })
     }
 
     pub fn void_ptr(&self) -> *const std::os::raw::c_void {
@@ -253,8 +263,7 @@ where
     }
 }
 
-impl Sub for WrappedSubUntyped
-{
+impl Sub for WrappedSubUntyped {
     fn handle(&self) -> &rcl_subscription_t {
         &self.rcl_handle
     }
@@ -274,7 +283,6 @@ impl Sub for WrappedSubUntyped
         }
     }
 }
-
 
 // services
 struct WrappedService<T>
@@ -317,7 +325,11 @@ where
         let response = (self.callback)(request);
         let mut native_response = WrappedNativeMsg::<T::Response>::from(&response);
         let res = unsafe {
-            rcl_send_response(&self.rcl_handle, &mut self.rcl_request, native_response.void_ptr_mut())
+            rcl_send_response(
+                &self.rcl_handle,
+                &mut self.rcl_request,
+                native_response.void_ptr_mut(),
+            )
         };
 
         // TODO
@@ -379,10 +391,16 @@ where
         } else {
             // I don't think this should be able to occur? Let's panic so we
             // find out...
-            let we_have: String = self.callbacks.iter()
+            let we_have: String = self
+                .callbacks
+                .iter()
                 .map(|(id, _)| id.to_string())
-                .collect::<Vec<_>>().join(",");
-            eprintln!("no such req id: {}, we have [{}], ignoring", req_id, we_have);
+                .collect::<Vec<_>>()
+                .join(",");
+            eprintln!(
+                "no such req id: {}, we have [{}], ignoring",
+                req_id, we_have
+            );
         }
     }
 
@@ -447,10 +465,9 @@ where
     client_: Weak<Mutex<WrappedClient<T>>>,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Context {
-    context_handle: Arc<Mutex<Box<rcl_context_t>>>,
+    context_handle: Arc<Mutex<ContextHandle>>,
 }
 
 // Not 100% about this one. From our end the context is rarely used
@@ -463,47 +480,76 @@ impl Context {
     pub fn create() -> Result<Context> {
         let mut ctx: Box<rcl_context_t> = unsafe { Box::new(rcl_get_zero_initialized_context()) };
         // argc/v
-        let args = std::env::args().map(|arg| CString::new(arg).unwrap() ).collect::<Vec<CString>>();
-        let mut c_args = args.iter().map(|arg| arg.as_ptr()).collect::<Vec<*const ::std::os::raw::c_char>>();
+        let args = std::env::args()
+            .map(|arg| CString::new(arg).unwrap())
+            .collect::<Vec<CString>>();
+        let mut c_args = args
+            .iter()
+            .map(|arg| arg.as_ptr())
+            .collect::<Vec<*const ::std::os::raw::c_char>>();
         c_args.push(std::ptr::null());
 
         let is_valid = unsafe {
             let allocator = rcutils_get_default_allocator();
             let mut init_options = rcl_get_zero_initialized_init_options();
             rcl_init_options_init(&mut init_options, allocator);
-            rcl_init((c_args.len() - 1) as ::std::os::raw::c_int, c_args.as_ptr(), &init_options, ctx.as_mut());
+            rcl_init(
+                (c_args.len() - 1) as ::std::os::raw::c_int,
+                c_args.as_ptr(),
+                &init_options,
+                ctx.as_mut(),
+            );
             rcl_init_options_fini(&mut init_options as *mut _);
             rcl_context_is_valid(ctx.as_mut())
         };
 
         let logging_ok = unsafe {
             let _guard = log_guard();
-            let ret = rcl_logging_configure(&ctx.as_ref().global_arguments,
-                                            &rcutils_get_default_allocator());
+            let ret = rcl_logging_configure(
+                &ctx.as_ref().global_arguments,
+                &rcutils_get_default_allocator(),
+            );
             ret == RCL_RET_OK as i32
         };
 
         if is_valid && logging_ok {
             Ok(Context {
-                context_handle: Arc::new(Mutex::new(ctx)),
+                context_handle: Arc::new(Mutex::new(ContextHandle(ctx))),
             })
         } else {
             Err(Error::RCL_RET_ERROR) // TODO
         }
     }
+
+    pub fn is_valid(&self) -> bool {
+        let mut ctx = self.context_handle.lock().unwrap();
+        unsafe { rcl_context_is_valid(ctx.as_mut()) }
+    }
 }
 
-#[derive(Debug, Clone)]
-pub struct ContextHandle(Arc<Mutex<Box<rcl_context_t>>>);
+#[derive(Debug)]
+pub struct ContextHandle(Box<rcl_context_t>);
+
+impl Deref for ContextHandle {
+    type Target = Box<rcl_context_t>;
+
+    fn deref<'a>(&'a self) -> &'a Box<rcl_context_t> {
+        &self.0
+    }
+}
+
+impl DerefMut for ContextHandle {
+    fn deref_mut<'a>(&'a mut self) -> &'a mut Box<rcl_context_t> {
+        &mut self.0
+    }
+}
 
 impl Drop for ContextHandle {
     fn drop(&mut self) {
-        println!("DROPPING CONTEXT HANDLE!");
-        let mut ctx_handle = self.0.lock().unwrap();
         // TODO: error handling? atleast probably need rcl_reset_error
         unsafe {
-            rcl::rcl_shutdown(ctx_handle.as_mut());
-            rcl::rcl_context_fini(ctx_handle.as_mut());
+            rcl::rcl_shutdown(self.0.as_mut());
+            rcl::rcl_context_fini(self.0.as_mut());
         }
     }
 }
@@ -536,50 +582,46 @@ impl ParameterValue {
             ParameterValue::String(string)
         } else if v.byte_array_value != std::ptr::null_mut() {
             let vals = unsafe {
-                std::slice::from_raw_parts(
-                    (*v.byte_array_value).values,
-                    (*v.byte_array_value).size)
+                std::slice::from_raw_parts((*v.byte_array_value).values, (*v.byte_array_value).size)
             };
             ParameterValue::ByteArray(vals.iter().cloned().collect())
-        }
-        else if v.bool_array_value != std::ptr::null_mut() {
+        } else if v.bool_array_value != std::ptr::null_mut() {
             let vals = unsafe {
-                std::slice::from_raw_parts(
-                    (*v.bool_array_value).values,
-                    (*v.bool_array_value).size)
+                std::slice::from_raw_parts((*v.bool_array_value).values, (*v.bool_array_value).size)
             };
             ParameterValue::BoolArray(vals.iter().cloned().collect())
-        }
-        else if v.integer_array_value != std::ptr::null_mut() {
+        } else if v.integer_array_value != std::ptr::null_mut() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.integer_array_value).values,
-                    (*v.integer_array_value).size)
+                    (*v.integer_array_value).size,
+                )
             };
             ParameterValue::IntegerArray(vals.iter().cloned().collect())
-        }
-        else if v.double_array_value != std::ptr::null_mut() {
+        } else if v.double_array_value != std::ptr::null_mut() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.double_array_value).values,
-                    (*v.double_array_value).size)
+                    (*v.double_array_value).size,
+                )
             };
             ParameterValue::DoubleArray(vals.iter().cloned().collect())
-        }
-        else if v.string_array_value != std::ptr::null_mut() {
+        } else if v.string_array_value != std::ptr::null_mut() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.string_array_value).data,
-                    (*v.string_array_value).size)
+                    (*v.string_array_value).size,
+                )
             };
-            let s = vals.iter().map(|cs| {
-                let s = unsafe { CStr::from_ptr(*cs) };
-                s.to_str().unwrap_or("").to_owned()
-            }).collect();
+            let s = vals
+                .iter()
+                .map(|cs| {
+                    let s = unsafe { CStr::from_ptr(*cs) };
+                    s.to_str().unwrap_or("").to_owned()
+                })
+                .collect();
             ParameterValue::StringArray(s)
-        }
-
-        else {
+        } else {
             ParameterValue::NotSet
         }
     }
@@ -633,9 +675,8 @@ impl Node {
         let ctx = self.context.context_handle.lock().unwrap();
         let mut params: Box<*mut rcl_params_t> = Box::new(std::ptr::null_mut());
 
-        let ret = unsafe {
-            rcl_arguments_get_param_overrides(&ctx.global_arguments, params.as_mut())
-        };
+        let ret =
+            unsafe { rcl_arguments_get_param_overrides(&ctx.global_arguments, params.as_mut()) };
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not read parameters: {}", ret);
             return Err(Error::from_rcl_error(ret));
@@ -647,12 +688,16 @@ impl Node {
 
         let node_names = unsafe {
             std::slice::from_raw_parts(
-                (*(*params.as_ref())).node_names, (*(*params.as_ref())).num_nodes)
+                (*(*params.as_ref())).node_names,
+                (*(*params.as_ref())).num_nodes,
+            )
         };
 
         let node_params = unsafe {
             std::slice::from_raw_parts(
-                (*(*params.as_ref())).params, (*(*params.as_ref())).num_nodes)
+                (*(*params.as_ref())).params,
+                (*(*params.as_ref())).num_nodes,
+            )
         };
 
         let qualified_name = self.fully_qualified_name()?;
@@ -665,25 +710,22 @@ impl Node {
             // This is copied from rclcpp, but there is a comment there suggesting
             // that more wildcards will be added in the future. Take note and mimic
             // their behavior.
-            if !(
-                node_name == "/**" ||
-                node_name == "**" ||
-                qualified_name == node_name ||
-                name == node_name
-            ) {
+            if !(node_name == "/**"
+                || node_name == "**"
+                || qualified_name == node_name
+                || name == node_name)
+            {
                 continue;
             }
 
             // make key value pairs.
-            let param_names = unsafe {
-                std::slice::from_raw_parts(np.parameter_names,np.num_params)
-            };
+            let param_names =
+                unsafe { std::slice::from_raw_parts(np.parameter_names, np.num_params) };
 
-            let param_values = unsafe {
-                std::slice::from_raw_parts(np.parameter_values,np.num_params)
-            };
+            let param_values =
+                unsafe { std::slice::from_raw_parts(np.parameter_values, np.num_params) };
 
-            for (s,v) in param_names.iter().zip(param_values) {
+            for (s, v) in param_names.iter().zip(param_values) {
                 let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
                 let val = ParameterValue::from_rcl(&*v);
@@ -691,10 +733,9 @@ impl Node {
             }
         }
 
-        unsafe { rcl_yaml_node_struct_fini(*params) } ;
+        unsafe { rcl_yaml_node_struct_fini(*params) };
         Ok(())
     }
-
 
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
         // cleanup default options.
@@ -737,9 +778,13 @@ impl Node {
         }
     }
 
-    fn create_subscription_helper(&mut self, topic: &str, ts: *const rosidl_message_type_support_t) -> Result<rcl_subscription_t> {
+    fn create_subscription_helper(
+        &mut self,
+        topic: &str,
+        ts: *const rosidl_message_type_support_t,
+    ) -> Result<rcl_subscription_t> {
         let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
-        let topic_c_string = CString::new(topic).map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let mut subscription_options = rcl_subscription_get_default_options();
@@ -814,17 +859,24 @@ impl Node {
         Ok(self.subs.last().unwrap().handle()) // hmm...
     }
 
-    pub fn create_service_helper(&mut self, service_name: &str,
-                                 service_ts: *const rosidl_service_type_support_t)
-                                 -> Result<rcl_service_t> {
+    pub fn create_service_helper(
+        &mut self,
+        service_name: &str,
+        service_ts: *const rosidl_service_type_support_t,
+    ) -> Result<rcl_service_t> {
         let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
-        let service_name_c_string = CString::new(service_name)
-            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let service_name_c_string =
+            CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let service_options = rcl_service_get_default_options();
-            rcl_service_init(&mut service_handle, self.node_handle.as_mut(),
-                             service_ts, service_name_c_string.as_ptr(), &service_options)
+            rcl_service_init(
+                &mut service_handle,
+                self.node_handle.as_mut(),
+                service_ts,
+                service_name_c_string.as_ptr(),
+                &service_options,
+            )
         };
         if result == RCL_RET_OK as i32 {
             Ok(service_handle)
@@ -856,18 +908,24 @@ impl Node {
         Ok(self.services.last().unwrap().handle()) // hmm...
     }
 
-
-    pub fn create_client_helper(&mut self, service_name: &str,
-                                service_ts: *const rosidl_service_type_support_t)
-                                -> Result<rcl_client_t> {
+    pub fn create_client_helper(
+        &mut self,
+        service_name: &str,
+        service_ts: *const rosidl_service_type_support_t,
+    ) -> Result<rcl_client_t> {
         let mut client_handle = unsafe { rcl_get_zero_initialized_client() };
-        let service_name_c_string = CString::new(service_name)
-            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let service_name_c_string =
+            CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let client_options = rcl_client_get_default_options();
-            rcl_client_init(&mut client_handle, self.node_handle.as_mut(),
-                             service_ts, service_name_c_string.as_ptr(), &client_options)
+            rcl_client_init(
+                &mut client_handle,
+                self.node_handle.as_mut(),
+                service_ts,
+                service_name_c_string.as_ptr(),
+                &client_options,
+            )
         };
         if result == RCL_RET_OK as i32 {
             Ok(client_handle)
@@ -876,16 +934,13 @@ impl Node {
         }
     }
 
-    pub fn create_client<T: 'static>(
-        &mut self,
-        service_name: &str,
-    ) -> Result<Client<T>>
+    pub fn create_client<T: 'static>(&mut self, service_name: &str) -> Result<Client<T>>
     where
         T: WrappedServiceTypeSupport,
     {
         let client_handle = self.create_client_helper(service_name, T::get_ts())?;
         let cloned_ch = rcl_client_t {
-            impl_: client_handle.impl_
+            impl_: client_handle.impl_,
         };
         let ws = WrappedClient::<T> {
             rcl_handle: cloned_ch,
@@ -900,21 +955,22 @@ impl Node {
         let arc = Arc::new(Mutex::new(ws));
         let client_ = Arc::downgrade(&arc);
         self.clients.push((client_handle, arc));
-        let c = Client {
-            client_
-        };
+        let c = Client { client_ };
         Ok(c)
     }
 
-    pub fn service_available<T: WrappedServiceTypeSupport>(&self, client: &Client<T>) -> Result<bool> {
-        let client = client.client_.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+    pub fn service_available<T: WrappedServiceTypeSupport>(
+        &self,
+        client: &Client<T>,
+    ) -> Result<bool> {
+        let client = client
+            .client_
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let client = client.lock().unwrap();
         let mut avail = false;
         let result = unsafe {
-            rcl_service_server_is_available(
-                self.node_handle.as_ref(),
-                client.handle(),
-                &mut avail)
+            rcl_service_server_is_available(self.node_handle.as_ref(), client.handle(), &mut avail)
         };
 
         if result == RCL_RET_OK as i32 {
@@ -925,11 +981,13 @@ impl Node {
         }
     }
 
-    pub fn create_publisher_helper(&mut self, topic: &str,
-                                   typesupport: *const rosidl_message_type_support_t) -> Result<rcl_publisher_t> {
+    pub fn create_publisher_helper(
+        &mut self,
+        topic: &str,
+        typesupport: *const rosidl_message_type_support_t,
+    ) -> Result<rcl_publisher_t> {
         let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
-        let topic_c_string = CString::new(topic)
-            .map_err(|_|Error::RCL_RET_INVALID_ARGUMENT)?;
+        let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
         let result = unsafe {
             let mut publisher_options = rcl_publisher_get_default_options();
@@ -949,7 +1007,6 @@ impl Node {
         }
     }
 
-
     pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
     where
         T: WrappedTypesupport,
@@ -963,7 +1020,11 @@ impl Node {
         Ok(p)
     }
 
-    pub fn create_publisher_untyped(&mut self, topic: &str, topic_type: &str) -> Result<PublisherUntyped> {
+    pub fn create_publisher_untyped(
+        &mut self,
+        topic: &str,
+        topic_type: &str,
+    ) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?; // TODO, get ts without allocating msg
         let publisher_handle = self.create_publisher_helper(topic, dummy.ts)?;
 
@@ -1030,9 +1091,7 @@ impl Node {
             }
         }
 
-        let ret = unsafe {
-            rcl_wait(&mut ws, timeout)
-        };
+        let ret = unsafe { rcl_wait(&mut ws, timeout) };
 
         if ret == RCL_RET_TIMEOUT as i32 {
             unsafe {
@@ -1056,21 +1115,19 @@ impl Node {
             }
         }
 
-        let ws_timers =
-            unsafe { std::slice::from_raw_parts(ws.timers, ws.size_of_timers) };
+        let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, ws.size_of_timers) };
         assert_eq!(ws_timers.len(), self.timers.len());
         for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
             if ws_s != &std::ptr::null() {
                 let mut is_ready = false;
-                let ret = unsafe {
-                    rcl_timer_is_ready(&s.timer_handle, &mut is_ready)
-                };
+                let ret = unsafe { rcl_timer_is_ready(&s.timer_handle, &mut is_ready) };
                 if ret == RCL_RET_OK as i32 {
                     if is_ready {
                         let mut nanos = 0i64;
                         // todo: error handling
-                        let ret = unsafe { rcl_timer_get_time_since_last_call(&s.timer_handle,
-                                                                              &mut nanos) };
+                        let ret = unsafe {
+                            rcl_timer_get_time_since_last_call(&s.timer_handle, &mut nanos)
+                        };
                         if ret == RCL_RET_OK as i32 {
                             let ret = unsafe { rcl_timer_call(&mut s.timer_handle) };
                             if ret == RCL_RET_OK as i32 {
@@ -1082,8 +1139,7 @@ impl Node {
             }
         }
 
-        let ws_clients =
-            unsafe { std::slice::from_raw_parts(ws.clients, ws.size_of_clients) };
+        let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, ws.size_of_clients) };
         assert_eq!(ws_clients.len(), self.clients.len());
         for ((_, s), ws_s) in self.clients.iter_mut().zip(ws_clients) {
             if ws_s != &std::ptr::null() {
@@ -1097,8 +1153,7 @@ impl Node {
             }
         }
 
-        let ws_services =
-            unsafe { std::slice::from_raw_parts(ws.services, ws.size_of_services) };
+        let ws_services = unsafe { std::slice::from_raw_parts(ws.services, ws.size_of_services) };
         assert_eq!(ws_services.len(), self.services.len());
         for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
             if ws_s != &std::ptr::null() {
@@ -1116,11 +1171,15 @@ impl Node {
         }
     }
 
-
     pub fn get_topic_names_and_types(&self) -> Result<HashMap<String, Vec<String>>> {
         let mut tnat = unsafe { rmw_get_zero_initialized_names_and_types() };
         let ret = unsafe {
-            rcl_get_topic_names_and_types(self.node_handle.as_ref(), &mut rcutils_get_default_allocator(), false, &mut tnat)
+            rcl_get_topic_names_and_types(
+                self.node_handle.as_ref(),
+                &mut rcutils_get_default_allocator(),
+                false,
+                &mut tnat,
+            )
         };
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not get topic names and types {}", ret);
@@ -1131,27 +1190,35 @@ impl Node {
         let types = unsafe { std::slice::from_raw_parts(tnat.types, tnat.names.size) };
 
         let mut res = HashMap::new();
-        for (n,t) in names.iter().zip(types) {
-            let topic_name = unsafe {CStr::from_ptr(*n).to_str().unwrap().to_owned() };
+        for (n, t) in names.iter().zip(types) {
+            let topic_name = unsafe { CStr::from_ptr(*n).to_str().unwrap().to_owned() };
             let topic_types = unsafe { std::slice::from_raw_parts(t, t.size) };
             let topic_types: Vec<String> = unsafe {
-                topic_types.iter().map(|t| CStr::from_ptr(*((*t).data)).to_str().unwrap().to_owned()).collect()
+                topic_types
+                    .iter()
+                    .map(|t| CStr::from_ptr(*((*t).data)).to_str().unwrap().to_owned())
+                    .collect()
             };
             res.insert(topic_name, topic_types);
         }
-        unsafe { rmw_names_and_types_fini(&mut tnat); } // TODO: check return value
+        unsafe {
+            rmw_names_and_types_fini(&mut tnat);
+        } // TODO: check return value
         Ok(res)
     }
 
     pub fn create_wall_timer(
         &mut self,
         period: Duration,
-        callback: Box<dyn FnMut(Duration) -> ()>) -> Result<&Timer> {
-
+        callback: Box<dyn FnMut(Duration) -> ()>,
+    ) -> Result<&Timer> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
 
         let ret = unsafe {
-            rcl_steady_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+            rcl_steady_clock_init(
+                clock_handle.as_mut_ptr(),
+                &mut rcutils_get_default_allocator(),
+            )
         };
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not create steady clock: {}", ret);
@@ -1164,9 +1231,14 @@ impl Node {
         {
             let mut ctx = self.context.context_handle.lock().unwrap();
             let ret = unsafe {
-                rcl_timer_init(&mut timer_handle, clock_handle.as_mut(),
-                               ctx.as_mut(), period.as_nanos() as i64,
-                               None, rcutils_get_default_allocator())
+                rcl_timer_init(
+                    &mut timer_handle,
+                    clock_handle.as_mut(),
+                    ctx.as_mut(),
+                    period.as_nanos() as i64,
+                    None,
+                    rcutils_get_default_allocator(),
+                )
             };
 
             if ret != RCL_RET_OK as i32 {
@@ -1175,10 +1247,14 @@ impl Node {
             }
         }
 
-        let timer = Timer { timer_handle, clock_handle, callback };
+        let timer = Timer {
+            timer_handle,
+            clock_handle,
+            callback,
+        };
         self.timers.push(timer);
 
-        Ok(&self.timers[self.timers.len()-1])
+        Ok(&self.timers[self.timers.len() - 1])
     }
 
     pub fn logger<'a>(&'a self) -> &'a str {
@@ -1189,7 +1265,6 @@ impl Node {
         let s = unsafe { CStr::from_ptr(ptr) };
         s.to_str().unwrap_or("")
     }
-
 }
 
 pub struct Timer {
@@ -1252,7 +1327,10 @@ where
         T: WrappedTypesupport,
     {
         // upgrade to actual ref. if still alive
-        let publisher = self.handle.upgrade().ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
         // copy rust msg to native and publish it
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
         let result = unsafe {
@@ -1276,7 +1354,10 @@ where
         T: WrappedTypesupport,
     {
         // upgrade to actual ref. if still alive
-        let publisher = self.handle.upgrade().ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
         let result =
             unsafe { rcl_publish(publisher.as_ref(), msg.void_ptr(), std::ptr::null_mut()) };
@@ -1289,7 +1370,6 @@ where
     }
 }
 
-
 impl<T> Client<T>
 where
     T: WrappedServiceTypeSupport,
@@ -1299,18 +1379,16 @@ where
         T: WrappedServiceTypeSupport,
     {
         // upgrade to actual ref. if still alive
-        let client = self.client_.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self
+            .client_
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
         // copy rust msg to native and publish it
         let native_msg: WrappedNativeMsg<T::Request> = WrappedNativeMsg::<T::Request>::from(msg);
         let mut seq_no = 0i64;
-        let result = unsafe {
-            rcl_send_request(
-                &client.rcl_handle,
-                native_msg.void_ptr(),
-                &mut seq_no,
-            )
-        };
+        let result =
+            unsafe { rcl_send_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
 
         if result == RCL_RET_OK as i32 {
             client.callbacks.push((seq_no, cb));
@@ -1322,11 +1400,13 @@ where
     }
 }
 
-
 impl PublisherUntyped {
     pub fn publish(&self, msg: serde_json::Value) -> Result<()> {
         // upgrade to actual ref. if still alive
-        let publisher = self.handle.upgrade().ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
         let mut native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
@@ -1375,7 +1455,11 @@ impl Clock {
 
         let rcl_ct = Clock::clock_type_to_rcl(&ct);
         let ret = unsafe {
-            rcl_clock_init(rcl_ct, clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
+            rcl_clock_init(
+                rcl_ct,
+                clock_handle.as_mut_ptr(),
+                &mut rcutils_get_default_allocator(),
+            )
         };
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not create {:?} clock: {}", ct, ret);
@@ -1392,10 +1476,7 @@ impl Clock {
             return Err(Error::from_rcl_error(RCL_RET_INVALID_ARGUMENT as i32));
         }
         let mut tp: rcutils_time_point_value_t = 0;
-        let ret = unsafe {
-            rcl_clock_get_now(&mut *self.clock_handle,
-                              &mut tp)
-        };
+        let ret = unsafe { rcl_clock_get_now(&mut *self.clock_handle, &mut tp) };
 
         if ret != RCL_RET_OK as i32 {
             eprintln!("could not create steady clock: {}", ret);
@@ -1410,10 +1491,7 @@ impl Clock {
     pub fn to_builtin_time(d: &Duration) -> builtin_interfaces::msg::Time {
         let sec = d.as_secs() as i32;
         let nanosec = d.subsec_nanos();
-        builtin_interfaces::msg::Time {
-            sec,
-            nanosec,
-        }
+        builtin_interfaces::msg::Time { sec, nanosec }
     }
 }
 
@@ -1428,6 +1506,18 @@ impl Drop for Clock {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_context_drop() -> () {
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+    }
 
     #[test]
     fn test_ros_str() -> () {
@@ -1582,12 +1672,14 @@ mod tests {
         msg.positions.push(34.0);
         let json = serde_json::to_value(msg.clone()).unwrap();
 
-        let mut native = WrappedNativeMsgUntyped::new_from("trajectory_msgs/msg/JointTrajectoryPoint").unwrap();
+        let mut native =
+            WrappedNativeMsgUntyped::new_from("trajectory_msgs/msg/JointTrajectoryPoint").unwrap();
         native.from_json(json.clone()).unwrap();
         let json2 = native.to_json().unwrap();
         assert_eq!(json, json2);
 
-        let msg2: trajectory_msgs::msg::JointTrajectoryPoint = serde_json::from_value(json2).unwrap();
+        let msg2: trajectory_msgs::msg::JointTrajectoryPoint =
+            serde_json::from_value(json2).unwrap();
         assert_eq!(msg, msg2);
     }
 
@@ -1596,9 +1688,7 @@ mod tests {
     fn test_test_msgs_array() -> () {
         let mut msg = test_msgs::msg::Arrays::default();
         println!("msg: {:?}", msg.string_values);
-        msg.string_values = vec![
-            "hej".to_string(), "hopp".to_string(), "stropp".to_string()
-        ];
+        msg.string_values = vec!["hej".to_string(), "hopp".to_string(), "stropp".to_string()];
 
         let msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
         let msg2 = test_msgs::msg::Arrays::from_native(&msg_native);
@@ -1612,7 +1702,7 @@ mod tests {
     fn test_test_msgs_array_too_few_elems() -> () {
         let mut msg = test_msgs::msg::Arrays::default();
         println!("msg: {:?}", msg.string_values);
-        msg.string_values = vec![ "hej".to_string(), "hopp".to_string() ];
+        msg.string_values = vec!["hej".to_string(), "hopp".to_string()];
         let _msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
     }
 
@@ -1659,14 +1749,14 @@ mod tests {
         assert_eq!(goal, goal2);
 
         let mut res = Fibonacci::Result::default();
-        res.sequence = vec![1,2,3];
+        res.sequence = vec![1, 2, 3];
         let rn = WrappedNativeMsg::<_>::from(&res);
         let res2 = Fibonacci::Result::from_native(&rn);
         println!("res2 {:?}", res2);
         assert_eq!(res, res2);
 
         let mut fb = Fibonacci::Feedback::default();
-        fb.sequence = vec![4,3,6];
+        fb.sequence = vec![4, 3, 6];
         let fbn = WrappedNativeMsg::<_>::from(&fb);
         let fb2 = Fibonacci::Feedback::from_native(&fbn);
         println!("feedback2 {:?}", fb2);
