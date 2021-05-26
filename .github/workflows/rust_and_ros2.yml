@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [ github_actions ]
   pull_request:
-    branches: [ master ]
+    branches: [ github_actions ]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,13 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: ros-tooling/setup-ros@v0.1
-      with:
-        required-ros-distributions: rolling
+    - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
           profile: minimal
           toolchain: stable
           override: true
-    - uses: actions/checkout@v2
+    - run: env
+    - uses: ros-tooling/setup-ros@v0.1
+      with:
+        required-ros-distributions: rolling
+    - run: env
     - run: cargo test --verbose
