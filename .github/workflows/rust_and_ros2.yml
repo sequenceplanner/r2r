@@ -12,12 +12,16 @@ env:
 jobs:
   testing_rolling:
     runs-on: ubuntu-latest
-    container: kristoferb/spbase_ros2:rolling
     
     steps:
-    - name: env test
-      run: env
-    - name: ros2 test
-      run: ros2
-    - name: rust test
-      run: cargo
+    - name: test
+    - uses: ros-tooling/setup-ros@v0.1
+      with:
+        required-ros-distributions: rolling
+    - uses: actions-rs/toolchain@v1
+      with:
+          profile: minimal
+          toolchain: stable
+          override: true
+    - uses: actions/checkout@v2
+    - run: cargo test --verbose
