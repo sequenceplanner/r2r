@@ -17,8 +17,7 @@ jobs:
     steps:
     - uses: ros-tooling/setup-ros@v0.1
       with:
-        required-ros-distributions: galactic
-        target-ros2-distro: galactic
+        required-ros-distributions: rolling
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
