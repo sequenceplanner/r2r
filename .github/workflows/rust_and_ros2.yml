@@ -13,11 +13,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    container: kristoferb/spbase_ros2:rolling
 
     steps:
-    - uses: ros-tooling/setup-ros@v0.1
-      with:
-        required-ros-distributions: rolling
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
