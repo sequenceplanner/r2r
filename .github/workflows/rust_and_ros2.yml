@@ -15,7 +15,6 @@ jobs:
     container: kristoferb/spbase_ros2:rolling
     
     steps:
-    - uses: actions/checkout@v2
     - name: env test
       run: env
     - name: ros2 test
