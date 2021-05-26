@@ -20,9 +20,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-    - run: env
     - uses: ros-tooling/setup-ros@v0.1
       with:
         required-ros-distributions: rolling
-    - run: source /opt/ros/rolling/setup.sh
+    - run: source /opt/ros/rolling/setup.bash
+    - run: ls -al
+    - run: env
     - run: cargo test --verbose
