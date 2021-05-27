@@ -15,15 +15,5 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-      with:
-          profile: minimal
-          toolchain: stable
-          override: true
-    - uses: ros-tooling/setup-ros@v0.1
-      with:
-        required-ros-distributions: rolling
-    - run: source /opt/ros/rolling/setup.bash
-    - run: ls -al
-    - run: env
-    - run: cargo test --verbose
+    - run: docker build . --file Dockerfile --tag r2r_test
+    - run: docker run r2r_test
