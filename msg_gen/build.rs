@@ -82,10 +82,20 @@ fn main() {
                 introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
             }
         } else if msg.prefix == "action" {
-            for s in &["Goal", "Result", "Feedback"] {
+            for s in &["Goal", "Result", "Feedback", "FeedbackMessage"] {
                 let key = &format!("{}__{}__{}_{}", &msg.module, &msg.prefix, &msg.name, s);
                 let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}_{}() }} as *const i32 as usize", &msg.module, &msg.prefix, &msg.name, s);
                 introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
+            }
+            // "internal" services
+            for srv in &["SendGoal", "GetResult"] {
+                // TODO: refactor this is copy paste from services...
+                for s in &["Request", "Response"] {
+                    let msgname = format!("{}_{}_{}", msg.name, srv, s);
+                    let key = &format!("{}__{}__{}", &msg.module, &msg.prefix, msgname);
+                    let val = &format!("unsafe {{ rosidl_typesupport_introspection_c__get_message_type_support_handle__{}__{}__{}() }} as *const i32 as usize", &msg.module, &msg.prefix, msgname);
+                    introspecion_map.push_str(&format!("m.insert(\"{}\", {});\n", key, val));
+                }
             }
         } else {
             let key = &format!("{}__{}__{}", &msg.module, &msg.prefix, &msg.name);

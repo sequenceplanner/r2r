@@ -11,9 +11,11 @@ use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
+use std::fmt::Debug;
 
 use msg_gen::*;
 use rcl::*;
+use actions::*;
 
 mod error;
 use error::*;
@@ -23,7 +25,7 @@ pub use utils::*;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned + Default {
+pub trait WrappedTypesupport: Serialize + serde::de::DeserializeOwned + Default + Debug {
     type CStruct;
 
     fn get_ts() -> &'static rosidl_message_type_support_t;
@@ -45,7 +47,20 @@ pub trait WrappedActionTypeSupport {
     type Result: WrappedTypesupport;
     type Feedback: WrappedTypesupport;
 
+    // internal...
+    type FeedbackMessage: WrappedTypesupport;
+    type SendGoal: WrappedServiceTypeSupport;
+    type GetResult: WrappedServiceTypeSupport;
+
     fn get_ts() -> &'static rosidl_action_type_support_t;
+
+    fn make_goal_request_msg(goal_id: unique_identifier_msgs::msg::UUID, goal: Self::Goal) ->
+        <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request;
+    fn make_result_request_msg(goal_id: unique_identifier_msgs::msg::UUID) ->
+        <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request;
+    fn destructure_feedback_msg(msg: Self::FeedbackMessage) -> (unique_identifier_msgs::msg::UUID, Self::Feedback);
+    fn destructure_result_response_msg(msg: <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response) ->
+        (i8, Self::Result);
 }
 
 #[derive(Debug)]
@@ -411,6 +426,206 @@ where
     }
 }
 
+
+// action clients
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum GoalStatus {
+    Unknown,
+    Accepted,
+    Executing,
+    Canceling,
+    Succeeded,
+    Canceled,
+    Aborted,
+}
+
+impl GoalStatus {
+    #[allow(dead_code)]
+    pub fn to_rcl(&self) -> i8 {
+        match self {
+            GoalStatus::Unknown => 0,
+            GoalStatus::Accepted => 1,
+            GoalStatus::Executing => 2,
+            GoalStatus::Canceling => 3,
+            GoalStatus::Succeeded => 4,
+            GoalStatus::Canceled => 5,
+            GoalStatus::Aborted => 6,
+        }
+    }
+
+    pub fn from_rcl(s: i8) -> Self {
+        match s {
+            0 => GoalStatus::Unknown,
+            1 => GoalStatus::Accepted,
+            2 => GoalStatus::Executing,
+            3 => GoalStatus::Canceling,
+            4 => GoalStatus::Succeeded,
+            5 => GoalStatus::Canceled,
+            6 => GoalStatus::Aborted,
+            _ => panic!("unknown action status: {}", s),
+        }
+    }
+}
+
+struct WrappedActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    rcl_handle: rcl_action_client_t,
+    goal_request_callbacks: Vec<(i64, Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response)>)>,
+    feedback_callbacks: Vec<(uuid::Uuid, Box<dyn FnMut(T::Feedback) -> ()>)>,
+    goal_statuses: Vec<(uuid::Uuid, GoalStatus)>,
+    result_request_callbacks: Vec<(i64, Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response)>)>,
+    result_callbacks: Vec<(uuid::Uuid, Box<dyn FnOnce(T::Result) -> ()>)>,
+}
+
+pub trait ActionClient_ {
+    fn handle(&self) -> &rcl_action_client_t;
+    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+
+    fn handle_goal_response(&mut self) -> ();
+    fn handle_feedback_msg(&mut self) -> ();
+    fn handle_result_response(&mut self) -> ();
+
+    fn run_result_request(&mut self, uuid: &uuid::Uuid) -> ();
+}
+
+
+use std::convert::TryInto;
+fn vec_to_uuid_bytes<T>(v: Vec<T>) -> [T; 16] {
+    v.try_into()
+        .unwrap_or_else(|v: Vec<T>| panic!("Expected a Vec of length {} but it was {}", 16, v.len()))
+}
+
+
+impl<T: 'static> WrappedActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub fn send_result_request(&mut self, uuid: &uuid::Uuid, cb: Box<dyn FnOnce(T::Result) -> ()>) -> Result<()> {
+        let uuid_msg = unique_identifier_msgs::msg::UUID { uuid: uuid.as_bytes().to_vec() };
+        let request_msg = T::make_result_request_msg(uuid_msg);
+        let native_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::GetResult as
+                                             WrappedServiceTypeSupport>::Request>::from(&request_msg);
+        let mut seq_no = 0i64;
+        let result =
+            unsafe { rcl_action_send_result_request(&self.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
+
+        if result == RCL_RET_OK as i32 {
+            self.result_request_callbacks.push((seq_no, Box::new(move |r: <<T as WrappedActionTypeSupport>::GetResult as
+                                                                           WrappedServiceTypeSupport>::Response| {
+                let (status, result) = T::destructure_result_response_msg(r);
+                let status = GoalStatus::from_rcl(status);
+                println!("status: {:?}, result: {:?}", status, result);
+                (cb)(result);
+            })));
+            Ok(())
+        } else {
+            eprintln!("coult not send request {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+impl<T: 'static> ActionClient_ for WrappedActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    fn handle(&self) -> &rcl_action_client_t {
+        &self.rcl_handle
+    }
+
+    fn handle_goal_response(&mut self) -> () {
+        let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
+        let mut response_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response>::new();
+
+        let ret = unsafe {
+            rcl_action_take_goal_response(&self.rcl_handle, request_id.as_mut_ptr(), response_msg.void_ptr_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let request_id = unsafe { request_id.assume_init() };
+            if let Some(idx) = self.goal_request_callbacks.iter().position(|(id, _)| id == &request_id.sequence_number) {
+                let (_, cb_to_run) = self.goal_request_callbacks.swap_remove(idx);
+                let response = <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
+                (cb_to_run)(response);
+            } else {
+                // I don't think this should be able to occur? Let's panic so we
+                // find out...
+                let we_have: String = self
+                    .goal_request_callbacks
+                    .iter()
+                    .map(|(id, _)| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                eprintln!(
+                    "no such req id: {}, we have [{}], ignoring",
+                    request_id.sequence_number, we_have
+                );
+            }
+        }
+    }
+
+    fn handle_feedback_msg(&mut self) -> () {
+        let mut feedback_msg = WrappedNativeMsg::<T::FeedbackMessage>::new();
+        let ret = unsafe {
+            rcl_action_take_feedback(&self.rcl_handle, feedback_msg.void_ptr_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let msg = T::FeedbackMessage::from_native(&feedback_msg);
+            let (uuid, feedback) = T::destructure_feedback_msg(msg);
+            let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid.uuid));
+            if let Some((_,cb)) = self.feedback_callbacks.iter_mut().find(|(uuid, _)| uuid == &msg_uuid) {
+                (cb)(feedback);
+            }
+        }
+    }
+
+    fn handle_result_response(&mut self) -> () {
+        let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
+        let mut response_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response>::new();
+
+        let ret = unsafe {
+            rcl_action_take_result_response(&self.rcl_handle, request_id.as_mut_ptr(), response_msg.void_ptr_mut())
+        };
+
+        if ret == RCL_RET_OK as i32 {
+            let request_id = unsafe { request_id.assume_init() };
+            if let Some(idx) = self.result_request_callbacks.iter().position(|(id, _)| id == &request_id.sequence_number) {
+                let (_, cb_to_run) = self.result_request_callbacks.swap_remove(idx);
+                let response = <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
+                (cb_to_run)(response);
+            } else {
+                // I don't think this should be able to occur? Let's panic so we
+                // find out...
+                let we_have: String = self
+                    .result_request_callbacks
+                    .iter()
+                    .map(|(id, _)| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                eprintln!(
+                    "no such req id: {}, we have [{}], ignoring",
+                    request_id.sequence_number, we_have
+                );
+            }
+        }
+    }
+
+    fn run_result_request(&mut self, uuid: &uuid::Uuid) -> () {
+        if let Some(idx) = self.result_callbacks.iter().position(|(cb_uuid, _)| cb_uuid == uuid) {
+            let (_, result_cb) = self.result_callbacks.swap_remove(idx);
+            println!("asking for final result for {}", uuid);
+            self.send_result_request(uuid, result_cb).unwrap(); // TODO error handling.
+        }
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_action_client_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
 // The publish function is thread safe. ROS2 docs state:
 // =============
 //
@@ -463,6 +678,15 @@ where
     T: WrappedServiceTypeSupport,
 {
     client_: Weak<Mutex<WrappedClient<T>>>,
+}
+
+unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
+
+pub struct ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    client_: Weak<Mutex<WrappedActionClient<T>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -637,6 +861,8 @@ pub struct Node {
     services: Vec<Box<dyn Service>>,
     // clients with hack to avoid locking just to wait...,
     clients: Vec<(rcl_client_t, Arc<Mutex<dyn Client_>>)>,
+    // action clients
+    action_clients: Vec<(rcl_action_client_t, Arc<Mutex<dyn ActionClient_>>)>,
     // timers,
     timers: Vec<Timer>,
     // and the publishers, whom we allow to be shared.. hmm.
@@ -767,6 +993,7 @@ impl Node {
                 subs: Vec::new(),
                 services: Vec::new(),
                 clients: Vec::new(),
+                action_clients: Vec::new(),
                 timers: Vec::new(),
                 pubs: Vec::new(),
             };
@@ -981,6 +1208,76 @@ impl Node {
         }
     }
 
+    pub fn create_action_client_helper(
+        &mut self,
+        action_name: &str,
+        action_ts: *const rosidl_action_type_support_t,
+    ) -> Result<rcl_action_client_t> {
+        let mut client_handle = unsafe { rcl_action_get_zero_initialized_client() };
+        let action_name_c_string =
+            CString::new(action_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+        let result = unsafe {
+            let client_options = rcl_action_client_get_default_options();
+            rcl_action_client_init(
+                &mut client_handle,
+                self.node_handle.as_mut(),
+                action_ts,
+                action_name_c_string.as_ptr(),
+                &client_options,
+            )
+        };
+        if result == RCL_RET_OK as i32 {
+            Ok(client_handle)
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
+    pub fn create_action_client<T: 'static>(&mut self, action_name: &str) -> Result<ActionClient<T>>
+    where
+        T: WrappedActionTypeSupport,
+    {
+        let client_handle = self.create_action_client_helper(action_name, T::get_ts())?;
+        let cloned_handle = unsafe { core::ptr::read(&client_handle) };
+        let wa = WrappedActionClient::<T> {
+            rcl_handle: cloned_handle,
+            goal_request_callbacks: Vec::new(),
+            feedback_callbacks: Vec::new(),
+            goal_statuses: Vec::new(),
+            result_request_callbacks: Vec::new(),
+            result_callbacks: Vec::new(),
+        };
+
+        let arc = Arc::new(Mutex::new(wa));
+        let client_ = Arc::downgrade(&arc);
+        self.action_clients.push((client_handle, arc));
+        let c = ActionClient { client_ };
+        Ok(c)
+    }
+
+    pub fn action_server_available<T: 'static + WrappedActionTypeSupport>(
+        &self,
+        client: &ActionClient<T>,
+    ) -> Result<bool> {
+        let client = client
+            .client_
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = client.lock().unwrap();
+        let mut avail = false;
+        let result = unsafe {
+            rcl_action_server_is_available(self.node_handle.as_ref(), client.handle(), &mut avail)
+        };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(avail)
+        } else {
+            eprintln!("coult not send request {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
     pub fn create_publisher_helper(
         &mut self,
         topic: &str,
@@ -1036,6 +1333,19 @@ impl Node {
         Ok(p)
     }
 
+    fn get_num_waits(rcl_handle: &rcl_action_client_t, num_subs: &mut usize, num_gc: &mut usize , num_timers: &mut usize,
+                     num_clients: &mut usize , num_services: &mut usize) -> Result<()> {
+        unsafe {
+            let result = rcl_action_client_wait_set_get_num_entities(rcl_handle, num_subs, num_gc,
+                                                                     num_timers, num_clients, num_services);
+            if result == RCL_RET_OK as i32 {
+                Ok(())
+            } else {
+                Err(Error::from_rcl_error(result))
+            }
+        }
+    }
+
     pub fn spin_once(&mut self, timeout: Duration) {
         let timeout = timeout.as_nanos() as i64;
         let mut ws = unsafe { rcl_get_zero_initialized_wait_set() };
@@ -1046,16 +1356,39 @@ impl Node {
         // #[doc = "* For example, calling rcl_wait() in two threads on two different wait sets"]
         // #[doc = "* that both contain a single, shared guard condition is undefined behavior."]
 
+        // count action client wait set needs
+        let mut total_action_subs = 0;
+        let mut total_action_clients = 0;
+        for (ach, _) in &self.action_clients {
+            let mut num_subs = 0;
+            let mut num_gc = 0;
+            let mut num_timers = 0;
+            let mut num_clients = 0;
+            let mut num_services = 0;
+
+            Self::get_num_waits(ach, &mut num_subs, &mut num_gc, &mut num_timers, &mut num_clients, &mut num_services)
+                .expect("could not get action client wait sets");
+            // sanity check
+            assert_eq!(num_subs, 2);
+            assert_eq!(num_clients, 3);
+            assert_eq!(num_gc, 0);
+            assert_eq!(num_timers, 0);
+            assert_eq!(num_services, 0);
+
+            total_action_subs += num_subs;
+            total_action_clients += num_clients;
+        }
+
         {
             let mut ctx = self.context.context_handle.lock().unwrap();
 
             unsafe {
                 rcl_wait_set_init(
                     &mut ws,
-                    self.subs.len(),
+                    self.subs.len() + total_action_subs,
                     0,
                     self.timers.len(),
-                    self.clients.len(),
+                    self.clients.len() + total_action_clients,
                     self.services.len(),
                     0,
                     ctx.as_mut(),
@@ -1091,6 +1424,16 @@ impl Node {
             }
         }
 
+        // code below assumes that actions are added last... perhaps a bad assumption.
+        for (ac, _) in self.action_clients.iter() {
+            unsafe {
+                rcl_action_wait_set_add_action_client(&mut ws,
+                                                      ac,
+                                                      std::ptr::null_mut(),
+                                                      std::ptr::null_mut());
+            }
+        }
+
         let ret = unsafe { rcl_wait(&mut ws, timeout) };
 
         if ret == RCL_RET_TIMEOUT as i32 {
@@ -1101,8 +1444,7 @@ impl Node {
         }
 
         let ws_subs =
-            unsafe { std::slice::from_raw_parts(ws.subscriptions, ws.size_of_subscriptions) };
-        assert_eq!(ws_subs.len(), self.subs.len());
+            unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subs.len()) };
         let mut msg_info = rmw_message_info_t::default(); // we dont care for now
         for (s, ws_s) in self.subs.iter_mut().zip(ws_subs) {
             if ws_s != &std::ptr::null() {
@@ -1139,8 +1481,7 @@ impl Node {
             }
         }
 
-        let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, ws.size_of_clients) };
-        assert_eq!(ws_clients.len(), self.clients.len());
+        let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
         for ((_, s), ws_s) in self.clients.iter_mut().zip(ws_clients) {
             if ws_s != &std::ptr::null() {
                 let mut s = s.lock().unwrap();
@@ -1162,6 +1503,64 @@ impl Node {
                 };
                 if ret == RCL_RET_OK as i32 {
                     s.run_cb();
+                }
+            }
+        }
+
+        for (ac, s) in &self.action_clients {
+            let mut is_feedback_ready = false;
+            let mut is_status_ready = false;
+            let mut is_goal_response_ready = false;
+            let mut is_cancel_response_ready = false;
+            let mut is_result_response_ready = false;
+
+            let ret = unsafe {
+                rcl_action_client_wait_set_get_entities_ready(&ws, ac,
+                    &mut is_feedback_ready,
+                    &mut is_status_ready,
+                    &mut is_goal_response_ready,
+                    &mut is_cancel_response_ready,
+                    &mut is_result_response_ready)
+            };
+
+            if ret != RCL_RET_OK as i32 {
+                continue;
+            }
+
+            if is_goal_response_ready {
+                let mut acs = s.lock().unwrap();
+                acs.handle_goal_response();
+            }
+
+            if is_result_response_ready {
+                let mut acs = s.lock().unwrap();
+                acs.handle_result_response();
+            }
+
+            if is_feedback_ready {
+                let mut acs = s.lock().unwrap();
+                acs.handle_feedback_msg();
+            }
+
+            if is_status_ready {
+                let mut status_array = WrappedNativeMsg::<action_msgs::msg::GoalStatusArray>::new();
+                let ret = unsafe {
+                    rcl_action_take_status(ac, status_array.void_ptr_mut())
+                };
+                if ret == RCL_RET_OK as i32 {
+                    let arr = action_msgs::msg::GoalStatusArray::from_native(&status_array);
+                    // TODO: actually use this information.
+                    for a in &arr.status_list {
+                        let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(a.goal_info.goal_id.uuid.clone()));
+                        let status = GoalStatus::from_rcl(a.status);
+                        println!("goal status for {}: {:?}", uuid, status);
+
+                        if status == GoalStatus::Succeeded {
+                            // query for the result.
+                            let mut acs = s.lock().unwrap();
+                            acs.run_result_request(&uuid);
+                        }
+                    }
                 }
             }
         }
@@ -1392,6 +1791,46 @@ where
 
         if result == RCL_RET_OK as i32 {
             client.callbacks.push((seq_no, cb));
+            Ok(())
+        } else {
+            eprintln!("coult not send request {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+impl<T> ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub fn send_goal_request(&self, goal: T::Goal,
+                             cb: Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response) -> ()>,
+                             feedback_cb: Box<dyn FnMut(T::Feedback) -> ()>,
+                             result_cb: Box<dyn FnOnce(T::Result) -> ()>) -> Result<()>
+    where
+        T: WrappedActionTypeSupport,
+    {
+        // upgrade to actual ref. if still alive
+        let client = self
+            .client_
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        // copy rust msg to native and publish it
+        let uuid = uuid::Uuid::new_v4();
+        let uuid_msg = unique_identifier_msgs::msg::UUID { uuid: uuid.as_bytes().to_vec() };
+        println!("UUID: {:?}", uuid);
+        client.feedback_callbacks.push((uuid, feedback_cb));
+        client.result_callbacks.push((uuid, result_cb));
+        let request_msg = T::make_goal_request_msg(uuid_msg, goal);
+        let native_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::SendGoal as
+                                             WrappedServiceTypeSupport>::Request>::from(&request_msg);
+        let mut seq_no = 0i64;
+        let result =
+            unsafe { rcl_action_send_goal_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
+
+        if result == RCL_RET_OK as i32 {
+            client.goal_request_callbacks.push((seq_no, cb));
             Ok(())
         } else {
             eprintln!("coult not send request {}", result);
@@ -1761,5 +2200,10 @@ mod tests {
         let fb2 = Fibonacci::Feedback::from_native(&fbn);
         println!("feedback2 {:?}", fb2);
         assert_eq!(fb, fb2);
+
+        let fb = WrappedNativeMsg::<Fibonacci::Feedback>::new();
+        let fb1 = Fibonacci::Feedback::default();
+        let fb2 = Fibonacci::Feedback::from_native(&fb);
+        assert_eq!(fb1, fb2);
     }
 }
