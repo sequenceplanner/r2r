@@ -66,6 +66,8 @@ fn main() {
 
     let bindings = builder
         .no_debug("_OSUnaligned.*")
+        .derive_partialeq(true)
+        .derive_copy(true)
         .generate()
         .expect("Unable to generate bindings");
 

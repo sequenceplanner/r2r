@@ -1,3 +1,7 @@
+use futures::executor::LocalPool;
+use futures::task::LocalSpawnExt;
+use futures::stream::StreamExt;
+use futures::future;
 use r2r;
 use std::collections::HashMap;
 use std::env;
@@ -10,7 +14,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let topic = args.get(1).expect("provide a topic!");
 
-    // run for a while to populate the topic list
+    let mut pool = LocalPool::new();
+    let spawner = pool.spawner();
+
+    // run for a while to populate the topic list (note blocking...)
     let mut count = 0;
     let mut nt = HashMap::new();
     while count < 50 {
@@ -37,20 +44,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let echo = &format!("{}_echo", topic);
     let echo_pub = node.create_publisher_untyped(echo, type_name)?;
 
-    let cb = move |msg: r2r::Result<serde_json::Value>| match msg {
-        Ok(msg) => {
-            let s = serde_json::to_string_pretty(&msg).unwrap();
-            println!("{}\n---\n", &s);
-            echo_pub.publish(msg).unwrap();
+    let sub = node.subscribe_untyped(topic, type_name)?;
+    spawner.spawn_local(async move { sub.for_each(|msg| {
+        match msg {
+            Ok(msg) => {
+                let s = serde_json::to_string_pretty(&msg).unwrap();
+                println!("{}\n---\n", &s);
+                echo_pub.publish(msg).unwrap();
+            }
+            Err(err) => {
+                println!("Could not parse msg. {}", err);
+            }
         }
-        Err(err) => {
-            println!("Could not parse msg. {}", err);
-        }
-    };
-
-    let _subref = node.subscribe_untyped(topic, type_name, Box::new(cb))?;
+        future::ready(())
+    }).await})?;
 
     loop {
         node.spin_once(std::time::Duration::from_millis(100));
+        pool.run_until_stalled();
     }
 }

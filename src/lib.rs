@@ -13,6 +13,11 @@ use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 use std::fmt::Debug;
 
+use std::future::Future;
+use futures::future::TryFutureExt;
+use futures::channel::{mpsc, oneshot};
+use futures::stream::{Stream, StreamExt};
+
 use msg_gen::*;
 use rcl::*;
 use actions::*;
@@ -109,9 +114,9 @@ impl WrappedNativeMsgUntyped {
         WrappedNativeMsgUntyped {
             ts: T::get_ts(),
             msg: T::create_msg() as *mut std::os::raw::c_void,
-            destroy: destroy,
-            msg_to_json: msg_to_json,
-            msg_from_json: msg_from_json,
+            destroy,
+            msg_to_json,
+            msg_from_json,
         }
     }
 
@@ -199,8 +204,7 @@ where
 
 pub trait Sub {
     fn handle(&self) -> &rcl_subscription_t;
-    fn run_cb(&mut self) -> ();
-    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void;
+    fn handle_incoming(&mut self) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 }
 
@@ -209,8 +213,7 @@ where
     T: WrappedTypesupport,
 {
     rcl_handle: rcl_subscription_t,
-    callback: Box<dyn FnMut(T) -> ()>,
-    rcl_msg: WrappedNativeMsg<T>,
+    sender: mpsc::Sender<T>,
 }
 
 struct WrappedSubNative<T>
@@ -218,14 +221,13 @@ where
     T: WrappedTypesupport,
 {
     rcl_handle: rcl_subscription_t,
-    callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
-    rcl_msg: WrappedNativeMsg<T>,
+    sender: mpsc::Sender<WrappedNativeMsg<T>>,
 }
 
 struct WrappedSubUntyped {
     rcl_handle: rcl_subscription_t,
-    rcl_msg: WrappedNativeMsgUntyped,
-    callback: Box<dyn FnMut(Result<serde_json::Value>) -> ()>,
+    topic_type: String,
+    sender: mpsc::Sender<Result<serde_json::Value>>,
 }
 
 impl<T> Sub for WrappedSub<T>
@@ -236,14 +238,19 @@ where
         &self.rcl_handle
     }
 
-    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
-        self.rcl_msg.void_ptr_mut()
-    }
-
-    fn run_cb(&mut self) -> () {
-        // copy native msg to rust type and run callback
-        let msg = T::from_native(&self.rcl_msg);
-        (self.callback)(msg);
+    fn handle_incoming(&mut self) -> () {
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+        let mut msg = WrappedNativeMsg::<T>::new();
+        let ret = unsafe {
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let msg = T::from_native(&msg);
+            match self.sender.try_send(msg) {
+                Err(e) => println!("error {:?}", e),
+                _ => (),
+            }
+        }
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -261,14 +268,18 @@ where
         &self.rcl_handle
     }
 
-    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
-        self.rcl_msg.void_ptr_mut()
-    }
-
-    fn run_cb(&mut self) -> () {
-        // *dont't* copy native msg to rust type.
-        // e.g. if you for instance have large image data...
-        (self.callback)(&self.rcl_msg);
+    fn handle_incoming(&mut self) -> () {
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+        let mut msg = WrappedNativeMsg::<T>::new();
+        let ret = unsafe {
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            match self.sender.try_send(msg) {
+                Err(e) => println!("error {:?}", e),
+                _ => (),
+            }
+        }
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -283,13 +294,20 @@ impl Sub for WrappedSubUntyped {
         &self.rcl_handle
     }
 
-    fn rcl_msg(&mut self) -> *mut std::os::raw::c_void {
-        self.rcl_msg.void_ptr_mut()
-    }
-
-    fn run_cb(&mut self) -> () {
-        let json = self.rcl_msg.to_json();
-        (self.callback)(json);
+    fn handle_incoming(&mut self) -> () {
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+        let mut msg = WrappedNativeMsgUntyped::new_from(&self.topic_type)
+            .expect(&format!("no typesupport for {}", self.topic_type));
+        let ret = unsafe {
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let json = msg.to_json();
+            match self.sender.try_send(json) {
+                Err(e) => println!("error {:?}", e),
+                _ => (),
+            }
+        }
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -366,17 +384,13 @@ where
     T: WrappedServiceTypeSupport,
 {
     rcl_handle: rcl_client_t,
-    rcl_request: rmw_request_id_t,
     // store callbacks with request sequence id and callback function
-    callbacks: Vec<(i64, Box<dyn FnOnce(T::Response)>)>,
-    rcl_response_msg: WrappedNativeMsg<T::Response>,
+    response_channels: Vec<(i64, oneshot::Sender<T::Response>)>,
 }
 
 pub trait Client_ {
     fn handle(&self) -> &rcl_client_t;
-    fn run_cb(&mut self) -> ();
-    fn rcl_response_msg(&mut self) -> *mut std::os::raw::c_void;
-    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t;
+    fn handle_response(&mut self) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 }
 
@@ -388,35 +402,37 @@ where
         &self.rcl_handle
     }
 
-    fn rcl_response_msg(&mut self) -> *mut std::os::raw::c_void {
-        self.rcl_response_msg.void_ptr_mut()
-    }
+    fn handle_response(&mut self) -> () {
+        let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
+        let mut response_msg = WrappedNativeMsg::<T::Response>::new();
 
-    fn rcl_request_id(&mut self) -> *mut rmw_request_id_t {
-        &mut self.rcl_request
-    }
-
-    fn run_cb(&mut self) -> () {
-        // copy native msg to rust type and run callback
-        let req_id = self.rcl_request.sequence_number;
-        if let Some(idx) = self.callbacks.iter().position(|(id, _)| id == &req_id) {
-            let (_, cb_to_run) = self.callbacks.swap_remove(idx);
-            let response = T::Response::from_native(&self.rcl_response_msg);
-            (cb_to_run)(response);
-        } else {
-            // I don't think this should be able to occur? Let's panic so we
-            // find out...
-            let we_have: String = self
-                .callbacks
-                .iter()
-                .map(|(id, _)| id.to_string())
-                .collect::<Vec<_>>()
-                .join(",");
-            eprintln!(
-                "no such req id: {}, we have [{}], ignoring",
-                req_id, we_have
-            );
-        }
+        let ret = unsafe {
+            rcl_take_response(&self.rcl_handle, request_id.as_mut_ptr(), response_msg.void_ptr_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let request_id = unsafe { request_id.assume_init() };
+            if let Some(idx) = self.response_channels.iter().position(|(id, _)| id == &request_id.sequence_number) {
+                let (_, channel) = self.response_channels.swap_remove(idx);
+                let response = T::Response::from_native(&response_msg);
+                match channel.send(response) {
+                    Ok(()) => {},
+                    Err(e) => { println!("error sending: {:?}", e); },
+                }
+            } else {
+                // I don't think this should be able to occur? Let's panic so we
+                // find out...
+                let we_have: String = self
+                    .response_channels
+                    .iter()
+                    .map(|(id, _)| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                eprintln!(
+                    "no such req id: {}, we have [{}], ignoring",
+                    request_id.sequence_number, we_have
+                );
+            }
+        } // TODO handle failure.
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -864,7 +880,7 @@ pub struct Node {
     // action clients
     action_clients: Vec<(rcl_action_client_t, Arc<Mutex<dyn ActionClient_>>)>,
     // timers,
-    timers: Vec<Timer>,
+    timers: Vec<Timer_>,
     // and the publishers, whom we allow to be shared.. hmm.
     pubs: Vec<Arc<rcl_publisher_t>>,
 }
@@ -1034,37 +1050,37 @@ impl Node {
     pub fn subscribe<T: 'static>(
         &mut self,
         topic: &str,
-        callback: Box<dyn FnMut(T) -> ()>,
-    ) -> Result<&rcl_subscription_t>
+    ) -> Result<impl Stream<Item = T> + Unpin>
     where
         T: WrappedTypesupport,
     {
         let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
+        let (sender, receiver) = mpsc::channel::<T>(10);
+
         let ws = WrappedSub {
             rcl_handle: subscription_handle,
-            rcl_msg: WrappedNativeMsg::<T>::new(),
-            callback: callback,
+            sender,
         };
         self.subs.push(Box::new(ws));
-        Ok(self.subs.last().unwrap().handle()) // hmm...
+        Ok(receiver)
     }
 
     pub fn subscribe_native<T: 'static>(
         &mut self,
         topic: &str,
-        callback: Box<dyn FnMut(&WrappedNativeMsg<T>) -> ()>,
-    ) -> Result<&rcl_subscription_t>
+    ) -> Result<impl Stream<Item = WrappedNativeMsg<T>>>
     where
         T: WrappedTypesupport,
     {
         let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
+        let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
+
         let ws = WrappedSubNative {
             rcl_handle: subscription_handle,
-            rcl_msg: WrappedNativeMsg::<T>::new(),
-            callback: callback,
+            sender,
         };
         self.subs.push(Box::new(ws));
-        Ok(self.subs.last().unwrap().handle()) // hmm...
+        Ok(receiver)
     }
 
     // Its not really untyped since we know the underlying type... But we throw this info away :)
@@ -1072,18 +1088,18 @@ impl Node {
         &mut self,
         topic: &str,
         topic_type: &str,
-        callback: Box<dyn FnMut(Result<serde_json::Value>) -> ()>,
-    ) -> Result<&rcl_subscription_t> {
+    ) -> Result<impl Stream<Item = Result<serde_json::Value>>> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let subscription_handle = self.create_subscription_helper(topic, msg.ts)?;
+        let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
         let ws = WrappedSubUntyped {
             rcl_handle: subscription_handle,
-            rcl_msg: msg,
-            callback: callback,
+            topic_type: topic_type.to_string(),
+            sender,
         };
         self.subs.push(Box::new(ws));
-        Ok(self.subs.last().unwrap().handle()) // hmm...
+        Ok(receiver)
     }
 
     pub fn create_service_helper(
@@ -1128,7 +1144,7 @@ impl Node {
                 sequence_number: 0,
             },
             rcl_request_msg: WrappedNativeMsg::<T::Request>::new(),
-            callback: callback,
+            callback,
         };
 
         self.services.push(Box::new(ws));
@@ -1166,17 +1182,9 @@ impl Node {
         T: WrappedServiceTypeSupport,
     {
         let client_handle = self.create_client_helper(service_name, T::get_ts())?;
-        let cloned_ch = rcl_client_t {
-            impl_: client_handle.impl_,
-        };
         let ws = WrappedClient::<T> {
-            rcl_handle: cloned_ch,
-            rcl_request: rmw_request_id_t {
-                writer_guid: [0; 16usize],
-                sequence_number: 0,
-            },
-            rcl_response_msg: WrappedNativeMsg::<T::Response>::new(),
-            callbacks: Vec::new(),
+            rcl_handle: client_handle,
+            response_channels: Vec::new(),
         };
 
         let arc = Arc::new(Mutex::new(ws));
@@ -1239,9 +1247,8 @@ impl Node {
         T: WrappedActionTypeSupport,
     {
         let client_handle = self.create_action_client_helper(action_name, T::get_ts())?;
-        let cloned_handle = unsafe { core::ptr::read(&client_handle) };
         let wa = WrappedActionClient::<T> {
-            rcl_handle: cloned_handle,
+            rcl_handle: client_handle,
             goal_request_callbacks: Vec::new(),
             feedback_callbacks: Vec::new(),
             goal_statuses: Vec::new(),
@@ -1445,20 +1452,15 @@ impl Node {
 
         let ws_subs =
             unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subs.len()) };
-        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
         for (s, ws_s) in self.subs.iter_mut().zip(ws_subs) {
             if ws_s != &std::ptr::null() {
-                let ret = unsafe {
-                    rcl_take(s.handle(), s.rcl_msg(), &mut msg_info, std::ptr::null_mut())
-                };
-                if ret == RCL_RET_OK as i32 {
-                    s.run_cb();
-                }
+                s.handle_incoming();
             }
         }
 
         let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, ws.size_of_timers) };
         assert_eq!(ws_timers.len(), self.timers.len());
+        let mut timers_to_remove = vec![];
         for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
             if ws_s != &std::ptr::null() {
                 let mut is_ready = false;
@@ -1473,24 +1475,32 @@ impl Node {
                         if ret == RCL_RET_OK as i32 {
                             let ret = unsafe { rcl_timer_call(&mut s.timer_handle) };
                             if ret == RCL_RET_OK as i32 {
-                                (s.callback)(Duration::from_nanos(nanos as u64));
+                                match s.sender.try_send(Duration::from_nanos(nanos as u64)) {
+                                    Err(e) => {
+                                        if e.is_full() {
+                                            println!("Warning: timer tick not handled in time - no wakeup will occur");
+                                        }
+                                        if e.is_disconnected() {
+                                            // client dropped the timer handle, let's drop our timer as well.
+                                            timers_to_remove.push(s.timer_handle);
+                                        }
+                                    },
+                                    _ => {} // ok
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        // drop timers scheduled for deletion
+        self.timers.retain(|t| !timers_to_remove.contains(&t.timer_handle));
 
         let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
         for ((_, s), ws_s) in self.clients.iter_mut().zip(ws_clients) {
             if ws_s != &std::ptr::null() {
                 let mut s = s.lock().unwrap();
-                let ret = unsafe {
-                    rcl_take_response(s.handle(), s.rcl_request_id(), s.rcl_response_msg())
-                };
-                if ret == RCL_RET_OK as i32 {
-                    s.run_cb();
-                }
+                s.handle_response();
             }
         }
 
@@ -1609,8 +1619,7 @@ impl Node {
     pub fn create_wall_timer(
         &mut self,
         period: Duration,
-        callback: Box<dyn FnMut(Duration) -> ()>,
-    ) -> Result<&Timer> {
+    ) -> Result<Timer> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
 
         let ret = unsafe {
@@ -1646,14 +1655,20 @@ impl Node {
             }
         }
 
-        let timer = Timer {
+        let (tx, rx) = mpsc::channel::<Duration>(1);
+
+        let timer = Timer_ {
             timer_handle,
             clock_handle,
-            callback,
+            sender: tx,
         };
         self.timers.push(timer);
 
-        Ok(&self.timers[self.timers.len() - 1])
+        let out_timer = Timer {
+            receiver: rx,
+        };
+
+        Ok(out_timer)
     }
 
     pub fn logger<'a>(&'a self) -> &'a str {
@@ -1666,10 +1681,31 @@ impl Node {
     }
 }
 
-pub struct Timer {
+pub struct Timer_ {
     timer_handle: rcl_timer_t,
     clock_handle: Box<rcl_clock_t>,
-    callback: Box<dyn FnMut(Duration) -> ()>,
+    sender: mpsc::Sender<Duration>,
+}
+
+impl Drop for Timer_ {
+    fn drop(&mut self) {
+        unsafe { rcl_timer_fini(&mut self.timer_handle); }
+    }
+}
+
+pub struct Timer {
+    receiver: mpsc::Receiver<Duration>,
+}
+
+impl Timer {
+    pub async fn tick(&mut self) -> Result<Duration> {
+        let next = self.receiver.next().await;
+        if let Some(elapsed) = next {
+            Ok(elapsed)
+        } else {
+            Err(Error::RCL_RET_TIMER_INVALID)
+        }
+    }
 }
 
 // Since publishers are temporarily upgraded to owners during the
@@ -1773,7 +1809,7 @@ impl<T> Client<T>
 where
     T: WrappedServiceTypeSupport,
 {
-    pub fn request(&self, msg: &T::Request, cb: Box<dyn FnOnce(T::Response) -> ()>) -> Result<()>
+    pub fn request(&self, msg: &T::Request) -> Result<impl Future<Output = Result<T::Response>>>
     where
         T: WrappedServiceTypeSupport,
     {
@@ -1789,9 +1825,12 @@ where
         let result =
             unsafe { rcl_send_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
 
+        let (sender, receiver) = oneshot::channel::<T::Response>();
+
         if result == RCL_RET_OK as i32 {
-            client.callbacks.push((seq_no, cb));
-            Ok(())
+            client.response_channels.push((seq_no, sender));
+            // instead of "canceled" we return invalid client.
+            Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
         } else {
             eprintln!("coult not send request {}", result);
             Err(Error::from_rcl_error(result))

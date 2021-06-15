@@ -56,6 +56,8 @@ fn main() {
 
     let bindings = builder
         .no_debug("_OSUnaligned.*")
+        .derive_partialeq(true)
+        .derive_copy(true)
         // whitelist a few specific things that we need.
         .whitelist_recursively(false)
         .whitelist_type("rcl_action_client_t").opaque_type("rcl_action_client_t")

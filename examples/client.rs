@@ -1,6 +1,24 @@
+use futures::executor::LocalPool;
+use futures::task::LocalSpawnExt;
+
 use r2r;
 
 use r2r::example_interfaces::srv::AddTwoInts;
+
+async fn requester_task(c: r2r::Client<AddTwoInts::Service>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut x: i64 = 0;
+    loop {
+        let req = AddTwoInts::Request { a: 10 * x, b: x };
+        let resp = c.request(&req)?.await?;
+        println!("{} + {} = {}", req.a, req.b, resp.sum);
+
+        x+=1;
+        if x == 10 {
+            break;
+        }
+    }
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
@@ -15,20 +33,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("service available.");
 
-    let mut c = 0;
+    let mut pool = LocalPool::new();
+    let spawner = pool.spawner();
+
+    spawner.spawn_local(async move {
+        match requester_task(client).await {
+            Ok(()) => println!("exiting"),
+            Err(e) => println!("error: {}", e),
+        }})?;
+
     loop {
-        let req = AddTwoInts::Request { a: 10 * c, b: c };
-
-        let cb_req = req.clone();
-        let cb = Box::new(move |r: AddTwoInts::Response| {
-            println!("{} + {} = {}", cb_req.a, cb_req.b, r.sum)
-        });
-
-        client.request(&req, cb)?;
-
-        node.spin_once(std::time::Duration::from_millis(1000));
-
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-        c += 1;
+        node.spin_once(std::time::Duration::from_millis(100));
+        pool.run_until_stalled();
     }
 }
