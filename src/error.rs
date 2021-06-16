@@ -81,6 +81,10 @@ pub enum Error {
     InvalidMessageType { msgtype: String },
     #[error("Serde error: {}", err)]
     SerdeError { err: String },
+
+    // action errors. perhaps they exist in the rcl?
+    #[error("Goal rejected by server.")]
+    GoalRejected,
 }
 
 impl Error {

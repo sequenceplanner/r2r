@@ -1,7 +1,9 @@
+use futures::executor::LocalPool;
+use futures::future;
+use futures::stream::StreamExt;
+use futures::task::LocalSpawnExt;
 use r2r;
 use r2r::example_interfaces::action::Fibonacci;
-use std::cell::RefCell;
-use std::rc::Rc;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
@@ -15,34 +17,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("action service available.");
 
     let goal = Fibonacci::Goal { order: 10 };
-    let goal_accepted = Rc::new(RefCell::new(None));
-    let cb_ga = goal_accepted.clone();
-    let cb = Box::new(move |r: Fibonacci::SendGoal::Response| {
-        println!("got response {:?}", r);
-        *cb_ga.borrow_mut() = Some(r.accepted);
-    });
-
-    let feedback_cb = Box::new(move |fb: Fibonacci::Feedback| {
-        println!("got feedback {:?}", fb);
-    });
-
-    let result_cb = Box::new(move |r: Fibonacci::Result| {
-        println!("final result {:?}", r);
-    });
-
     println!("sending goal: {:?}", goal);
-    client.send_goal_request(goal, cb, feedback_cb, result_cb)?;
+    let goal_fut = client.send_goal_request(goal)?;
 
-    let mut c = 0;
-    loop {
-        node.spin_once(std::time::Duration::from_millis(1000));
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-        c += 1;
-        if c > 100 {
-            println!("shutdown");
-            break;
+    let mut pool = LocalPool::new();
+    let spawner = pool.spawner();
+
+    let task_spawner = spawner.clone();
+    spawner.spawn_local(async move {
+        let goal = goal_fut.await.unwrap(); // assume success
+
+        // process feedback stream in its own task
+        task_spawner
+            .spawn_local(goal.feedback.for_each(|msg| {
+                println!("new feedback msg {:?}", msg);
+                future::ready(())
+            }))
+            .unwrap();
+
+        // await result in this task
+        let result = goal.result.await;
+        match result {
+            Ok(msg) => println!("got result {:?}", msg),
+            Err(e) => println!("action failed: {:?}", e),
         }
-    }
+    })?;
 
-    Ok(())
+    loop {
+        node.spin_once(std::time::Duration::from_millis(100));
+        pool.run_until_stalled();
+    }
 }

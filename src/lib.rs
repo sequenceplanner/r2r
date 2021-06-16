@@ -15,6 +15,7 @@ use std::fmt::Debug;
 
 use std::future::Future;
 use futures::future::TryFutureExt;
+use futures::future::FutureExt;
 use futures::channel::{mpsc, oneshot};
 use futures::stream::{Stream, StreamExt};
 
@@ -63,6 +64,7 @@ pub trait WrappedActionTypeSupport {
         <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request;
     fn make_result_request_msg(goal_id: unique_identifier_msgs::msg::UUID) ->
         <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request;
+    fn destructure_goal_response_msg(msg: <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response) -> (bool, builtin_interfaces::msg::Time);
     fn destructure_feedback_msg(msg: Self::FeedbackMessage) -> (unique_identifier_msgs::msg::UUID, Self::Feedback);
     fn destructure_result_response_msg(msg: <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response) ->
         (i8, Self::Result);
@@ -353,7 +355,6 @@ where
     }
 
     fn run_cb(&mut self) -> () {
-        // copy native msg to rust type and run callback
         let request = T::Request::from_native(&self.rcl_request_msg);
         let response = (self.callback)(request);
         let mut native_response = WrappedNativeMsg::<T::Response>::from(&response);
@@ -412,15 +413,13 @@ where
         if ret == RCL_RET_OK as i32 {
             let request_id = unsafe { request_id.assume_init() };
             if let Some(idx) = self.response_channels.iter().position(|(id, _)| id == &request_id.sequence_number) {
-                let (_, channel) = self.response_channels.swap_remove(idx);
+                let (_, sender) = self.response_channels.swap_remove(idx);
                 let response = T::Response::from_native(&response_msg);
-                match channel.send(response) {
+                match sender.send(response) {
                     Ok(()) => {},
-                    Err(e) => { println!("error sending: {:?}", e); },
+                    Err(e) => { println!("error sending to client: {:?}", e); },
                 }
             } else {
-                // I don't think this should be able to occur? Let's panic so we
-                // find out...
                 let we_have: String = self
                     .response_channels
                     .iter()
@@ -488,11 +487,11 @@ where
     T: WrappedActionTypeSupport,
 {
     rcl_handle: rcl_action_client_t,
-    goal_request_callbacks: Vec<(i64, Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response)>)>,
-    feedback_callbacks: Vec<(uuid::Uuid, Box<dyn FnMut(T::Feedback) -> ()>)>,
-    goal_statuses: Vec<(uuid::Uuid, GoalStatus)>,
-    result_request_callbacks: Vec<(i64, Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response)>)>,
-    result_callbacks: Vec<(uuid::Uuid, Box<dyn FnOnce(T::Result) -> ()>)>,
+    goal_response_channels: Vec<(i64, oneshot::Sender<<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response>)>,
+    feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<T::Feedback>)>,
+    // goal_statuses: Vec<(uuid::Uuid, GoalStatus)>,
+    result_requests: Vec<(i64, uuid::Uuid)>,
+    result_senders: Vec<(uuid::Uuid, oneshot::Sender<T::Result>)>,
 }
 
 pub trait ActionClient_ {
@@ -501,9 +500,10 @@ pub trait ActionClient_ {
 
     fn handle_goal_response(&mut self) -> ();
     fn handle_feedback_msg(&mut self) -> ();
+    fn handle_status_msg(&mut self) -> ();
     fn handle_result_response(&mut self) -> ();
 
-    fn run_result_request(&mut self, uuid: &uuid::Uuid) -> ();
+    fn send_result_request(&mut self, uuid: uuid::Uuid) -> ();
 }
 
 
@@ -511,36 +511,6 @@ use std::convert::TryInto;
 fn vec_to_uuid_bytes<T>(v: Vec<T>) -> [T; 16] {
     v.try_into()
         .unwrap_or_else(|v: Vec<T>| panic!("Expected a Vec of length {} but it was {}", 16, v.len()))
-}
-
-
-impl<T: 'static> WrappedActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    pub fn send_result_request(&mut self, uuid: &uuid::Uuid, cb: Box<dyn FnOnce(T::Result) -> ()>) -> Result<()> {
-        let uuid_msg = unique_identifier_msgs::msg::UUID { uuid: uuid.as_bytes().to_vec() };
-        let request_msg = T::make_result_request_msg(uuid_msg);
-        let native_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::GetResult as
-                                             WrappedServiceTypeSupport>::Request>::from(&request_msg);
-        let mut seq_no = 0i64;
-        let result =
-            unsafe { rcl_action_send_result_request(&self.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
-
-        if result == RCL_RET_OK as i32 {
-            self.result_request_callbacks.push((seq_no, Box::new(move |r: <<T as WrappedActionTypeSupport>::GetResult as
-                                                                           WrappedServiceTypeSupport>::Response| {
-                let (status, result) = T::destructure_result_response_msg(r);
-                let status = GoalStatus::from_rcl(status);
-                println!("status: {:?}, result: {:?}", status, result);
-                (cb)(result);
-            })));
-            Ok(())
-        } else {
-            eprintln!("coult not send request {}", result);
-            Err(Error::from_rcl_error(result))
-        }
-    }
 }
 
 impl<T: 'static> ActionClient_ for WrappedActionClient<T>
@@ -560,15 +530,16 @@ where
         };
         if ret == RCL_RET_OK as i32 {
             let request_id = unsafe { request_id.assume_init() };
-            if let Some(idx) = self.goal_request_callbacks.iter().position(|(id, _)| id == &request_id.sequence_number) {
-                let (_, cb_to_run) = self.goal_request_callbacks.swap_remove(idx);
+            if let Some(idx) = self.goal_response_channels.iter().position(|(id, _)| id == &request_id.sequence_number) {
+                let (_, sender) = self.goal_response_channels.swap_remove(idx);
                 let response = <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
-                (cb_to_run)(response);
+                match sender.send(response) {
+                    Ok(()) => {},
+                    Err(e) => { println!("error sending to action client: {:?}", e); },
+                }
             } else {
-                // I don't think this should be able to occur? Let's panic so we
-                // find out...
                 let we_have: String = self
-                    .goal_request_callbacks
+                    .goal_response_channels
                     .iter()
                     .map(|(id, _)| id.to_string())
                     .collect::<Vec<_>>()
@@ -590,8 +561,31 @@ where
             let msg = T::FeedbackMessage::from_native(&feedback_msg);
             let (uuid, feedback) = T::destructure_feedback_msg(msg);
             let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid.uuid));
-            if let Some((_,cb)) = self.feedback_callbacks.iter_mut().find(|(uuid, _)| uuid == &msg_uuid) {
-                (cb)(feedback);
+            if let Some((_,sender)) = self.feedback_senders.iter_mut().find(|(uuid, _)| uuid == &msg_uuid) {
+                match sender.try_send(feedback) {
+                    Err(e) => eprintln!("warning: could not send feedback msg ({})", e),
+                    _ => (),
+                }
+            }
+        }
+    }
+
+    fn handle_status_msg(&mut self) -> () {
+        let mut status_array = WrappedNativeMsg::<action_msgs::msg::GoalStatusArray>::new();
+        let ret = unsafe {
+            rcl_action_take_status(&self.rcl_handle, status_array.void_ptr_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            let arr = action_msgs::msg::GoalStatusArray::from_native(&status_array);
+            // TODO: actually use this information.
+            for a in &arr.status_list {
+                let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(a.goal_info.goal_id.uuid.clone()));
+                if !self.result_senders.iter().any(|(suuid, _)| suuid == &uuid) { continue; }
+                let status = GoalStatus::from_rcl(a.status);
+                if status == GoalStatus::Succeeded {
+                    self.send_result_request(uuid);
+                }
+                // TODO, cancel futures when goal is aborted etc.
             }
         }
     }
@@ -606,15 +600,26 @@ where
 
         if ret == RCL_RET_OK as i32 {
             let request_id = unsafe { request_id.assume_init() };
-            if let Some(idx) = self.result_request_callbacks.iter().position(|(id, _)| id == &request_id.sequence_number) {
-                let (_, cb_to_run) = self.result_request_callbacks.swap_remove(idx);
-                let response = <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
-                (cb_to_run)(response);
+            if let Some(idx) = self.result_requests.iter().position(|(id, _)| id == &request_id.sequence_number) {
+                let (_, uuid) = self.result_requests.swap_remove(idx);
+                if let Some(idx) = self.result_senders.iter().position(|(suuid, _)| suuid == &uuid) {
+                    let (_, sender) = self.result_senders.swap_remove(idx);
+                    let response = <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
+                    let (status, result) = T::destructure_result_response_msg(response);
+                    let status = GoalStatus::from_rcl(status);
+                    if status != GoalStatus::Succeeded {
+                        println!("goal status failed: {:?}, result: {:?}", status, result);
+                        // this will drop the sender which makes the receiver fail with "canceled"
+                    } else {
+                        match sender.send(result) {
+                            Ok(()) => {},
+                            Err(e) => { println!("error sending result to action client: {:?}", e); },
+                        }
+                    }
+                }
             } else {
-                // I don't think this should be able to occur? Let's panic so we
-                // find out...
                 let we_have: String = self
-                    .result_request_callbacks
+                    .result_requests
                     .iter()
                     .map(|(id, _)| id.to_string())
                     .collect::<Vec<_>>()
@@ -627,11 +632,19 @@ where
         }
     }
 
-    fn run_result_request(&mut self, uuid: &uuid::Uuid) -> () {
-        if let Some(idx) = self.result_callbacks.iter().position(|(cb_uuid, _)| cb_uuid == uuid) {
-            let (_, result_cb) = self.result_callbacks.swap_remove(idx);
-            println!("asking for final result for {}", uuid);
-            self.send_result_request(uuid, result_cb).unwrap(); // TODO error handling.
+    fn send_result_request(&mut self, uuid: uuid::Uuid) -> () {
+        let uuid_msg = unique_identifier_msgs::msg::UUID { uuid: uuid.as_bytes().to_vec() };
+        let request_msg = T::make_result_request_msg(uuid_msg);
+        let native_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::GetResult as
+                                             WrappedServiceTypeSupport>::Request>::from(&request_msg);
+        let mut seq_no = 0i64;
+        let result =
+            unsafe { rcl_action_send_result_request(&self.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
+
+        if result == RCL_RET_OK as i32 {
+            self.result_requests.push((seq_no, uuid));
+        } else {
+            eprintln!("coult not send request {}", result);
         }
     }
 
@@ -703,6 +716,15 @@ where
     T: WrappedActionTypeSupport,
 {
     client_: Weak<Mutex<WrappedActionClient<T>>>,
+}
+
+#[derive(Debug)]
+pub struct Goal<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub feedback: mpsc::Receiver<T::Feedback>,
+    pub result: oneshot::Receiver<T::Result>,
 }
 
 #[derive(Debug, Clone)]
@@ -1251,11 +1273,11 @@ impl Node {
         let client_handle = self.create_action_client_helper(action_name, T::get_ts())?;
         let wa = WrappedActionClient::<T> {
             rcl_handle: client_handle,
-            goal_request_callbacks: Vec::new(),
-            feedback_callbacks: Vec::new(),
-            goal_statuses: Vec::new(),
-            result_request_callbacks: Vec::new(),
-            result_callbacks: Vec::new(),
+            goal_response_channels: Vec::new(),
+            feedback_senders: Vec::new(),
+            result_senders: Vec::new(),
+            // goal_statuses: Vec::new(),
+            result_requests: Vec::new(),
         };
 
         let arc = Arc::new(Mutex::new(wa));
@@ -1555,25 +1577,8 @@ impl Node {
             }
 
             if is_status_ready {
-                let mut status_array = WrappedNativeMsg::<action_msgs::msg::GoalStatusArray>::new();
-                let ret = unsafe {
-                    rcl_action_take_status(ac, status_array.void_ptr_mut())
-                };
-                if ret == RCL_RET_OK as i32 {
-                    let arr = action_msgs::msg::GoalStatusArray::from_native(&status_array);
-                    // TODO: actually use this information.
-                    for a in &arr.status_list {
-                        let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(a.goal_info.goal_id.uuid.clone()));
-                        let status = GoalStatus::from_rcl(a.status);
-                        println!("goal status for {}: {:?}", uuid, status);
-
-                        if status == GoalStatus::Succeeded {
-                            // query for the result.
-                            let mut acs = s.lock().unwrap();
-                            acs.run_result_request(&uuid);
-                        }
-                    }
-                }
+                let mut acs = s.lock().unwrap();
+                acs.handle_status_msg();
             }
         }
 
@@ -1768,7 +1773,6 @@ where
             .handle
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
-        // copy rust msg to native and publish it
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
         let result = unsafe {
             rcl_publish(
@@ -1821,7 +1825,6 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
-        // copy rust msg to native and publish it
         let native_msg: WrappedNativeMsg<T::Request> = WrappedNativeMsg::<T::Request>::from(msg);
         let mut seq_no = 0i64;
         let result =
@@ -1844,10 +1847,7 @@ impl<T> ActionClient<T>
 where
     T: WrappedActionTypeSupport,
 {
-    pub fn send_goal_request(&self, goal: T::Goal,
-                             cb: Box<dyn FnOnce(<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response) -> ()>,
-                             feedback_cb: Box<dyn FnMut(T::Feedback) -> ()>,
-                             result_cb: Box<dyn FnOnce(T::Result) -> ()>) -> Result<()>
+    pub fn send_goal_request(&self, goal: T::Goal) -> Result<impl Future<Output = Result<Goal<T>>>>
     where
         T: WrappedActionTypeSupport,
     {
@@ -1857,12 +1857,9 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
-        // copy rust msg to native and publish it
+
         let uuid = uuid::Uuid::new_v4();
         let uuid_msg = unique_identifier_msgs::msg::UUID { uuid: uuid.as_bytes().to_vec() };
-        println!("UUID: {:?}", uuid);
-        client.feedback_callbacks.push((uuid, feedback_cb));
-        client.result_callbacks.push((uuid, result_cb));
         let request_msg = T::make_goal_request_msg(uuid_msg, goal);
         let native_msg = WrappedNativeMsg::<<<T as WrappedActionTypeSupport>::SendGoal as
                                              WrappedServiceTypeSupport>::Request>::from(&request_msg);
@@ -1870,11 +1867,37 @@ where
         let result =
             unsafe { rcl_action_send_goal_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no) };
 
+        // set up channels
+        let (goal_req_sender, goal_req_receiver) =
+            oneshot::channel::<<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response>();
+        let (feedback_sender, feedback_receiver) = mpsc::channel::<T::Feedback>(1);
+        client.feedback_senders.push((uuid, feedback_sender));
+        let (result_sender, result_receiver) = oneshot::channel::<T::Result>();
+        client.result_senders.push((uuid, result_sender));
+
         if result == RCL_RET_OK as i32 {
-            client.goal_request_callbacks.push((seq_no, cb));
-            Ok(())
+            client.goal_response_channels.push((seq_no, goal_req_sender));
+            // instead of "canceled" we return invalid client.
+            let future = goal_req_receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID).map(|r| {
+                match r {
+                    Ok(resp) => {
+                        let (accepted, _stamp) = T::destructure_goal_response_msg(resp);
+                        if accepted {
+                            Ok(Goal {
+                                feedback: feedback_receiver,
+                                result: result_receiver,
+                            })
+                        } else {
+                            println!("goal rejected");
+                            Err(Error::GoalRejected)
+                        }
+                    },
+                    Err(e) => Err(e),
+                }
+            });
+            Ok(future)
         } else {
-            eprintln!("coult not send request {}", result);
+            eprintln!("coult not send goal request {}", result);
             Err(Error::from_rcl_error(result))
         }
     }

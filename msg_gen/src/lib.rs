@@ -154,6 +154,10 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String
                 }}
             }}
 
+            fn destructure_goal_response_msg(msg: SendGoal::Response) -> (bool, builtin_interfaces::msg::Time) {{
+                (msg.accepted, msg.stamp)
+            }}
+
             fn destructure_feedback_msg(msg: FeedbackMessage) -> (unique_identifier_msgs::msg::UUID, Feedback) {{
                 (msg.goal_id, msg.feedback)
             }}
