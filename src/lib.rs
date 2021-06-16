@@ -885,6 +885,8 @@ pub struct Node {
     pubs: Vec<Arc<rcl_publisher_t>>,
 }
 
+unsafe impl Send for Node {}
+
 impl Node {
     pub fn name(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_name(self.node_handle.as_ref()) };
