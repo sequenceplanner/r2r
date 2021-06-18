@@ -85,6 +85,15 @@ pub enum Error {
     // action errors. perhaps they exist in the rcl?
     #[error("Goal rejected by server.")]
     GoalRejected,
+
+    #[error("Goal cancel request rejected by server.")]
+    GoalCancelRejected,
+
+    #[error("Unknown goal id.")]
+    GoalCancelUnknownGoalID,
+
+    #[error("Goal already in a terminal state.")]
+    GoalCancelAlreadyTerminated,
 }
 
 impl Error {
