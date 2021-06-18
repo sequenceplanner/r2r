@@ -1,7 +1,7 @@
 
 [package]
 name = "r2r"
-version = "0.0.8"
+version = "0.1.0"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Minimal ros2 bindings."
 license = "Apache-2.0/MIT"
@@ -12,10 +12,10 @@ serde = { version = "1.0.123", features = ["derive"] }
 serde_json = "1.0.62"
 thiserror = "1.0"
 lazy_static = "1.4.0"
-common = { path = "common", version = "0.0.3" }
-rcl = { path = "rcl", version = "0.0.3" }
-msg_gen = { path = "msg_gen", version = "0.0.3" }
-actions = { path = "actions", version = "0.0.1" }
+common = { path = "common", version = "0.1.0" }
+rcl = { path = "rcl", version = "0.1.0" }
+msg_gen = { path = "msg_gen", version = "0.1.0" }
+actions = { path = "actions", version = "0.1.0" }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 futures = "0.3.15"
 
@@ -25,7 +25,7 @@ futures = "0.3.15"
 tokio = { version = "1", features = ["full"] } # for example
 
 [build-dependencies]
-common = { path = "common", version = "0.0.3" }
-msg_gen = { path = "msg_gen", version = "0.0.3" }
+common = { path = "common", version = "0.1.0" }
+msg_gen = { path = "msg_gen", version = "0.1.0" }
 
 [workspace]
