@@ -15,5 +15,5 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./.github/workflows/Dockerfile --tag r2r_test
+    - run: docker build . --file ./tests/Dockerfile --tag r2r_test
     - run: docker run r2r_test
