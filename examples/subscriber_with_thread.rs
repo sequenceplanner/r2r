@@ -4,6 +4,7 @@ use std::thread;
 use r2r;
 use r2r::std_msgs;
 
+// This example listens to /topic and publishes to /hello and /count
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
@@ -37,14 +38,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         pubint.publish(&to_send).unwrap();
     };
 
-    let _ws2 = node.subscribe("/hi", Box::new(cb))?;
+    let _ws2 = node.subscribe("/topic", Box::new(cb))?;
 
-    // run for 10 seconds
+    // here we spin the node in its own thread
+    let handle = std::thread::spawn(move || {
+        let mut count = 0;
+        while count < 100 {
+            node.spin_once(std::time::Duration::from_millis(100));
+            count += 1;
+        }
+    });
+
+    // give the thread time to run
     let mut count = 0;
-    while count < 100 {
-        node.spin_once(std::time::Duration::from_millis(100));
+    while count < 10 {
+        std::thread::sleep(std::time::Duration::from_millis(1000));
+        println!("hello from main thread");
         count += 1;
     }
+    handle.join().unwrap();
 
     Ok(())
 }
