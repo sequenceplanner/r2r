@@ -17,3 +17,19 @@ jobs:
     - uses: actions/checkout@v2
     - run: docker build . --file ./tests/Dockerfile --tag r2r_test
     - run: docker run r2r_test
+    
+  testing_foxy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - run: docker build . --file ./tests/Dockerfile_foxy --tag r2r_test
+    - run: docker run r2r_test
+
+  testing_galactic:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - run: docker build . --file ./tests/Dockerfile_galactic --tag r2r_test
+    - run: docker run r2r_test
