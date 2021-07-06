@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ github_actions ]
+    branches: [ futures ]
   pull_request:
-    branches: [ github_actions ]
+    branches: [ futures ]
 
 env:
   CARGO_TERM_COLOR: always
