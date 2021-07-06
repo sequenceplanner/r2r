@@ -1,10 +1,6 @@
-name: Rust
+name: testing_ros
 
-on:
-  push:
-    branches: [ futures ]
-  pull_request:
-    branches: [ futures ]
+on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
