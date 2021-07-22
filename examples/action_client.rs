@@ -30,31 +30,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let task_spawner = spawner.clone();
     let task_done = done.clone();
     spawner.spawn_local(async move {
-        let goal = goal_fut.await.unwrap(); // assume success
+        let mut goal = goal_fut.await.unwrap(); // assume success
 
+        println!("goal accepted: {}", goal.uuid);
         // process feedback stream in its own task
-        let goal_id = goal.uuid.clone();
+        let nested_goal = goal.clone();
         let nested_task_done = task_done.clone();
         task_spawner
-            .spawn_local(goal.feedback.for_each(move |msg| {
-                let task_client = client.clone();
-                let task_done = nested_task_done.clone();
+            .spawn_local(goal.get_feedback().unwrap().for_each(move |msg| {
+                let nested_task_done = nested_task_done.clone();
+                let nested_goal = nested_goal.clone();
                 async move {
-                    println!("new feedback msg {:?}", msg);
+                    println!("new feedback msg {:?} -- {:?}", msg, nested_goal.get_status());
 
                     // cancel the goal before it finishes. (comment out to complete the goal)
                     if msg.sequence.len() == 8 {
-                        task_client.lock().unwrap().send_cancel_request(&goal_id).unwrap().
+                        nested_goal.cancel().unwrap().
                             map(|r| {
                                 println!("goal cancelled: {:?}", r);
                                 // we are done.
-                                *task_done.lock().unwrap() = true;
+                                *nested_task_done.lock().unwrap() = true;
                             }).await;
                     }
                 }})).unwrap();
 
         // await result in this task
-        let result = goal.result.await;
+        let result = goal.get_result().unwrap().await;
         match result {
             Ok(msg) => {
                 println!("got result {:?}", msg);

@@ -105,6 +105,7 @@ fn field_name(field_name: &str) -> String {
 pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> String {
     format!(
         "
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
         pub struct Service();
         impl WrappedServiceTypeSupport for Service {{
             type Request = Request;
@@ -124,6 +125,7 @@ pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> Strin
 pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String {
     format!(
         "
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
         pub struct Action();
         impl WrappedActionTypeSupport for Action {{
             type Goal = Goal;
@@ -148,10 +150,35 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String
                 }}
             }}
 
+            fn make_goal_response_msg(accepted: bool, stamp: builtin_interfaces::msg::Time) -> SendGoal::Response {{
+                SendGoal::Response {{
+                     accepted,
+                     stamp
+                }}
+            }}
+
+            fn make_feedback_msg(goal_id: unique_identifier_msgs::msg::UUID, feedback: Feedback) -> FeedbackMessage {{
+                FeedbackMessage {{
+                     goal_id,
+                     feedback
+                }}
+            }}
+
             fn make_result_request_msg(goal_id: unique_identifier_msgs::msg::UUID) -> GetResult::Request {{
                 GetResult::Request {{
                      goal_id,
                 }}
+            }}
+
+            fn make_result_response_msg(status: i8, result: Result) -> GetResult::Response {{
+                GetResult::Response {{
+                     status,
+                     result,
+                }}
+            }}
+
+            fn destructure_goal_request_msg(msg: SendGoal::Request) -> (unique_identifier_msgs::msg::UUID, Goal) {{
+                (msg.goal_id, msg.goal)
             }}
 
             fn destructure_goal_response_msg(msg: SendGoal::Response) -> (bool, builtin_interfaces::msg::Time) {{
@@ -164,6 +191,10 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String
 
             fn destructure_result_response_msg(msg: GetResult::Response) -> (i8, Result) {{
                 (msg.status, msg.result)
+            }}
+
+            fn destructure_result_request_msg(msg: GetResult::Request) -> unique_identifier_msgs::msg::UUID {{
+                msg.goal_id
             }}
         }}
 
