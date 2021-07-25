@@ -33,7 +33,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match timer_task(timer).await {
             Ok(()) => println!("exiting"),
             Err(e) => println!("error: {}", e),
-        }})?;
+        }
+    })?;
 
     loop {
         node.spin_once(std::time::Duration::from_millis(100));

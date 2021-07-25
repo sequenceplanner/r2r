@@ -1059,7 +1059,6 @@ where
             let gi = action_msgs::msg::GoalInfo::from_native(&goal_info);
             let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(gi.goal_id.uuid.clone()));
             println!("goal expired: {} - {}", uuid, num_expired);
-            // todo: delete info about goal.
             self.goals.remove(&uuid);
             self.result_msgs.remove(&uuid);
             self.result_requests.remove(&uuid);
@@ -1071,13 +1070,23 @@ where
             let mut status = rcl_action_get_zero_initialized_goal_status_array();
             let ret = rcl_action_get_goal_status_array(&self.rcl_handle, &mut status);
             if ret != RCL_RET_OK as i32 {
-                println!("action server: failed to get goal status array: {}", ret);
+                println!(
+                    "action server: failed to get goal status array: {}",
+                    Error::from_rcl_error(ret)
+                );
+                return;
             }
-            // todo: error handling...
-            rcl_action_publish_status(
+            let ret = rcl_action_publish_status(
                 &self.rcl_handle,
                 &status as *const _ as *const std::os::raw::c_void,
             );
+            if ret != RCL_RET_OK as i32 {
+                println!(
+                    "action server: failed to publish status: {}",
+                    Error::from_rcl_error(ret)
+                );
+                return;
+            }
             rcl_action_goal_status_array_fini(&mut status);
         }
     }
@@ -1091,7 +1100,10 @@ where
                     rcl_action_send_result_response(&self.rcl_handle, &mut req, msg.void_ptr_mut())
                 };
                 if ret != RCL_RET_OK as i32 {
-                    println!("action server: could send result request response. {}", ret);
+                    println!(
+                        "action server: could send result request response. {}",
+                        Error::from_rcl_error(ret)
+                    );
                 }
             }
         }
@@ -1146,13 +1158,15 @@ where
 
         let mut request_id = unsafe { request_id.assume_init() };
         if let Some(response_msg) = response_msg {
-            println!("sending result msg");
             let ret = unsafe {
                 rcl_action_send_result_response(&self.rcl_handle, &mut request_id, response_msg)
             };
 
             if ret != RCL_RET_OK as i32 {
-                println!("action server: could send result request response. {}", ret);
+                println!(
+                    "action server: could send result request response. {}",
+                    Error::from_rcl_error(ret)
+                );
                 return;
             }
         } else {
@@ -1285,37 +1299,39 @@ where
         let action_server = self
             .server
             .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?; // todo: error codes
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
 
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: self.uuid.as_bytes().to_vec(),
         };
         let feedback_msg = T::make_feedback_msg(uuid_msg, msg);
         let mut native_msg = WrappedNativeMsg::<T::FeedbackMessage>::from(&feedback_msg);
-        let result = unsafe {
+        let ret = unsafe {
             rcl_action_publish_feedback(
                 action_server.lock().unwrap().handle(),
                 native_msg.void_ptr_mut(),
             )
         };
 
-        if result == RCL_RET_OK as i32 {
+        if ret == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("coult not publish {}", result);
+            eprintln!("coult not publish {}", Error::from_rcl_error(ret));
             Ok(()) // todo: error codes
         }
     }
 
     fn set_cancel(&mut self) {
-        // todo: error handling
         let ret = unsafe {
             let handle = self.handle.lock().unwrap();
             rcl_action_update_goal_state(*handle, rcl_action_goal_event_t::GOAL_EVENT_CANCEL_GOAL)
         };
 
         if ret != RCL_RET_OK as i32 {
-            println!("action server: could not cancel goal: {}", ret);
+            println!(
+                "action server: could not cancel goal: {}",
+                Error::from_rcl_error(ret)
+            );
         }
     }
 
@@ -1324,7 +1340,7 @@ where
         let action_server = self
             .server
             .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?; // todo: error codes
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut action_server = action_server.lock().unwrap();
 
         // todo: check that the goal exists
@@ -1342,7 +1358,7 @@ where
 
         if !goal_exists {
             println!("tried to publish result without a goal");
-            return Ok(());
+            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
         }
 
         // todo: error handling
@@ -1371,14 +1387,17 @@ where
         };
 
         if ret != RCL_RET_OK as i32 {
-            println!("action server: could not cancel goal: {}", ret);
+            println!(
+                "action server: could not cancel goal: {}",
+                Error::from_rcl_error(ret)
+            );
         }
 
         // upgrade to actual ref. if still alive
         let action_server = self
             .server
             .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?; // todo: error codes
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut action_server = action_server.lock().unwrap();
 
         // todo: check that the goal exists
@@ -1395,8 +1414,8 @@ where
             unsafe { rcl_action_server_goal_exists(action_server.handle(), &*goal_info_native) };
 
         if !goal_exists {
-            println!("tried to publish result without a goal");
-            return Ok(());
+            println!("tried to abort without a goal");
+            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
         }
 
         // todo: error handling
@@ -1425,7 +1444,7 @@ where
         let action_server = self
             .server
             .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?; // todo: error codes
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut action_server = action_server.lock().unwrap();
 
         // todo: check that the goal exists
@@ -1443,7 +1462,7 @@ where
 
         if !goal_exists {
             println!("tried to publish result without a goal");
-            return Ok(());
+            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
         }
 
         // todo: error handling
@@ -1488,7 +1507,7 @@ where
         let action_server = self
             .server
             .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?; // todo: error codes
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let action_server = action_server.lock().unwrap();
 
         Ok(unsafe { rcl_action_server_is_valid(&action_server.rcl_handle) })
@@ -2818,7 +2837,10 @@ where
     T: WrappedActionTypeSupport,
 {
     pub fn get_status(&self) -> Result<GoalStatus> {
-        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
         let client = client.lock().unwrap();
 
         Ok(client.get_goal_status(&self.uuid))
@@ -2827,16 +2849,19 @@ where
     pub fn get_result(&mut self) -> Result<impl Future<Output = Result<T::Result>>> {
         if let Some(result_channel) = self.result.lock().unwrap().take() {
             // upgrade to actual ref. if still alive
-            let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+            let client = self
+                .client
+                .upgrade()
+                .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
             let mut client = client.lock().unwrap();
 
             client.send_result_request(self.uuid);
 
-            Ok(result_channel.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
+            Ok(result_channel.map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID))
         } else {
             // todo: error codes...
             println!("already asked for the result!");
-            Err(Error::RCL_RET_CLIENT_INVALID)
+            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
         }
     }
 
@@ -2846,13 +2871,16 @@ where
         } else {
             // todo: error codes...
             println!("someone else owns the feedback consumer stream");
-            Err(Error::RCL_RET_CLIENT_INVALID)
+            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
         }
     }
 
     pub fn cancel(&self) -> Result<impl Future<Output = Result<()>>> {
         // upgrade to actual ref. if still alive
-        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
 
         client.send_cancel_request(&self.uuid)
@@ -2871,7 +2899,10 @@ where
         T: WrappedActionTypeSupport,
     {
         // upgrade to actual ref. if still alive
-        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
 
         let uuid = uuid::Uuid::new_v4();
@@ -2903,7 +2934,7 @@ where
             // instead of "canceled" we return invalid client.
             let fut_client = Weak::clone(&self.client);
             let future = goal_req_receiver
-                .map_err(|_| Error::RCL_RET_CLIENT_INVALID)
+                .map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID)
                 .map(move |r| match r {
                     Ok(resp) => {
                         let (accepted, _stamp) = T::destructure_goal_response_msg(resp);
@@ -2916,7 +2947,7 @@ where
                             })
                         } else {
                             println!("goal rejected");
-                            Err(Error::GoalRejected)
+                            Err(Error::RCL_RET_ACTION_GOAL_REJECTED)
                         }
                     }
                     Err(e) => Err(e),

@@ -1,7 +1,7 @@
 use futures::executor::LocalPool;
-use futures::task::LocalSpawnExt;
-use futures::stream::StreamExt;
 use futures::future;
+use futures::stream::StreamExt;
+use futures::task::LocalSpawnExt;
 use r2r;
 use std::collections::HashMap;
 use std::env;
@@ -45,19 +45,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let echo_pub = node.create_publisher_untyped(echo, type_name)?;
 
     let sub = node.subscribe_untyped(topic, type_name)?;
-    spawner.spawn_local(async move { sub.for_each(|msg| {
-        match msg {
-            Ok(msg) => {
-                let s = serde_json::to_string_pretty(&msg).unwrap();
-                println!("{}\n---\n", &s);
-                echo_pub.publish(msg).unwrap();
+    spawner.spawn_local(async move {
+        sub.for_each(|msg| {
+            match msg {
+                Ok(msg) => {
+                    let s = serde_json::to_string_pretty(&msg).unwrap();
+                    println!("{}\n---\n", &s);
+                    echo_pub.publish(msg).unwrap();
+                }
+                Err(err) => {
+                    println!("Could not parse msg. {}", err);
+                }
             }
-            Err(err) => {
-                println!("Could not parse msg. {}", err);
-            }
-        }
-        future::ready(())
-    }).await})?;
+            future::ready(())
+        })
+        .await
+    })?;
 
     loop {
         node.spin_once(std::time::Duration::from_millis(100));

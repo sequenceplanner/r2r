@@ -76,7 +76,11 @@ fn main() {
 
                     // also "internal" feedback message type that wraps the feedback type with a uuid
                     let feedback_msgname = format!("{}_FeedbackMessage", msg);
-                    codegen.push_str(&msg_gen::generate_rust_msg(module, prefix, &feedback_msgname));
+                    codegen.push_str(&msg_gen::generate_rust_msg(
+                        module,
+                        prefix,
+                        &feedback_msgname,
+                    ));
 
                     codegen.push_str("    }\n");
                 }

@@ -52,8 +52,7 @@ fn field_type(t: u8) -> String {
     } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE as u8) {
         // f128 does not exist in rust
         "u128".to_owned()
-    }
-    else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u8) {
+    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u8) {
         "message".to_owned()
     } else {
         panic!("ros native type not implemented: {}", t);
@@ -223,9 +222,9 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             // TODO: refactor...
             // handle special case of ActionName_ServiceName_Response
             let nn = name.splitn(3, "_").collect::<Vec<&str>>();
-            if let [ _mod_name, _srv_name, msg_name ] = &nn[..] {
+            if let [_mod_name, _srv_name, msg_name] = &nn[..] {
                 name = msg_name.to_string();
-            } else if let [ _mod_name, msg_name ] = &nn[..] {
+            } else if let [_mod_name, msg_name] = &nn[..] {
                 name = msg_name.to_string();
             } else {
                 panic!("malformed service name {}", name);
@@ -241,21 +240,21 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                 let (module, prefix, name, _, _) = introspection(member.members_);
                 // hack here to rustify nested action type names
                 if prefix == "action" {
-                    if let Some((n1,n2)) = name.rsplit_once("_") {
-                        format!("{module}::{prefix}::{srvname}::{msgname}",
-                                module = module,
-                                prefix = prefix,
-                                srvname = n1,
-                                msgname = n2
-                        )
-                    }
-                    else {
+                    if let Some((n1, n2)) = name.rsplit_once("_") {
                         format!(
-                        "{module}::{prefix}::{msgname}",
-                        module = module,
-                        prefix = prefix,
-                        msgname = name
-                    )
+                            "{module}::{prefix}::{srvname}::{msgname}",
+                            module = module,
+                            prefix = prefix,
+                            srvname = n1,
+                            msgname = n2
+                        )
+                    } else {
+                        format!(
+                            "{module}::{prefix}::{msgname}",
+                            module = module,
+                            prefix = prefix,
+                            msgname = name
+                        )
                     }
                 } else {
                     format!(
@@ -351,7 +350,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                 let (module, prefix, name, _, _) = introspection(member.members_);
                 // same hack as above to rustify message type names
                 if prefix == "action" {
-                    if let Some((n1,n2)) = name.rsplit_once("_") {
+                    if let Some((n1, n2)) = name.rsplit_once("_") {
                         from_native.push_str(&format!("{field_name}: {module}::{prefix}::{srvname}::{msgname}::from_native(&msg.{field_name}),\n", field_name = field_name, module = module, prefix=prefix, srvname = n1, msgname = n2));
                     } else {
                         panic!("ooops at from_native");

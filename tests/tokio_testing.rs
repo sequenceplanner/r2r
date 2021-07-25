@@ -1,7 +1,7 @@
 use futures::stream::StreamExt;
-use tokio::task;
-use std::sync::{Arc, Mutex};
 use r2r;
+use std::sync::{Arc, Mutex};
+use tokio::task;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,7 +15,9 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
 
     task::spawn(async move {
         (0..10).for_each(|i| {
-            p_the_no.publish(&r2r::std_msgs::msg::Int32{data: i}).unwrap();
+            p_the_no
+                .publish(&r2r::std_msgs::msg::Int32 { data: i })
+                .unwrap();
         });
     });
 
@@ -23,8 +25,12 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
         loop {
             match s_the_no.next().await {
                 Some(msg) => {
-                    p_new_no.publish(&r2r::std_msgs::msg::Int32{data: msg.data + 10}).unwrap();
-                },
+                    p_new_no
+                        .publish(&r2r::std_msgs::msg::Int32 {
+                            data: msg.data + 10,
+                        })
+                        .unwrap();
+                }
                 None => break,
             }
         }
@@ -36,10 +42,10 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
             match s_new_no.next().await {
                 Some(msg) => {
                     let i = msg.data;
-                    if i==19 {
+                    if i == 19 {
                         *s.lock().unwrap() = 19;
                     }
-                },
+                }
                 None => break,
             }
         }
@@ -52,11 +58,11 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
             if *x == 19 {
                 break;
             }
-        };
+        }
 
         state.lock().unwrap().clone()
     });
-    let x =  handle.join().unwrap();
+    let x = handle.join().unwrap();
     assert_eq!(x, 19);
     Ok(())
 }

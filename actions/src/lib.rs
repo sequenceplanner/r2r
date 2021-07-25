@@ -5,5 +5,5 @@
 #![allow(dead_code)]
 include!(concat!(env!("OUT_DIR"), "/action_bindings.rs"));
 
-use rcl::*;
 use msg_gen::*;
+use rcl::*;

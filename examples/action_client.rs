@@ -2,14 +2,16 @@ use futures::executor::LocalPool;
 use futures::future::FutureExt;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
-use std::sync::{Arc,Mutex};
 use r2r;
 use r2r::example_interfaces::action::Fibonacci;
+use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = Arc::new(Mutex::new(node.create_action_client::<Fibonacci::Action>("/fibonacci")?));
+    let client = Arc::new(Mutex::new(
+        node.create_action_client::<Fibonacci::Action>("/fibonacci")?,
+    ));
 
     // signal that we are done
     let done = Arc::new(Mutex::new(false));
@@ -41,18 +43,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let nested_task_done = nested_task_done.clone();
                 let nested_goal = nested_goal.clone();
                 async move {
-                    println!("new feedback msg {:?} -- {:?}", msg, nested_goal.get_status());
+                    println!(
+                        "new feedback msg {:?} -- {:?}",
+                        msg,
+                        nested_goal.get_status()
+                    );
 
                     // cancel the goal before it finishes. (comment out to complete the goal)
                     if msg.sequence.len() == 8 {
-                        nested_goal.cancel().unwrap().
-                            map(|r| {
+                        nested_goal
+                            .cancel()
+                            .unwrap()
+                            .map(|r| {
                                 println!("goal cancelled: {:?}", r);
                                 // we are done.
                                 *nested_task_done.lock().unwrap() = true;
-                            }).await;
+                            })
+                            .await;
                     }
-                }})).unwrap();
+                }
+            }))
+            .unwrap();
 
         // await result in this task
         let result = goal.get_result().unwrap().await;
@@ -60,7 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(msg) => {
                 println!("got result {:?}", msg);
                 *task_done.lock().unwrap() = true;
-            },
+            }
             Err(e) => println!("action failed: {:?}", e),
         }
     })?;

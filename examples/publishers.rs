@@ -16,7 +16,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         positions.push(count as f64);
         let to_send = JointTrajectoryPoint {
             positions: positions.clone(),
-            time_from_start: Duration { sec: count, nanosec: 0 },
+            time_from_start: Duration {
+                sec: count,
+                nanosec: 0,
+            },
             ..Default::default()
         };
         let mut native = r2r::WrappedNativeMsg::<Int32>::new();

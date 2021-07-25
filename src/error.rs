@@ -82,9 +82,25 @@ pub enum Error {
     #[error("Serde error: {}", err)]
     SerdeError { err: String },
 
-    // action errors. perhaps they exist in the rcl?
-    #[error("Goal rejected by server.")]
-    GoalRejected,
+    // action errors.
+    #[error("RCL_RET_ACTION_NAME_INVALID")]
+    RCL_RET_ACTION_NAME_INVALID,
+    #[error("RCL_RET_ACTION_GOAL_ACCEPTED")]
+    RCL_RET_ACTION_GOAL_ACCEPTED,
+    #[error("RCL_RET_ACTION_GOAL_REJECTED")]
+    RCL_RET_ACTION_GOAL_REJECTED,
+    #[error("RCL_RET_ACTION_CLIENT_INVALID")]
+    RCL_RET_ACTION_CLIENT_INVALID,
+    #[error("RCL_RET_ACTION_CLIENT_TAKE_FAILED")]
+    RCL_RET_ACTION_CLIENT_TAKE_FAILED,
+    #[error("RCL_RET_ACTION_SERVER_INVALID")]
+    RCL_RET_ACTION_SERVER_INVALID,
+    #[error("RCL_RET_ACTION_SERVER_TAKE_FAILED")]
+    RCL_RET_ACTION_SERVER_TAKE_FAILED,
+    #[error("RCL_RET_ACTION_GOAL_HANDLE_INVALID")]
+    RCL_RET_ACTION_GOAL_HANDLE_INVALID,
+    #[error("RCL_RET_ACTION_GOAL_EVENT_INVALID")]
+    RCL_RET_ACTION_GOAL_EVENT_INVALID,
 
     #[error("Goal cancel request rejected by server.")]
     GoalCancelRejected,
