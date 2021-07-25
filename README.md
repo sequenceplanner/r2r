@@ -15,7 +15,7 @@ How to use
 4. The bindings will rebuild automatically if/when you source your workspace(s).
 5. If you make changes to existing message types, run cargo clean -p msg_gen to force recompilation of the rust message types on the next build.
 
-A couple of examples are included in examples/
+Examples of how to use the crate are included in examples/
 ```
 . /opt/ros/foxy/setup.sh
 cargo build
@@ -28,19 +28,18 @@ An example application can be found here <https://github.com/sequenceplanner/r2r
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ ~Foxy~ Galactic
 - Building Rust types
 - Publish/subscribe
 - Services
+- Actions
 - Parameters
 
 TODO
 --------------------
-- The code generation is currently just a big hack. Needs cleanup and refactoring.
+- Documentation. (For now, look at the examples.)
+- General cleanup and error handling.
 - Expose more of the RCL like QoS settings.
-- Action types?
-- Async API!
-
 
 ***
 <!--
