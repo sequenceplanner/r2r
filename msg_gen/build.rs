@@ -121,6 +121,7 @@ fn main() {
         // blacklist types that are handled by rcl bindings
         .blacklist_type("rosidl_message_type_support_t")
         .blacklist_type("rosidl_service_type_support_t")
+        .blacklist_type("rosidl_action_type_support_t")
         .blacklist_type("rosidl_runtime_c__String")
         .blacklist_type("rosidl_runtime_c__String__Sequence")
         .blacklist_type("rosidl_runtime_c__U16String")

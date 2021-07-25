@@ -21,6 +21,8 @@
 #include <rosidl_runtime_c/primitives_sequence_functions.h>
 
 #include <rosidl_runtime_c/message_type_support_struct.h>
+#include <rosidl_runtime_c/service_type_support_struct.h>
+#include <rosidl_runtime_c/action_type_support_struct.h>
 #include <rosidl_typesupport_introspection_c/message_introspection.h>
 #include <rosidl_typesupport_introspection_c/field_types.h>
 
