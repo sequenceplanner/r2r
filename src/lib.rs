@@ -19,6 +19,10 @@ use futures::future::TryFutureExt;
 use futures::stream::{Stream, StreamExt};
 use std::future::Future;
 
+// otherwise crates using r2r needs to specify the same version of uuid as
+// this crate depend on, which seem like bad user experience.
+pub extern crate uuid;
+
 use actions::*;
 use msg_gen::*;
 use rcl::*;
