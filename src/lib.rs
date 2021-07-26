@@ -1243,6 +1243,7 @@ where
 
 unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
 
+#[derive(Clone)]
 pub struct ActionClient<T>
 where
     T: WrappedActionTypeSupport,

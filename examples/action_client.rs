@@ -9,22 +9,20 @@ use std::sync::{Arc, Mutex};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = Arc::new(Mutex::new(
-        node.create_action_client::<Fibonacci::Action>("/fibonacci")?,
-    ));
+    let client = node.create_action_client::<Fibonacci::Action>("/fibonacci")?;
 
     // signal that we are done
     let done = Arc::new(Mutex::new(false));
 
     println!("waiting for action service...");
-    while !node.action_server_available(&client.lock().unwrap())? {
+    while !node.action_server_available(&client)? {
         std::thread::sleep(std::time::Duration::from_millis(500));
     }
     println!("action service available.");
 
     let goal = Fibonacci::Goal { order: 10 };
     println!("sending goal: {:?}", goal);
-    let goal_fut = client.lock().unwrap().send_goal_request(goal)?;
+    let goal_fut = client.send_goal_request(goal)?;
 
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
