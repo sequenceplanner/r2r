@@ -28,15 +28,16 @@ An example application can be found here <https://github.com/sequenceplanner/r2r
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ ~Foxy~ Galactic
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic
 - Building Rust types
 - Publish/subscribe
 - Services
 - Actions
-- Parameters
+- Static parameters (e.g. loading from yaml files and parsing launch parameters)
 
 TODO
 --------------------
+- Implement the services associated with updating parameters at run-time.
 - Documentation. (For now, look at the examples.)
 - General cleanup and error handling.
 - Expose more of the RCL like QoS settings.
