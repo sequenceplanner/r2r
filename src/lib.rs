@@ -110,7 +110,7 @@ where
     pub msg: *mut T::CStruct,
 }
 
-pub trait VoidPtr {
+trait VoidPtr {
     fn void_ptr(&self) -> *const std::os::raw::c_void;
     fn void_ptr_mut(&mut self) -> *mut std::os::raw::c_void;
 }
@@ -248,7 +248,7 @@ where
     }
 }
 
-pub trait Sub {
+trait Sub {
     fn handle(&self) -> &rcl_subscription_t;
     fn handle_incoming(&mut self) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
@@ -389,7 +389,7 @@ where
     rcl_request_msg: WrappedNativeMsg<T::Request>,
 }
 
-pub trait Service {
+trait Service {
     fn handle(&self) -> &rcl_service_t;
     fn run_cb(&mut self) -> ();
     fn rcl_request_id(&mut self) -> *mut rmw_request_id_t;
@@ -448,7 +448,7 @@ where
     response_channels: Vec<(i64, oneshot::Sender<T::Response>)>,
 }
 
-pub trait Client_ {
+trait Client_ {
     fn handle(&self) -> &rcl_client_t;
     fn handle_response(&mut self) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
@@ -568,7 +568,7 @@ where
     goal_status: HashMap<uuid::Uuid, GoalStatus>,
 }
 
-pub trait ActionClient_ {
+trait ActionClient_ {
     fn handle(&self) -> &rcl_action_client_t;
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 
@@ -869,7 +869,7 @@ where
     result_requests: HashMap<uuid::Uuid, Vec<rmw_request_id_t>>,
 }
 
-pub trait ActionServer_ {
+trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
     fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> ();
     fn handle_cancel_request(&mut self) -> ();
@@ -1918,7 +1918,7 @@ impl Node {
         Ok(receiver)
     }
 
-    pub fn create_service_helper(
+    fn create_service_helper(
         &mut self,
         service_name: &str,
         service_ts: *const rosidl_service_type_support_t,
@@ -1967,7 +1967,7 @@ impl Node {
         Ok(self.services.last().unwrap().handle()) // hmm...
     }
 
-    pub fn create_client_helper(
+    fn create_client_helper(
         &mut self,
         service_name: &str,
         service_ts: *const rosidl_service_type_support_t,
@@ -2032,7 +2032,7 @@ impl Node {
         }
     }
 
-    pub fn create_action_client_helper(
+    fn create_action_client_helper(
         &mut self,
         action_name: &str,
         action_ts: *const rosidl_action_type_support_t,
@@ -2102,7 +2102,7 @@ impl Node {
         }
     }
 
-    pub fn create_action_server_helper(
+    fn create_action_server_helper(
         &mut self,
         action_name: &str,
         clock_handle: *mut rcl_clock_t,
@@ -2175,7 +2175,7 @@ impl Node {
         Ok(c)
     }
 
-    pub fn create_publisher_helper(
+    fn create_publisher_helper(
         &mut self,
         topic: &str,
         typesupport: *const rosidl_message_type_support_t,
@@ -2682,7 +2682,7 @@ impl Node {
     }
 }
 
-pub struct Timer_ {
+struct Timer_ {
     timer_handle: rcl_timer_t,
     clock_handle: Box<rcl_clock_t>,
     sender: mpsc::Sender<Duration>,
