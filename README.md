@@ -3,9 +3,11 @@ R2R - Minimal ROS2 Rust bindings
 
 Minimal bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure -- `cargo build` is all you need. Convenience Rust types are created by calling into the c introspection libraries. This circumvents the ROS2 .msg/.idl pipeline by relying on already generated C code. The convenience types can be ignored when you need to trade convenience for performance, e.g. treating large chunks of data manually. By default, the behavior is to build bindings to the RCL and all message types that can be found in the currently sourced ros environment.
 
-When integration with the colcon build system is desired, a CMakeLists.txt file can be used to limit the generation of bindings to only include specific (idl) dependencies. This is done through additional environment variables. A minimal example is available here: <https://github.com/m-dahl/r2r_minimal_node/>.
+When integration with the colcon build system is desired, a CMakeLists.txt file can be used to limit the generation of bindings to only include specific (idl) dependencies. This is done through additional environment variables. A minimal example of the colcon integration is available here: <https://github.com/m-dahl/r2r_minimal_node/>.
 
-Manual is available on github pages <https://sequenceplanner.github.io/r2r/>
+Manual is available on github pages <https://sequenceplanner.github.io/r2r/> (documention is lacking though).
+
+These bindings are being written organically when things are needed by me and others so please be aware that the API will change.
 
 How to use
 --------------------
@@ -23,8 +25,6 @@ cargo run --example subscriber_with_thread
 # In other shell
 ros2 topic pub /hi std_msgs/msg/String "data: 'Hello, world!'"
 ```
-
-An example application can be found here <https://github.com/sequenceplanner/r2r-echo>, which can be installed by running cargo install --git https://github.com/sequenceplanner/r2r-echo.
 
 What works?
 --------------------
