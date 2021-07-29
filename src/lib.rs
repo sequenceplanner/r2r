@@ -1608,7 +1608,7 @@ impl Drop for ContextHandle {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ParameterValue {
     NotSet,
     Bool(bool),
@@ -1679,11 +1679,31 @@ impl ParameterValue {
             ParameterValue::NotSet
         }
     }
+
+    fn from_parameter_value_msg(msg: rcl_interfaces::msg::ParameterValue) -> Self {
+        // todo: use constants from ParameterType message
+        match msg.type_ {
+            0 => ParameterValue::NotSet,
+            1 => ParameterValue::Bool(msg.bool_value),
+            2 => ParameterValue::Integer(msg.integer_value),
+            3 => ParameterValue::Double(msg.double_value),
+            4 => ParameterValue::String(msg.string_value),
+            5 => ParameterValue::ByteArray(msg.byte_array_value),
+            6 => ParameterValue::BoolArray(msg.bool_array_value),
+            7 => ParameterValue::IntegerArray(msg.integer_array_value),
+            8 => ParameterValue::DoubleArray(msg.double_array_value),
+            9 => ParameterValue::StringArray(msg.string_array_value),
+            _ => {
+                println!("warning: malformed parametervalue message");
+                ParameterValue::NotSet
+            },
+        }
+    }
 }
 
 pub struct Node {
     context: Context,
-    pub params: HashMap<String, ParameterValue>,
+    pub params: Arc<Mutex<HashMap<String, ParameterValue>>>,
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subs: Vec<Box<dyn Sub>>,
@@ -1785,11 +1805,12 @@ impl Node {
             let param_values =
                 unsafe { std::slice::from_raw_parts(np.parameter_values, np.num_params) };
 
+            let mut params = self.params.lock().unwrap();
             for (s, v) in param_names.iter().zip(param_values) {
                 let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
                 let val = ParameterValue::from_rcl(&*v);
-                self.params.insert(key.to_owned(), val);
+                params.insert(key.to_owned(), val);
             }
         }
 
@@ -1821,9 +1842,9 @@ impl Node {
 
         if res == RCL_RET_OK as i32 {
             let mut node = Node {
-                params: HashMap::new(),
+                params: Arc::new(Mutex::new(HashMap::new())),
                 context: ctx,
-                node_handle: node_handle,
+                node_handle,
                 subs: Vec::new(),
                 services: Vec::new(),
                 clients: Vec::new(),
@@ -1833,11 +1854,39 @@ impl Node {
                 pubs: Vec::new(),
             };
             node.load_params()?;
+
+            node.setup_parameter_services()?;
+
             Ok(node)
         } else {
             eprintln!("could not create node{}", res);
             Err(Error::from_rcl_error(res))
         }
+    }
+
+    fn setup_parameter_services(&mut self) -> Result<()> {
+        let node_name = self.name()?;
+        let params_cb = self.params.clone();
+        self.create_service::<rcl_interfaces::srv::SetParameters::Service>(&format!("{}/set_parameters", node_name),
+                                                      Box::new(move |req: rcl_interfaces::srv::SetParameters::Request| {
+                                                          let mut result = rcl_interfaces::srv::SetParameters::Response::default();
+                                                          for p in req.parameters {
+                                                              let val = ParameterValue::from_parameter_value_msg(p.value);
+                                                              params_cb.lock().unwrap().insert(p.name, val);
+                                                              let r = rcl_interfaces::msg::SetParametersResult {
+                                                                  successful: true,
+                                                                  reason: "".into(),
+                                                              };
+                                                              result.results.push(r);
+                                                          }
+                                                          result
+                                                      }))?;
+
+        Ok(())
+    }
+
+    pub fn get_param(&self, name: &str) -> Option<ParameterValue> {
+        self.params.lock().unwrap().get(name).cloned()
     }
 
     fn create_subscription_helper(
