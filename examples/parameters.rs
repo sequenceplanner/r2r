@@ -19,13 +19,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut i = 0;
     loop {
         node.spin_once(std::time::Duration::from_millis(100));
-        if i % 20 == 0 { // every 2 seconds print all parameters
+        if i % 20 == 0 {
+            // every 2 seconds print all parameters
             println!("node parameters");
             node.params.lock().unwrap().iter().for_each(|(k, v)| {
                 println!("{} - {:?}", k, v);
             });
         }
-        i+=1;
+        i += 1;
         if i > 1000 {
             break;
         }

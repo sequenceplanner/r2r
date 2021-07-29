@@ -1696,7 +1696,7 @@ impl ParameterValue {
             _ => {
                 println!("warning: malformed parametervalue message");
                 ParameterValue::NotSet
-            },
+            }
         }
     }
 }
@@ -1867,20 +1867,22 @@ impl Node {
     fn setup_parameter_services(&mut self) -> Result<()> {
         let node_name = self.name()?;
         let params_cb = self.params.clone();
-        self.create_service::<rcl_interfaces::srv::SetParameters::Service>(&format!("{}/set_parameters", node_name),
-                                                      Box::new(move |req: rcl_interfaces::srv::SetParameters::Request| {
-                                                          let mut result = rcl_interfaces::srv::SetParameters::Response::default();
-                                                          for p in req.parameters {
-                                                              let val = ParameterValue::from_parameter_value_msg(p.value);
-                                                              params_cb.lock().unwrap().insert(p.name, val);
-                                                              let r = rcl_interfaces::msg::SetParametersResult {
-                                                                  successful: true,
-                                                                  reason: "".into(),
-                                                              };
-                                                              result.results.push(r);
-                                                          }
-                                                          result
-                                                      }))?;
+        self.create_service::<rcl_interfaces::srv::SetParameters::Service>(
+            &format!("{}/set_parameters", node_name),
+            Box::new(move |req: rcl_interfaces::srv::SetParameters::Request| {
+                let mut result = rcl_interfaces::srv::SetParameters::Response::default();
+                for p in req.parameters {
+                    let val = ParameterValue::from_parameter_value_msg(p.value);
+                    params_cb.lock().unwrap().insert(p.name, val);
+                    let r = rcl_interfaces::msg::SetParametersResult {
+                        successful: true,
+                        reason: "".into(),
+                    };
+                    result.results.push(r);
+                }
+                result
+            }),
+        )?;
 
         Ok(())
     }
