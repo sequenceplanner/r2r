@@ -1,7 +1,7 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
-
 use r2r;
+use std::io::Write;
 
 use r2r::example_interfaces::srv::AddTwoInts;
 
@@ -11,8 +11,10 @@ async fn requester_task(
     let mut x: i64 = 0;
     loop {
         let req = AddTwoInts::Request { a: 10 * x, b: x };
+        print!("{} + {} = ", req.a, req.b);
+        std::io::stdout().flush()?;
         let resp = c.request(&req)?.await?;
-        println!("{} + {} = {}", req.a, req.b, resp.sum);
+        println!("{}", resp.sum);
 
         x += 1;
         if x == 10 {
@@ -40,7 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     spawner.spawn_local(async move {
         match requester_task(client).await {
-            Ok(()) => println!("exiting"),
+            Ok(()) => println!("done."),
             Err(e) => println!("error: {}", e),
         }
     })?;
