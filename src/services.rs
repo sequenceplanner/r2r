@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Service {
+pub trait Service_ {
     fn handle(&self) -> &rcl_service_t;
     fn send_completed_responses(&mut self) -> ();
     fn handle_request(&mut self) -> ();
@@ -16,7 +16,7 @@ where
     pub outstanding_requests: Vec<oneshot::Receiver<(rmw_request_id_t, T::Response)>>,
 }
 
-impl<T: 'static> Service for TypedService<T>
+impl<T: 'static> Service_ for TypedService<T>
 where
     T: WrappedServiceTypeSupport,
 {

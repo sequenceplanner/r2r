@@ -17,15 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let p = node.create_publisher::<r2r::std_msgs::msg::String>("/topic2")?;
     let state = Arc::new(Mutex::new(SharedState::default()));
 
-    use r2r::example_interfaces::srv::AddTwoInts;
-    let client = node.create_client::<AddTwoInts::Service>("/add_two_ints")?;
-
-    std::thread::spawn(move || {
-        let req = AddTwoInts::Request { a: 10, b: 20 };
-        print!("{} + {} = ", req.a, req.b);
-        let resp = client.request(&req).expect("");
-    });
-
     // task that every other time forwards message to topic2
     let state_t1 = state.clone();
     task::spawn(async move {

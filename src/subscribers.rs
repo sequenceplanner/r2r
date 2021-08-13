@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait Subscriber {
+pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;
     fn handle_incoming(&mut self) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
@@ -28,7 +28,7 @@ pub struct UntypedSubscriber {
     pub sender: mpsc::Sender<Result<serde_json::Value>>,
 }
 
-impl<T: 'static> Subscriber for TypedSubscriber<T>
+impl<T: 'static> Subscriber_ for TypedSubscriber<T>
 where
     T: WrappedTypesupport,
 {
@@ -63,7 +63,7 @@ where
     }
 }
 
-impl<T: 'static> Subscriber for NativeSubscriber<T>
+impl<T: 'static> Subscriber_ for NativeSubscriber<T>
 where
     T: WrappedTypesupport,
 {
@@ -97,7 +97,7 @@ where
     }
 }
 
-impl Subscriber for UntypedSubscriber {
+impl Subscriber_ for UntypedSubscriber {
     fn handle(&self) -> &rcl_subscription_t {
         &self.rcl_handle
     }
