@@ -2,7 +2,7 @@
 use rcl::*;
 use thiserror::Error;
 
-// TODO
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Error, Debug)]
 pub enum Error {

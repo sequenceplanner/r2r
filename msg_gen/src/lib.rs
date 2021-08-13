@@ -486,7 +486,7 @@ pub fn generate_untyped_helper(msgs: &Vec<common::RosMsg>) -> String {
     let open = String::from(
         "
 impl WrappedNativeMsgUntyped {
-    fn new_from(typename: &str) -> Result<Self> {
+    pub fn new_from(typename: &str) -> Result<Self> {
 ",
     );
     let close = String::from(
@@ -514,6 +514,47 @@ impl WrappedNativeMsgUntyped {
             "
         if typename == \"{typename}\" {{
             return Ok(WrappedNativeMsgUntyped::new::<{rustname}>());
+        }}
+",
+            typename = typename,
+            rustname = rustname
+        ));
+    }
+
+    format!("{}{}{}", open, lines, close)
+}
+
+pub fn generate_untyped_service_helper(msgs: &Vec<common::RosMsg>) -> String {
+    let open = String::from(
+        "
+impl UntypedServiceSupport {
+    pub fn new_from(typename: &str) -> Result<Self> {
+",
+    );
+    let close = String::from(
+        "
+        else
+        {
+            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
+        }
+    }
+}
+",
+    );
+
+    let mut lines = String::new();
+    for msg in msgs {
+        if msg.prefix != "srv" {
+            continue;
+        }
+
+        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
+        let rustname = format!("{}::{}::{}::Service", msg.module, msg.prefix, msg.name);
+
+        lines.push_str(&format!(
+            "
+        if typename == \"{typename}\" {{
+            return Ok(UntypedServiceSupport::new::<{rustname}>());
         }}
 ",
             typename = typename,

@@ -93,14 +93,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Box::new(accept_cancel_cb),
             Box::new(handle_goal_cb),
         )?;
-    loop {
+
+    while !*done.lock().unwrap() {
         node.lock()
             .unwrap()
             .spin_once(std::time::Duration::from_millis(100));
         pool.run_until_stalled();
-        if *done.lock().unwrap() {
-            break;
-        }
     }
 
     Ok(())
