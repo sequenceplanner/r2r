@@ -32,13 +32,134 @@ pub struct Publisher<T>
 where
     T: WrappedTypesupport,
 {
-    pub handle: Weak<rcl_publisher_t>,
-    pub type_: PhantomData<T>,
+    handle: Weak<rcl_publisher_t>,
+    type_: PhantomData<T>,
 }
 
 unsafe impl Send for PublisherUntyped {}
 #[derive(Debug, Clone)]
 pub struct PublisherUntyped {
-    pub handle: Weak<rcl_publisher_t>,
-    pub type_: String,
+    handle: Weak<rcl_publisher_t>,
+    type_: String,
+}
+
+pub fn make_publisher<T>(handle: Weak<rcl_publisher_t>) -> Publisher<T>
+where T: WrappedTypesupport {
+    Publisher {
+        handle,
+        type_: PhantomData,
+    }
+}
+
+pub fn make_publisher_untyped(handle: Weak<rcl_publisher_t>, type_: String) -> PublisherUntyped {
+    PublisherUntyped {
+        handle,
+        type_,
+    }
+}
+
+pub fn create_publisher_helper(
+    node: &mut rcl_node_t,
+    topic: &str,
+    typesupport: *const rosidl_message_type_support_t,
+) -> Result<rcl_publisher_t> {
+    let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
+    let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    let result = unsafe {
+        let mut publisher_options = rcl_publisher_get_default_options();
+        publisher_options.qos = rmw_qos_profile_t::default();
+        rcl_publisher_init(
+            &mut publisher_handle,
+            node,
+            typesupport,
+            topic_c_string.as_ptr(),
+            &publisher_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        Ok(publisher_handle)
+    } else {
+        Err(Error::from_rcl_error(result))
+    }
+}
+
+
+impl PublisherUntyped {
+    pub fn publish(&self, msg: serde_json::Value) -> Result<()> {
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        let mut native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
+        native_msg.from_json(msg)?;
+
+        let result = unsafe {
+            rcl_publish(
+                publisher.as_ref(),
+                native_msg.void_ptr(),
+                std::ptr::null_mut(),
+            )
+        };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            eprintln!("coult not publish {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+impl<T: 'static> Publisher<T>
+where
+    T: WrappedTypesupport,
+{
+    pub fn publish(&self, msg: &T) -> Result<()>
+    where
+        T: WrappedTypesupport,
+    {
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+        let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
+        let result = unsafe {
+            rcl_publish(
+                publisher.as_ref(),
+                native_msg.void_ptr(),
+                std::ptr::null_mut(),
+            )
+        };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            eprintln!("coult not publish {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
+    pub fn publish_native(&self, msg: &WrappedNativeMsg<T>) -> Result<()>
+    where
+        T: WrappedTypesupport,
+    {
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        let result =
+            unsafe { rcl_publish(publisher.as_ref(), msg.void_ptr(), std::ptr::null_mut()) };
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            eprintln!("could not publish native {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
 }

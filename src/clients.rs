@@ -1,5 +1,66 @@
 use super::*;
 
+// Public facing apis
+
+pub struct Client<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    client: Weak<Mutex<TypedClient<T>>>,
+}
+
+impl<T: 'static> Client<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    pub fn request(&self, msg: &T::Request) -> Result<impl Future<Output = Result<T::Response>>>
+    where
+        T: WrappedServiceTypeSupport,
+    {
+        // upgrade to actual ref. if still alive
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        client.request(msg)
+    }
+}
+
+pub struct UntypedClient
+{
+    client: Weak<Mutex<UntypedClient_>>,
+}
+
+impl UntypedClient
+{
+    pub fn request(&self, msg: serde_json::Value) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>>
+    {
+        // upgrade to actual ref. if still alive
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        client.request(msg)
+    }
+}
+
+pub fn make_client<T>(client: Weak<Mutex<TypedClient<T>>>) -> Client<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    Client {
+        client
+    }
+}
+
+pub fn make_untyped_client(client: Weak<Mutex<UntypedClient_>>) -> UntypedClient {
+    UntypedClient {
+        client
+    }
+}
+
 unsafe impl<T> Send for TypedClient<T> where T: WrappedServiceTypeSupport {}
 
 impl<T: 'static> TypedClient<T>
@@ -208,4 +269,35 @@ pub fn create_client_helper(
     } else {
         Err(Error::from_rcl_error(result))
     }
+}
+
+pub fn service_available_helper(node: &mut rcl_node_t, client: &rcl_client_t) -> Result<bool> {
+    let mut avail = false;
+    let result = unsafe {
+        rcl_service_server_is_available(node, client, &mut avail)
+    };
+
+    if result == RCL_RET_OK as i32 {
+        Ok(avail)
+    } else {
+        Err(Error::from_rcl_error(result))
+    }
+}
+
+pub fn service_available<T: 'static + WrappedServiceTypeSupport>(node: &mut rcl_node_t, client: &Client<T>) -> Result<bool> {
+    let client = client
+        .client
+        .upgrade()
+        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+    let client = client.lock().unwrap();
+    service_available_helper(node, client.handle())
+}
+
+pub fn service_available_untyped(node: &mut rcl_node_t, client: &UntypedClient) -> Result<bool> {
+    let client = client
+        .client
+        .upgrade()
+        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+    let client = client.lock().unwrap();
+    service_available_helper(node, client.handle())
 }

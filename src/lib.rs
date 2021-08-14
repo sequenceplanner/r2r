@@ -45,6 +45,7 @@ use services::*;
 
 mod clients;
 use clients::*;
+pub use clients::{Client, UntypedClient};
 
 mod action_clients;
 use action_clients::*;
@@ -63,52 +64,6 @@ pub use parameters::ParameterValue;
 
 mod clocks;
 pub use clocks::{Clock, ClockType};
-
-// Public facing client API.
-pub struct Client<T>
-where
-    T: WrappedServiceTypeSupport,
-{
-    client_: Weak<Mutex<TypedClient<T>>>,
-}
-
-impl<T: 'static> Client<T>
-where
-    T: WrappedServiceTypeSupport,
-{
-    pub fn request(&self, msg: &T::Request) -> Result<impl Future<Output = Result<T::Response>>>
-    where
-        T: WrappedServiceTypeSupport,
-    {
-        // upgrade to actual ref. if still alive
-        let client = self
-            .client_
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-        let mut client = client.lock().unwrap();
-        client.request(msg)
-    }
-}
-
-// Public facing client API.
-pub struct UntypedClient
-{
-    client_: Weak<Mutex<UntypedClient_>>,
-}
-
-impl UntypedClient
-{
-    pub fn request(&self, msg: serde_json::Value) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>>
-    {
-        // upgrade to actual ref. if still alive
-        let client = self
-            .client_
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-        let mut client = client.lock().unwrap();
-        client.request(msg)
-    }
-}
 
 /// Encapsulates a service request. In contrast to having a simply callback from
 /// Request -> Response types that is called synchronously, the service request
@@ -300,7 +255,6 @@ impl Node {
     }
 
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
-        // cleanup default options.
         let (res, node_handle) = {
             let mut ctx_handle = ctx.context_handle.lock().unwrap();
 
@@ -342,37 +296,11 @@ impl Node {
         }
     }
 
-    fn create_subscription_helper(
-        &mut self,
-        topic: &str,
-        ts: *const rosidl_message_type_support_t,
-    ) -> Result<rcl_subscription_t> {
-        let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
-        let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
-
-        let result = unsafe {
-            let mut subscription_options = rcl_subscription_get_default_options();
-            subscription_options.qos = rmw_qos_profile_t::default();
-            rcl_subscription_init(
-                &mut subscription_handle,
-                self.node_handle.as_mut(),
-                ts,
-                topic_c_string.as_ptr(),
-                &subscription_options,
-            )
-        };
-        if result == RCL_RET_OK as i32 {
-            Ok(subscription_handle)
-        } else {
-            Err(Error::from_rcl_error(result))
-        }
-    }
-
     pub fn subscribe<T: 'static>(&mut self, topic: &str) -> Result<impl Stream<Item = T> + Unpin>
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
+        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
         let (sender, receiver) = mpsc::channel::<T>(10);
 
         let ws = TypedSubscriber {
@@ -390,7 +318,7 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = self.create_subscription_helper(topic, T::get_ts())?;
+        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
         let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
         let ws = NativeSubscriber {
@@ -408,7 +336,7 @@ impl Node {
         topic_type: &str,
     ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let subscription_handle = self.create_subscription_helper(topic, msg.ts)?;
+        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
         let ws = UntypedSubscriber {
@@ -477,8 +405,8 @@ impl Node {
         };
 
         let client_arc = Arc::new(Mutex::new(ws));
-        self.clients.push(client_arc.clone());
-        let c = Client { client_: Arc::downgrade(&client_arc) };
+        let c = make_client(Arc::downgrade(&client_arc));
+        self.clients.push(client_arc);
         Ok(c)
     }
 
@@ -494,40 +422,17 @@ impl Node {
         };
 
         let client_arc = Arc::new(Mutex::new(client));
-        self.clients.push(client_arc.clone());
-        let c = UntypedClient { client_: Arc::downgrade(&client_arc) };
+        let c = make_untyped_client(Arc::downgrade(&client_arc));
+        self.clients.push(client_arc);
         Ok(c)
     }
 
-    fn service_available_helper(&self, client: &rcl_client_t) -> Result<bool> {
-        let mut avail = false;
-        let result = unsafe {
-            rcl_service_server_is_available(self.node_handle.as_ref(), client, &mut avail)
-        };
-
-        if result == RCL_RET_OK as i32 {
-            Ok(avail)
-        } else {
-            Err(Error::from_rcl_error(result))
-        }
+    pub fn service_available<T: 'static + WrappedServiceTypeSupport>(&mut self, client: &Client<T>) -> Result<bool> {
+        service_available(self.node_handle.as_mut(), client)
     }
 
-    pub fn service_available<T: 'static + WrappedServiceTypeSupport>(&self,client: &Client<T>) -> Result<bool> {
-        let client = client
-            .client_
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-        let client = client.lock().unwrap();
-        self.service_available_helper(client.handle())
-    }
-
-    pub fn service_available_untyped(&self, client: &UntypedClient) -> Result<bool> {
-        let client = client
-            .client_
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-        let client = client.lock().unwrap();
-        self.service_available_helper(client.handle())
+    pub fn service_available_untyped(&mut self, client: &UntypedClient) -> Result<bool> {
+        service_available_untyped(self.node_handle.as_mut(), client)
     }
 
     fn create_action_client_helper(
@@ -671,42 +576,14 @@ impl Node {
         Ok(c)
     }
 
-    fn create_publisher_helper(
-        &mut self,
-        topic: &str,
-        typesupport: *const rosidl_message_type_support_t,
-    ) -> Result<rcl_publisher_t> {
-        let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
-        let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
-
-        let result = unsafe {
-            let mut publisher_options = rcl_publisher_get_default_options();
-            publisher_options.qos = rmw_qos_profile_t::default();
-            rcl_publisher_init(
-                &mut publisher_handle,
-                self.node_handle.as_mut(),
-                typesupport,
-                topic_c_string.as_ptr(),
-                &publisher_options,
-            )
-        };
-        if result == RCL_RET_OK as i32 {
-            Ok(publisher_handle)
-        } else {
-            Err(Error::from_rcl_error(result))
-        }
-    }
-
     pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
     where
         T: WrappedTypesupport,
     {
-        let publisher_handle = self.create_publisher_helper(topic, T::get_ts())?;
-        self.pubs.push(Arc::new(publisher_handle));
-        let p = Publisher {
-            handle: Arc::downgrade(self.pubs.last().unwrap()),
-            type_: PhantomData,
-        };
+        let publisher_handle = create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+        let arc = Arc::new(publisher_handle);
+        let p = make_publisher(Arc::downgrade(&arc));
+        self.pubs.push(arc);
         Ok(p)
     }
 
@@ -715,14 +592,11 @@ impl Node {
         topic: &str,
         topic_type: &str,
     ) -> Result<PublisherUntyped> {
-        let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?; // TODO, get ts without allocating msg
-        let publisher_handle = self.create_publisher_helper(topic, dummy.ts)?;
-
-        self.pubs.push(Arc::new(publisher_handle));
-        let p = PublisherUntyped {
-            handle: Arc::downgrade(self.pubs.last().unwrap()),
-            type_: topic_type.to_owned(),
-        };
+        let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
+        let publisher_handle = create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts)?;
+        let arc = Arc::new(publisher_handle);
+        let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
+        self.pubs.push(arc);
         Ok(p)
     }
 
@@ -1250,57 +1124,6 @@ impl Drop for Node {
     }
 }
 
-impl<T: 'static> Publisher<T>
-where
-    T: WrappedTypesupport,
-{
-    pub fn publish(&self, msg: &T) -> Result<()>
-    where
-        T: WrappedTypesupport,
-    {
-        // upgrade to actual ref. if still alive
-        let publisher = self
-            .handle
-            .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
-        let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
-        let result = unsafe {
-            rcl_publish(
-                publisher.as_ref(),
-                native_msg.void_ptr(),
-                std::ptr::null_mut(),
-            )
-        };
-
-        if result == RCL_RET_OK as i32 {
-            Ok(())
-        } else {
-            eprintln!("coult not publish {}", result);
-            Err(Error::from_rcl_error(result))
-        }
-    }
-
-    pub fn publish_native(&self, msg: &WrappedNativeMsg<T>) -> Result<()>
-    where
-        T: WrappedTypesupport,
-    {
-        // upgrade to actual ref. if still alive
-        let publisher = self
-            .handle
-            .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
-
-        let result =
-            unsafe { rcl_publish(publisher.as_ref(), msg.void_ptr(), std::ptr::null_mut()) };
-        if result == RCL_RET_OK as i32 {
-            Ok(())
-        } else {
-            eprintln!("could not publish native {}", result);
-            Err(Error::from_rcl_error(result))
-        }
-    }
-}
-
 impl<T: 'static> ClientGoal<T>
 where
     T: WrappedActionTypeSupport,
@@ -1424,34 +1247,6 @@ where
             Ok(future)
         } else {
             eprintln!("coult not send goal request {}", result);
-            Err(Error::from_rcl_error(result))
-        }
-    }
-}
-
-impl PublisherUntyped {
-    pub fn publish(&self, msg: serde_json::Value) -> Result<()> {
-        // upgrade to actual ref. if still alive
-        let publisher = self
-            .handle
-            .upgrade()
-            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
-
-        let mut native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
-        native_msg.from_json(msg)?;
-
-        let result = unsafe {
-            rcl_publish(
-                publisher.as_ref(),
-                native_msg.void_ptr(),
-                std::ptr::null_mut(),
-            )
-        };
-
-        if result == RCL_RET_OK as i32 {
-            Ok(())
-        } else {
-            eprintln!("coult not publish {}", result);
             Err(Error::from_rcl_error(result))
         }
     }

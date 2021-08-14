@@ -129,3 +129,30 @@ impl Subscriber_ for UntypedSubscriber {
         }
     }
 }
+
+
+pub fn create_subscription_helper(
+    node: &mut rcl_node_t,
+    topic: &str,
+    ts: *const rosidl_message_type_support_t,
+) -> Result<rcl_subscription_t> {
+    let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
+    let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    let result = unsafe {
+        let mut subscription_options = rcl_subscription_get_default_options();
+        subscription_options.qos = rmw_qos_profile_t::default();
+        rcl_subscription_init(
+            &mut subscription_handle,
+            node,
+            ts,
+            topic_c_string.as_ptr(),
+            &subscription_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        Ok(subscription_handle)
+    } else {
+        Err(Error::from_rcl_error(result))
+    }
+}
