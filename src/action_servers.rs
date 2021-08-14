@@ -1,5 +1,36 @@
 use super::*;
 
+#[derive(Clone)]
+pub struct ActionServer<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    server: Weak<Mutex<WrappedActionServer<T>>>,
+}
+
+impl<T> ActionServer<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub fn is_valid(&self) -> Result<bool> {
+        // upgrade to actual ref. if still alive
+        let action_server = self
+            .server
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
+        let action_server = action_server.lock().unwrap();
+
+        Ok(unsafe { rcl_action_server_is_valid(&action_server.rcl_handle) })
+    }
+}
+
+pub fn make_action_server<T>(s: Weak<Mutex<WrappedActionServer<T>>>) -> ActionServer<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    ActionServer { server: s }
+}
+
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
     fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> ();
@@ -591,5 +622,30 @@ pub fn create_action_server_helper(
         Ok(server_handle)
     } else {
         Err(Error::from_rcl_error(result))
+    }
+}
+
+pub fn action_server_get_num_waits(
+    rcl_handle: &rcl_action_server_t,
+    num_subs: &mut usize,
+    num_gc: &mut usize,
+    num_timers: &mut usize,
+    num_clients: &mut usize,
+    num_services: &mut usize,
+) -> Result<()> {
+    unsafe {
+        let result = rcl_action_server_wait_set_get_num_entities(
+            rcl_handle,
+            num_subs,
+            num_gc,
+            num_timers,
+            num_clients,
+            num_services,
+        );
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
     }
 }

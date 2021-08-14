@@ -85,3 +85,20 @@ impl Drop for ContextHandle {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_context_drop() -> () {
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+        {
+            let ctx = Context::create().unwrap();
+            assert!(ctx.is_valid());
+        }
+    }
+}

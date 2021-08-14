@@ -548,3 +548,28 @@ pub fn create_action_client_helper(
         Err(Error::from_rcl_error(result))
     }
 }
+
+pub fn action_client_get_num_waits(
+    rcl_handle: &rcl_action_client_t,
+    num_subs: &mut usize,
+    num_gc: &mut usize,
+    num_timers: &mut usize,
+    num_clients: &mut usize,
+    num_services: &mut usize,
+) -> Result<()> {
+    unsafe {
+        let result = rcl_action_client_wait_set_get_num_entities(
+            rcl_handle,
+            num_subs,
+            num_gc,
+            num_timers,
+            num_clients,
+            num_services,
+        );
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
