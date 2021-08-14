@@ -564,3 +564,32 @@ where
         Ok(())
     }
 }
+
+pub fn create_action_server_helper(
+    node: &mut rcl_node_t,
+    action_name: &str,
+    clock_handle: *mut rcl_clock_t,
+    action_ts: *const rosidl_action_type_support_t,
+) -> Result<rcl_action_server_t> {
+    let mut server_handle = unsafe { rcl_action_get_zero_initialized_server() };
+    let action_name_c_string =
+        CString::new(action_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    let result = unsafe {
+        let server_options = rcl_action_server_get_default_options();
+
+        rcl_action_server_init(
+            &mut server_handle,
+            node,
+            clock_handle,
+            action_ts,
+            action_name_c_string.as_ptr(),
+            &server_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        Ok(server_handle)
+    } else {
+        Err(Error::from_rcl_error(result))
+    }
+}

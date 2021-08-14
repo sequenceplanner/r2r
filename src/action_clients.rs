@@ -1,5 +1,185 @@
 use super::*;
 
+unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
+
+#[derive(Clone)]
+pub struct ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    client: Weak<Mutex<WrappedActionClient<T>>>,
+}
+
+#[derive(Clone)]
+pub struct ClientGoal<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    client: Weak<Mutex<WrappedActionClient<T>>>,
+    pub uuid: uuid::Uuid,
+    feedback: Arc<Mutex<Option<mpsc::Receiver<T::Feedback>>>>,
+    result: Arc<Mutex<Option<oneshot::Receiver<T::Result>>>>,
+}
+
+impl<T: 'static> ClientGoal<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub fn get_status(&self) -> Result<GoalStatus> {
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+        let client = client.lock().unwrap();
+
+        Ok(client.get_goal_status(&self.uuid))
+    }
+
+    pub fn get_result(&mut self) -> Result<impl Future<Output = Result<T::Result>>> {
+        if let Some(result_channel) = self.result.lock().unwrap().take() {
+            // upgrade to actual ref. if still alive
+            let client = self
+                .client
+                .upgrade()
+                .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+            let mut client = client.lock().unwrap();
+
+            client.send_result_request(self.uuid);
+
+            Ok(result_channel.map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID))
+        } else {
+            // todo: error codes...
+            println!("already asked for the result!");
+            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
+        }
+    }
+
+    pub fn get_feedback(&self) -> Result<impl Stream<Item = T::Feedback> + Unpin> {
+        if let Some(feedback_channel) = self.feedback.lock().unwrap().take() {
+            Ok(feedback_channel)
+        } else {
+            // todo: error codes...
+            println!("someone else owns the feedback consumer stream");
+            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
+        }
+    }
+
+    pub fn cancel(&self) -> Result<impl Future<Output = Result<()>>> {
+        // upgrade to actual ref. if still alive
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+
+        client.send_cancel_request(&self.uuid)
+    }
+}
+
+impl<T: 'static> ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub fn send_goal_request(
+        &self,
+        goal: T::Goal,
+    ) -> Result<impl Future<Output = Result<ClientGoal<T>>>>
+    where
+        T: WrappedActionTypeSupport,
+    {
+        // upgrade to actual ref. if still alive
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+
+        let uuid = uuid::Uuid::new_v4();
+        let uuid_msg = unique_identifier_msgs::msg::UUID {
+            uuid: uuid.as_bytes().to_vec(),
+        };
+        let request_msg = T::make_goal_request_msg(uuid_msg, goal);
+        let native_msg = WrappedNativeMsg::<
+            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
+        >::from(&request_msg);
+        let mut seq_no = 0i64;
+        let result = unsafe {
+            rcl_action_send_goal_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no)
+        };
+
+        // set up channels
+        let (goal_req_sender, goal_req_receiver) = oneshot::channel::<
+            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
+        >();
+        let (feedback_sender, feedback_receiver) = mpsc::channel::<T::Feedback>(1);
+        client.feedback_senders.push((uuid, feedback_sender));
+        let (result_sender, result_receiver) = oneshot::channel::<T::Result>();
+        client.result_senders.push((uuid, result_sender));
+
+        if result == RCL_RET_OK as i32 {
+            client
+                .goal_response_channels
+                .push((seq_no, goal_req_sender));
+            // instead of "canceled" we return invalid client.
+            let fut_client = Weak::clone(&self.client);
+            let future = goal_req_receiver
+                .map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID)
+                .map(move |r| match r {
+                    Ok(resp) => {
+                        let (accepted, _stamp) = T::destructure_goal_response_msg(resp);
+                        if accepted {
+                            Ok(ClientGoal {
+                                client: fut_client,
+                                uuid,
+                                feedback: Arc::new(Mutex::new(Some(feedback_receiver))),
+                                result: Arc::new(Mutex::new(Some(result_receiver))),
+                            })
+                        } else {
+                            println!("goal rejected");
+                            Err(Error::RCL_RET_ACTION_GOAL_REJECTED)
+                        }
+                    }
+                    Err(e) => Err(e),
+                });
+            Ok(future)
+        } else {
+            eprintln!("coult not send goal request {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+pub fn make_action_client<T>(client: Weak<Mutex<WrappedActionClient<T>>>) -> ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    ActionClient {
+        client
+    }
+}
+
+pub fn action_server_available<T>(node: &rcl_node_t, client: &ActionClient<T>) -> Result<bool>
+where
+    T: 'static + WrappedActionTypeSupport,
+{
+    let client = client
+        .client
+        .upgrade()
+        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+    let client = client.lock().unwrap();
+    let mut avail = false;
+    let result = unsafe {
+        rcl_action_server_is_available(node, client.handle(), &mut avail)
+    };
+
+    if result == RCL_RET_OK as i32 {
+        Ok(avail)
+    } else {
+        eprintln!("coult not send request {}", result);
+        Err(Error::from_rcl_error(result))
+    }
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum GoalStatus {
     Unknown,
@@ -340,5 +520,31 @@ where
         unsafe {
             rcl_action_client_fini(&mut self.rcl_handle, node);
         }
+    }
+}
+
+pub fn create_action_client_helper(
+    node: &mut rcl_node_t,
+    action_name: &str,
+    action_ts: *const rosidl_action_type_support_t,
+) -> Result<rcl_action_client_t> {
+    let mut client_handle = unsafe { rcl_action_get_zero_initialized_client() };
+    let action_name_c_string =
+        CString::new(action_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    let result = unsafe {
+        let client_options = rcl_action_client_get_default_options();
+        rcl_action_client_init(
+            &mut client_handle,
+            node,
+            action_ts,
+            action_name_c_string.as_ptr(),
+            &client_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        Ok(client_handle)
+    } else {
+        Err(Error::from_rcl_error(result))
     }
 }

@@ -1,5 +1,33 @@
 use super::*;
 
+/// Encapsulates a service request. In contrast to having a simply callback from
+/// Request -> Response types that is called synchronously, the service request
+/// can be moved around and completed asynchronously.
+pub struct ServiceRequest<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    pub message: T::Request,
+    request_id: rmw_request_id_t,
+    response_sender: oneshot::Sender<(rmw_request_id_t, T::Response)>,
+}
+
+impl<T> ServiceRequest<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    /// Complete the service request, consuming the request in the process.
+    /// The reply is sent back on the next "ros spin".
+    pub fn respond(self, msg: T::Response) {
+        match self.response_sender.send((self.request_id, msg)) {
+            Err(_) => {
+                println!("service response receiver dropped");
+            }
+            _ => {}
+        }
+    }
+}
+
 pub trait Service_ {
     fn handle(&self) -> &rcl_service_t;
     fn send_completed_responses(&mut self) -> ();
@@ -87,5 +115,31 @@ where
         unsafe {
             rcl_service_fini(&mut self.rcl_handle, node);
         }
+    }
+}
+
+pub fn create_service_helper(
+    node: &mut rcl_node_t,
+    service_name: &str,
+    service_ts: *const rosidl_service_type_support_t,
+) -> Result<rcl_service_t> {
+    let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
+    let service_name_c_string =
+        CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    let result = unsafe {
+        let service_options = rcl_service_get_default_options();
+        rcl_service_init(
+            &mut service_handle,
+            node,
+            service_ts,
+            service_name_c_string.as_ptr(),
+            &service_options,
+        )
+    };
+    if result == RCL_RET_OK as i32 {
+        Ok(service_handle)
+    } else {
+        Err(Error::from_rcl_error(result))
     }
 }
