@@ -7,7 +7,7 @@ pub struct Node {
     // the node owns the subscribers
     subs: Vec<Box<dyn Subscriber_>>,
     // services,
-    services: Vec<Box<dyn Service_>>,
+    services: Vec<Arc<Mutex<dyn Service_>>>,
     // service clients
     clients: Vec<Arc<Mutex<dyn Client_>>>,
     // action clients
@@ -226,7 +226,7 @@ impl Node {
             sender,
         };
 
-        self.services.push(Box::new(ws));
+        self.services.push(Arc::new(Mutex::new(ws)));
         Ok(receiver)
     }
 
@@ -302,10 +302,7 @@ impl Node {
     pub fn create_action_server<T: 'static>(
         &mut self,
         action_name: &str,
-        accept_goal_cb: Box<dyn FnMut(&uuid::Uuid, &T::Goal) -> bool>,
-        accept_cancel_cb: Box<dyn FnMut(&ServerGoal<T>) -> bool>,
-        goal_cb: Box<dyn FnMut(ServerGoal<T>)>,
-    ) -> Result<ActionServer<T>>
+    ) -> Result<impl Stream<Item = GoalRequest<T>> + Unpin>
     where
         T: WrappedActionTypeSupport,
     {
@@ -323,23 +320,24 @@ impl Node {
         }
         let mut clock_handle = Box::new(unsafe { clock_handle.assume_init() });
 
+        let (goal_request_sender, goal_request_receiver) = mpsc::channel::<GoalRequest<T>>(10);
+
         let server_handle =
             create_action_server_helper(self.node_handle.as_mut(), action_name, clock_handle.as_mut(), T::get_ts())?;
         let server = WrappedActionServer::<T> {
             rcl_handle: server_handle,
             clock_handle,
-            accept_goal_cb,
-            accept_cancel_cb,
-            goal_cb,
+            goal_request_sender,
+            active_cancel_requests: Vec::new(),
+            cancel_senders: HashMap::new(),
             goals: HashMap::new(),
             result_msgs: HashMap::new(),
             result_requests: HashMap::new(),
         };
 
         let server_arc = Arc::new(Mutex::new(server));
-        let s = make_action_server(Arc::downgrade(&server_arc));
         self.action_servers.push(server_arc);
-        Ok(s)
+        Ok(goal_request_receiver)
     }
 
     pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
@@ -367,9 +365,9 @@ impl Node {
     }
 
     pub fn spin_once(&mut self, timeout: Duration) {
-        // first handle any completed service responses
-        for s in &mut self.services {
-            s.send_completed_responses();
+        // first handle any completed action cancellation responses
+        for a in &mut self.action_servers {
+            a.lock().unwrap().send_completed_cancel_requests();
         }
 
         let timeout = timeout.as_nanos() as i64;
@@ -482,7 +480,7 @@ impl Node {
 
         for s in &self.services {
             unsafe {
-                rcl_wait_set_add_service(&mut ws, s.handle(), std::ptr::null_mut());
+                rcl_wait_set_add_service(&mut ws, s.lock().unwrap().handle(), std::ptr::null_mut());
             }
         }
 
@@ -572,7 +570,8 @@ impl Node {
         let ws_services = unsafe { std::slice::from_raw_parts(ws.services, self.services.len()) };
         for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
             if ws_s != &std::ptr::null() {
-                s.handle_request();
+                let mut service = s.lock().unwrap();
+                service.handle_request(s.clone());
             }
         }
 
@@ -815,7 +814,7 @@ impl Drop for Node {
             s.destroy(&mut self.node_handle);
         }
         for s in &mut self.services {
-            s.destroy(&mut self.node_handle);
+            s.lock().unwrap().destroy(&mut self.node_handle);
         }
         for t in &mut self.timers {
             // TODO: check return values

@@ -52,7 +52,7 @@ use action_clients::*;
 
 mod action_servers;
 use action_servers::*;
-pub use action_servers::ServerGoal;
+pub use action_servers::{ActionServer, GoalRequest, ServerGoal, CancelRequest};
 
 mod context;
 pub use context::Context;

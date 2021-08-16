@@ -9,29 +9,26 @@ where
 {
     pub message: T::Request,
     request_id: rmw_request_id_t,
-    response_sender: oneshot::Sender<(rmw_request_id_t, T::Response)>,
+    service: Weak<Mutex<dyn Service_>>,
 }
 
 impl<T> ServiceRequest<T>
 where
-    T: WrappedServiceTypeSupport,
+    T: 'static + WrappedServiceTypeSupport,
 {
     /// Complete the service request, consuming the request in the process.
-    /// The reply is sent back on the next "ros spin".
-    pub fn respond(self, msg: T::Response) {
-        match self.response_sender.send((self.request_id, msg)) {
-            Err(_) => {
-                println!("service response receiver dropped");
-            }
-            _ => {}
-        }
+    pub fn respond(self, msg: T::Response) -> Result<()> {
+        let service = self.service.upgrade().ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
+        let mut service = service.lock().unwrap();
+        let native_msg = WrappedNativeMsg::<T::Response>::from(&msg);
+        service.send_response(self.request_id, Box::new(native_msg))
     }
 }
 
 pub trait Service_ {
     fn handle(&self) -> &rcl_service_t;
-    fn send_completed_responses(&mut self) -> ();
-    fn handle_request(&mut self) -> ();
+    fn send_response(&mut self, request_id: rmw_request_id_t, msg: Box<dyn VoidPtr>) -> Result<()>;
+    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 }
 
@@ -52,37 +49,22 @@ where
         &self.rcl_handle
     }
 
-    fn send_completed_responses(&mut self) -> () {
-        let mut to_send = vec![];
-        self.outstanding_requests.retain_mut(|r| {
-            match r.try_recv() {
-                Ok(Some(resp)) => {
-                    to_send.push(resp);
-                    false // done with this.
-                }
-                Ok(None) => true, // keep message, waiting for service
-                Err(_) => false,  // channel canceled
-            }
-        });
-
-        for (mut req_id, msg) in to_send {
-            let mut native_response = WrappedNativeMsg::<T::Response>::from(&msg);
-            let res = unsafe {
-                rcl_send_response(
-                    &self.rcl_handle,
-                    &mut req_id,
-                    native_response.void_ptr_mut(),
-                )
-            };
-
-            // TODO
-            if res != RCL_RET_OK as i32 {
-                eprintln!("could not send service response {}", res);
-            }
+    fn send_response(&mut self, mut request_id: rmw_request_id_t, mut msg: Box<dyn VoidPtr>) -> Result<()> {
+        let res = unsafe {
+            rcl_send_response(
+                &self.rcl_handle,
+                &mut request_id,
+                msg.void_ptr_mut(),
+            )
+        };
+        if res == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            Err(Error::from_rcl_error(res))
         }
     }
 
-    fn handle_request(&mut self) -> () {
+    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> () {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut request_msg = WrappedNativeMsg::<T::Request>::new();
 
@@ -96,13 +78,10 @@ where
         if ret == RCL_RET_OK as i32 {
             let request_id = unsafe { request_id.assume_init() };
             let request_msg = T::Request::from_native(&request_msg);
-            let (response_sender, response_receiver) =
-                oneshot::channel::<(rmw_request_id_t, T::Response)>();
-            self.outstanding_requests.push(response_receiver);
             let request = ServiceRequest::<T> {
                 message: request_msg,
                 request_id,
-                response_sender,
+                service: Arc::downgrade(&service)
             };
             match self.sender.try_send(request) {
                 Err(e) => eprintln!("warning: could not send service request ({})", e),

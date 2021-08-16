@@ -17,8 +17,6 @@ where
 {
     client: Weak<Mutex<WrappedActionClient<T>>>,
     pub uuid: uuid::Uuid,
-    feedback: Arc<Mutex<Option<mpsc::Receiver<T::Feedback>>>>,
-    result: Arc<Mutex<Option<oneshot::Receiver<T::Result>>>>,
 }
 
 impl<T: 'static> ClientGoal<T>
@@ -33,35 +31,6 @@ where
         let client = client.lock().unwrap();
 
         Ok(client.get_goal_status(&self.uuid))
-    }
-
-    pub fn get_result(&mut self) -> Result<impl Future<Output = Result<T::Result>>> {
-        if let Some(result_channel) = self.result.lock().unwrap().take() {
-            // upgrade to actual ref. if still alive
-            let client = self
-                .client
-                .upgrade()
-                .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
-            let mut client = client.lock().unwrap();
-
-            client.send_result_request(self.uuid);
-
-            Ok(result_channel.map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID))
-        } else {
-            // todo: error codes...
-            println!("already asked for the result!");
-            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
-        }
-    }
-
-    pub fn get_feedback(&self) -> Result<impl Stream<Item = T::Feedback> + Unpin> {
-        if let Some(feedback_channel) = self.feedback.lock().unwrap().take() {
-            Ok(feedback_channel)
-        } else {
-            // todo: error codes...
-            println!("someone else owns the feedback consumer stream");
-            Err(Error::RCL_RET_ACTION_CLIENT_INVALID)
-        }
     }
 
     pub fn cancel(&self) -> Result<impl Future<Output = Result<()>>> {
@@ -83,7 +52,13 @@ where
     pub fn send_goal_request(
         &self,
         goal: T::Goal,
-    ) -> Result<impl Future<Output = Result<ClientGoal<T>>>>
+    ) -> Result<
+        impl Future<Output = Result<
+                (
+                    ClientGoal<T>,
+                    impl Future<Output = Result<(GoalStatus, T::Result)>>,
+                    impl Stream<Item = T::Feedback> + Unpin,
+                )>>>
     where
         T: WrappedActionTypeSupport,
     {
@@ -111,9 +86,9 @@ where
         let (goal_req_sender, goal_req_receiver) = oneshot::channel::<
             <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
         >();
-        let (feedback_sender, feedback_receiver) = mpsc::channel::<T::Feedback>(1);
+        let (feedback_sender, feedback_receiver) = mpsc::channel::<T::Feedback>(10);
         client.feedback_senders.push((uuid, feedback_sender));
-        let (result_sender, result_receiver) = oneshot::channel::<T::Result>();
+        let (result_sender, result_receiver) = oneshot::channel::<(GoalStatus, T::Result)>();
         client.result_senders.push((uuid, result_sender));
 
         if result == RCL_RET_OK as i32 {
@@ -128,12 +103,21 @@ where
                     Ok(resp) => {
                         let (accepted, _stamp) = T::destructure_goal_response_msg(resp);
                         if accepted {
-                            Ok(ClientGoal {
+                            // on goal accept we immediately send the result request
+                            {
+                                let c = fut_client
+                                    .upgrade()
+                                    .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+                                let mut c = c.lock().unwrap();
+                                c.send_result_request(uuid.clone());
+                            }
+
+                            Ok((ClientGoal {
                                 client: fut_client,
                                 uuid,
-                                feedback: Arc::new(Mutex::new(Some(feedback_receiver))),
-                                result: Arc::new(Mutex::new(Some(result_receiver))),
-                            })
+                            }, result_receiver
+                                .map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID),
+                                feedback_receiver))
                         } else {
                             println!("goal rejected");
                             Err(Error::RCL_RET_ACTION_GOAL_REJECTED)
@@ -219,6 +203,22 @@ impl GoalStatus {
     }
 }
 
+impl std::fmt::Display for GoalStatus {
+    fn fmt(&self, fmtr: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            GoalStatus::Unknown => "unknown",
+            GoalStatus::Accepted => "accepted",
+            GoalStatus::Executing => "executing",
+            GoalStatus::Canceling => "canceling",
+            GoalStatus::Succeeded => "succeeded",
+            GoalStatus::Canceled => "canceled",
+            GoalStatus::Aborted => "aborted",
+        };
+
+        write!(fmtr, "{}", s)
+    }
+}
+
 pub struct WrappedActionClient<T>
 where
     T: WrappedActionTypeSupport,
@@ -233,7 +233,7 @@ where
     pub cancel_response_channels: Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
     pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<T::Feedback>)>,
     pub result_requests: Vec<(i64, uuid::Uuid)>,
-    pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<T::Result>)>,
+    pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<(GoalStatus, T::Result)>)>,
     pub goal_status: HashMap<uuid::Uuid, GoalStatus>,
 }
 
@@ -469,15 +469,10 @@ where
                     let response = <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
                     let (status, result) = T::destructure_result_response_msg(response);
                     let status = GoalStatus::from_rcl(status);
-                    if status != GoalStatus::Succeeded {
-                        println!("goal status failed: {:?}, result: {:?}", status, result);
-                        // this will drop the sender which makes the receiver fail with "canceled"
-                    } else {
-                        match sender.send(result) {
-                            Ok(()) => {}
-                            Err(e) => {
-                                println!("error sending result to action client: {:?}", e);
-                            }
+                    match sender.send((status, result)) {
+                        Ok(()) => {}
+                        Err(e) => {
+                            println!("error sending result to action client: {:?}", e);
                         }
                     }
                 }

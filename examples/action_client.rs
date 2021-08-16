@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!("action service available.");
 
-    let goal = Fibonacci::Goal { order: 10 };
+    let goal = Fibonacci::Goal { order: 5 };
     println!("sending goal: {:?}", goal);
     let goal_fut = client.send_goal_request(goal)?;
 
@@ -30,14 +30,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let task_spawner = spawner.clone();
     let task_done = done.clone();
     spawner.spawn_local(async move {
-        let mut goal = goal_fut.await.unwrap(); // assume success
+        let (goal, result, feedback) = goal_fut.await.unwrap(); // assume success
 
         println!("goal accepted: {}", goal.uuid);
         // process feedback stream in its own task
         let nested_goal = goal.clone();
         let nested_task_done = task_done.clone();
         task_spawner
-            .spawn_local(goal.get_feedback().unwrap().for_each(move |msg| {
+            .spawn_local(feedback.for_each(move |msg| {
                 let nested_task_done = nested_task_done.clone();
                 let nested_goal = nested_goal.clone();
                 async move {
@@ -47,8 +47,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         nested_goal.get_status()
                     );
 
-                    // cancel the goal before it finishes. (comment out to complete the goal)
-                    if msg.sequence.len() == 8 {
+                    // 50/50 that cancel the goal before it finishes.
+                    if msg.sequence.len() == 4 && rand::random::<bool>() {
                         nested_goal
                             .cancel()
                             .unwrap()
@@ -64,10 +64,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap();
 
         // await result in this task
-        let result = goal.get_result().unwrap().await;
-        match result {
-            Ok(msg) => {
-                println!("got result {:?}", msg);
+        match result.await {
+            Ok((status, msg)) => {
+                println!("got result {} with msg {:?}", status, msg);
                 *task_done.lock().unwrap() = true;
             }
             Err(e) => println!("action failed: {:?}", e),

@@ -1,4 +1,7 @@
 use super::*;
+// use core::pin::Pin;
+// use futures::prelude::*;
+use futures::future::{join_all, JoinAll};
 
 #[derive(Clone)]
 pub struct ActionServer<T>
@@ -24,22 +27,146 @@ where
     }
 }
 
-pub fn make_action_server<T>(s: Weak<Mutex<WrappedActionServer<T>>>) -> ActionServer<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    ActionServer { server: s }
-}
-
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
+    fn handle_mut(&mut self) -> &mut rcl_action_server_t;
     fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> ();
+    fn send_completed_cancel_requests(&mut self) -> ();
     fn handle_cancel_request(&mut self) -> ();
     fn handle_result_request(&mut self) -> ();
     fn handle_goal_expired(&mut self) -> ();
     fn publish_status(&self) -> ();
+    fn set_goal_state(
+        &mut self,
+        uuid: &uuid::Uuid,
+        new_state: rcl_action_goal_event_t,
+    ) -> Result<()>;
     fn add_result(&mut self, uuid: uuid::Uuid, msg: Box<dyn VoidPtr>) -> ();
+    fn cancel_goal(&mut self, uuid: &uuid::Uuid);
+    fn is_cancelling(&self, uuid: &uuid::Uuid) -> Result<bool>;
+    fn add_goal_handle(
+        &mut self,
+        uuid: uuid::Uuid,
+        goal_handle: *mut rcl_action_goal_handle_t,
+    ) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t);
+}
+
+pub struct CancelRequest {
+    pub uuid: uuid::Uuid,
+    response_sender: oneshot::Sender<(uuid::Uuid, bool)>,
+}
+
+impl CancelRequest {
+    /// Accepts the cancel request. The action server should now cancel the corresponding goal.
+    pub fn accept(self) {
+        match self.response_sender.send((self.uuid, true)) {
+            Err(_) => eprintln!("warning: could not send goal canellation accept msg"),
+            _ => (),
+        }
+    }
+    /// Rejects the cancel request.
+    pub fn reject(self) {
+        match self.response_sender.send((self.uuid, false)) {
+            Err(_) => eprintln!("warning: could not send goal cancellation rejection"),
+            _ => (),
+        }
+    }
+}
+
+pub struct GoalRequest<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    pub uuid: uuid::Uuid,
+    pub goal: T::Goal,
+    cancel_requests: mpsc::Receiver<CancelRequest>,
+    server: Weak<Mutex<dyn ActionServer_>>,
+    request_id: rmw_request_id_t,
+}
+
+impl<T: 'static> GoalRequest<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    /// Accept the goal request and become a ServerGoal.
+    /// Returns a handle to the goal and a stream on which cancel requests can be received.
+    pub fn accept(mut self) -> Result<(ServerGoal<T>, impl Stream<Item = CancelRequest> + Unpin)> {
+        let uuid_msg = unique_identifier_msgs::msg::UUID {
+            uuid: self.uuid.as_bytes().to_vec(),
+        };
+        let time = builtin_interfaces::msg::Time::default();
+        let goal_info = action_msgs::msg::GoalInfo {
+            goal_id: uuid_msg,
+            stamp: time.clone(),
+        };
+        let native_goal_info = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::from(&goal_info);
+
+        let server = self.server.upgrade().unwrap(); // todo fixme
+        let mut server = server.lock().unwrap();
+
+        let goal_handle: *mut rcl_action_goal_handle_t =
+            unsafe { rcl_action_accept_new_goal(server.handle_mut(), &*native_goal_info) };
+
+        // send response
+        let response_msg = T::make_goal_response_msg(true, time);
+        let mut response_msg = WrappedNativeMsg::<
+            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
+        >::from(&response_msg);
+
+        let ret = unsafe {
+            rcl_action_send_goal_response(
+                server.handle_mut(),
+                &mut self.request_id,
+                response_msg.void_ptr_mut(),
+            )
+        };
+        if ret != RCL_RET_OK as i32 {
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        unsafe {
+            rcl_action_update_goal_state(goal_handle, rcl_action_goal_event_t::GOAL_EVENT_EXECUTE);
+        }
+
+        server.publish_status();
+
+        let g = ServerGoal {
+            uuid: self.uuid.clone(),
+            goal: self.goal,
+            server: self.server,
+        };
+
+        // server.goals.insert(g.uuid.clone(), goal_handle);
+        server.add_goal_handle(g.uuid.clone(), goal_handle);
+
+        return Ok((g, self.cancel_requests));
+    }
+
+    /// reject the goal request and be consumed in the process
+    pub fn reject(mut self) -> Result<()> {
+        let time = builtin_interfaces::msg::Time::default();
+        let server = self.server.upgrade().unwrap(); // todo fixme
+        let mut server = server.lock().unwrap();
+
+        let response_msg = T::make_goal_response_msg(true, time);
+        let mut response_msg = WrappedNativeMsg::<
+            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
+        >::from(&response_msg);
+
+        let ret = unsafe {
+            rcl_action_send_goal_response(
+                server.handle_mut(),
+                &mut self.request_id,
+                response_msg.void_ptr_mut(),
+            )
+        };
+        if ret != RCL_RET_OK as i32 {
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        Ok(())
+    }
 }
 
 pub struct WrappedActionServer<T>
@@ -48,10 +175,14 @@ where
 {
     pub rcl_handle: rcl_action_server_t,
     pub clock_handle: Box<rcl_clock_t>,
-    pub accept_goal_cb: Box<dyn FnMut(&uuid::Uuid, &T::Goal) -> bool>,
-    pub accept_cancel_cb: Box<dyn FnMut(&ServerGoal<T>) -> bool>,
-    pub goal_cb: Box<dyn FnMut(ServerGoal<T>)>,
-    pub goals: HashMap<uuid::Uuid, ServerGoal<T>>,
+    pub goal_request_sender: mpsc::Sender<GoalRequest<T>>,
+    pub cancel_senders: HashMap<uuid::Uuid, mpsc::Sender<CancelRequest>>,
+    pub active_cancel_requests: Vec<(
+        rmw_request_id_t,
+        action_msgs::srv::CancelGoal::Response,
+        JoinAll<oneshot::Receiver<(uuid::Uuid, bool)>>,
+    )>,
+    pub goals: HashMap<uuid::Uuid, *mut rcl_action_goal_handle_t>,
     pub result_msgs: HashMap<uuid::Uuid, Box<dyn VoidPtr>>,
     pub result_requests: HashMap<uuid::Uuid, Vec<rmw_request_id_t>>,
 }
@@ -62,6 +193,157 @@ where
 {
     fn handle(&self) -> &rcl_action_server_t {
         &self.rcl_handle
+    }
+
+    fn handle_mut(&mut self) -> &mut rcl_action_server_t {
+        &mut self.rcl_handle
+    }
+
+    fn is_cancelling(&self, uuid: &uuid::Uuid) -> Result<bool> {
+        if let Some(handle) = self.goals.get(uuid) {
+            let mut state = 0u8; // TODO: int8 STATUS_UNKNOWN   = 0;
+            let ret = unsafe { rcl_action_goal_handle_get_status(*handle, &mut state) };
+
+            if ret != RCL_RET_OK as i32 {
+                println!("action server: Failed to get goal handle state: {}", ret);
+                return Err(Error::from_rcl_error(ret));
+            }
+            return Ok(state == 3u8); // TODO: int8 STATUS_CANCELING
+        }
+        Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID)
+    }
+
+    fn cancel_goal(&mut self, uuid: &uuid::Uuid) {
+        if let Some(handle) = self.goals.remove(uuid) {
+            let ret = unsafe {
+                rcl_action_update_goal_state(
+                    handle,
+                    rcl_action_goal_event_t::GOAL_EVENT_CANCEL_GOAL,
+                )
+            };
+
+            if ret != RCL_RET_OK as i32 {
+                println!(
+                    "action server: could not cancel goal: {}",
+                    Error::from_rcl_error(ret)
+                );
+            }
+        }
+    }
+
+    fn set_goal_state(
+        &mut self,
+        uuid: &uuid::Uuid,
+        new_state: rcl_action_goal_event_t,
+    ) -> Result<()> {
+        let goal_info = action_msgs::msg::GoalInfo {
+            goal_id: unique_identifier_msgs::msg::UUID {
+                uuid: uuid.as_bytes().to_vec(),
+            },
+            ..action_msgs::msg::GoalInfo::default()
+        };
+        let goal_info_native = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::from(&goal_info);
+
+        // does this goal exist?
+        let goal_exists =
+            unsafe { rcl_action_server_goal_exists(self.handle(), &*goal_info_native) };
+
+        if !goal_exists {
+            println!("tried to publish result without a goal");
+            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
+        }
+
+        if let Some(handle) = self.goals.get(uuid) {
+            // todo: error handling
+            unsafe {
+                rcl_action_update_goal_state(*handle, new_state);
+            }
+
+            // todo: error handling
+            unsafe {
+                rcl_action_notify_goal_done(self.handle());
+            }
+
+            // send out updated statues
+            self.publish_status();
+
+            Ok(())
+        } else {
+            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
+        }
+    }
+
+    fn send_completed_cancel_requests(&mut self) {
+        let mut canceled = vec![];
+        let mut responses = vec![];
+        self.active_cancel_requests
+            .retain_mut(|(request_id, msg, fut)| {
+                println!("checking fut?");
+                let boxed = fut.boxed();
+                if let Some(results) = boxed.now_or_never() {
+                    println!("cancel answers: {:?}", results);
+
+                    let mut response_msg = msg.clone();
+                    let requested_cancels = response_msg.goals_canceling.len();
+                    for r in results {
+                        match r {
+                            Ok((uuid, do_cancel)) => {
+                                // cancel goal and filter response msg.
+                                if do_cancel {
+                                    canceled.push(uuid.clone());
+                                }
+
+                                response_msg.goals_canceling.retain(|goal_info| {
+                                    let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(
+                                        goal_info.goal_id.uuid.clone(),
+                                    ));
+                                    do_cancel && msg_uuid == uuid
+                                });
+                            }
+                            Err(oneshot::Canceled) => {
+                                eprintln!("Warning, cancel request not handled!");
+                                return false; // skip this request.
+                            }
+                        }
+                    }
+
+                    // check if all cancels were rejected.
+                    if requested_cancels >= 1 && response_msg.goals_canceling.is_empty() {
+                        response_msg.return_code = 1; // TODO: auto generate these (int8 ERROR_REJECTED=1)
+                    }
+
+                    responses.push((*request_id, response_msg));
+
+                    false
+                } else {
+                    true
+                }
+            });
+
+        canceled.iter().for_each(|uuid| self.cancel_goal(&uuid));
+        if !canceled.is_empty() {
+            // at least one goal state changed, publish a new status message
+            self.publish_status();
+        }
+
+        // send out responses
+        for (mut request_id, response_msg) in responses {
+            // send out response msg.
+            println!("sending out cancellation msg\n{:?}", response_msg);
+            let mut native_msg =
+                WrappedNativeMsg::<action_msgs::srv::CancelGoal::Response>::from(&response_msg);
+            let ret = unsafe {
+                rcl_action_send_cancel_response(
+                    &self.rcl_handle,
+                    &mut request_id,
+                    native_msg.void_ptr_mut(),
+                )
+            };
+
+            if ret != RCL_RET_OK as i32 {
+                println!("action server: could send cancel response. {}", ret);
+            }
+        }
     }
 
     fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> () {
@@ -84,69 +366,22 @@ where
         let msg = <<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request>::from_native(&request_msg);
         let (uuid_msg, goal) = T::destructure_goal_request_msg(msg);
         let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid_msg.uuid.clone()));
-        let goal_accepted = (self.accept_goal_cb)(&uuid, &goal);
-        let time = builtin_interfaces::msg::Time::default();
 
-        let goal_info = action_msgs::msg::GoalInfo {
-            goal_id: uuid_msg,
-            stamp: time.clone(),
+        let (cancel_sender, cancel_receiver) = mpsc::channel::<CancelRequest>(10);
+        self.cancel_senders.insert(uuid.clone(), cancel_sender);
+
+        let gr: GoalRequest<T> = GoalRequest {
+            uuid,
+            goal,
+            cancel_requests: cancel_receiver,
+            server: Arc::downgrade(&server),
+            request_id: unsafe { request_id.assume_init() },
         };
 
-        let native_goal_info = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::from(&goal_info);
-
-        let goal_handle: Option<*mut rcl_action_goal_handle_t> = if goal_accepted {
-            unsafe {
-                Some(rcl_action_accept_new_goal(
-                    &mut self.rcl_handle,
-                    &*native_goal_info,
-                ))
-            }
-        } else {
-            None
-        };
-
-        // send response
-        let response_msg = T::make_goal_response_msg(goal_accepted, time);
-        let mut response_msg = WrappedNativeMsg::<
-            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
-        >::from(&response_msg);
-
-        let ret = unsafe {
-            let mut request_id = request_id.assume_init();
-            rcl_action_send_goal_response(
-                &self.rcl_handle,
-                &mut request_id,
-                response_msg.void_ptr_mut(),
-            )
-        };
-        if ret != RCL_RET_OK as i32 {
-            println!("action server: failed to send goal response");
-            return;
-        }
-
-        // if we accepted the goal, update its state machine and publish all goal statuses
-        if let Some(goal_handle) = goal_handle {
-            unsafe {
-                rcl_action_update_goal_state(
-                    goal_handle,
-                    rcl_action_goal_event_t::GOAL_EVENT_EXECUTE,
-                );
-            }
-
-            self.publish_status();
-
-            // run the user supplied cb with newly created goal handle object
-            let g: ServerGoal<T> = ServerGoal {
-                uuid,
-                goal,
-                handle: Arc::new(Mutex::new(goal_handle)),
-                server: Arc::downgrade(&server),
-            };
-
-            self.goals.insert(uuid, g.clone());
-
-            // start goal callback
-            (self.goal_cb)(g);
+        // send out request.
+        match self.goal_request_sender.try_send(gr) {
+            Err(e) => eprintln!("warning: could not send service request ({})", e),
+            _ => (),
         }
     }
 
@@ -160,6 +395,8 @@ where
                 request_msg.void_ptr_mut(),
             )
         };
+
+        let request_id = unsafe { request_id.assume_init() };
 
         if ret != RCL_RET_OK as i32 {
             // this seems normal if client dies.
@@ -176,52 +413,38 @@ where
             return;
         }
 
-        let mut response_msg =
+        let response_msg =
             action_msgs::srv::CancelGoal::Response::from_native(&cancel_response.msg);
 
-        // let user filter cancelled goals.
-        let requested_cancels = response_msg.goals_canceling.len();
-        response_msg.goals_canceling.retain(|goal_info| {
-            let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(goal_info.goal_id.uuid.clone()));
-            if let Some(goal) = self.goals.get(&uuid) {
-                (self.accept_cancel_cb)(goal)
-            } else {
-                true
-            }
-        });
+        let return_channels = response_msg
+            .goals_canceling
+            .iter()
+            .flat_map(|goal_info| {
+                let uuid =
+                    uuid::Uuid::from_bytes(vec_to_uuid_bytes(goal_info.goal_id.uuid.clone()));
+                self.cancel_senders
+                    .get_mut(&uuid)
+                    .and_then(|cancel_sender| {
+                        let (s, r) = oneshot::channel::<(uuid::Uuid, bool)>();
+                        let cr = CancelRequest {
+                            uuid: uuid.clone(),
+                            response_sender: s,
+                        };
+                        match cancel_sender.try_send(cr) {
+                            Err(_) => {
+                                eprintln!("warning: could not send goal cancellation request");
+                                None
+                            }
+                            _ => Some(r),
+                        }
+                    })
+            })
+            .collect::<Vec<_>>();
 
-        response_msg.goals_canceling.iter().for_each(|goal_info| {
-            let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(goal_info.goal_id.uuid.clone()));
-            if let Some(goal) = self.goals.get_mut(&uuid) {
-                goal.set_cancel();
-            }
-        });
-
-        // check if all cancels were rejected.
-        if requested_cancels >= 1 && response_msg.goals_canceling.is_empty() {
-            response_msg.return_code = 1; // TODO: auto generate these (int8 ERROR_REJECTED=1)
-        }
-
-        if !response_msg.goals_canceling.is_empty() {
-            // at least one goal state changed, publish a new status message
-            self.publish_status();
-        }
-
-        let mut native_msg =
-            WrappedNativeMsg::<action_msgs::srv::CancelGoal::Response>::from(&response_msg);
-        let ret = unsafe {
-            let mut request_id = request_id.assume_init();
-            rcl_action_send_cancel_response(
-                &self.rcl_handle,
-                &mut request_id,
-                native_msg.void_ptr_mut(),
-            )
-        };
-
-        if ret != RCL_RET_OK as i32 {
-            println!("action server: could send cancel response. {}", ret);
-            return;
-        }
+        // because we want to reply to the caller when all goals have been either accepted or rejected,
+        // join the channels into one future that we can poll during spin.
+        self.active_cancel_requests
+            .push((request_id, response_msg, join_all(return_channels)));
     }
 
     fn handle_goal_expired(&mut self) {
@@ -239,7 +462,8 @@ where
             let gi = action_msgs::msg::GoalInfo::from_native(&goal_info);
             let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(gi.goal_id.uuid.clone()));
             println!("goal expired: {} - {}", uuid, num_expired);
-            self.goals.remove(&uuid);
+            // todo
+            // self.goals.remove(&uuid);
             self.result_msgs.remove(&uuid);
             self.result_requests.remove(&uuid);
         }
@@ -269,6 +493,14 @@ where
             }
             rcl_action_goal_status_array_fini(&mut status);
         }
+    }
+
+    fn add_goal_handle(
+        &mut self,
+        uuid: uuid::Uuid,
+        goal_handle: *mut rcl_action_goal_handle_t,
+    ) -> () {
+        self.goals.insert(uuid, goal_handle);
     }
 
     // bit of a hack...
@@ -374,7 +606,6 @@ where
 {
     pub uuid: uuid::Uuid,
     pub goal: T::Goal,
-    handle: Arc<Mutex<*mut rcl_action_goal_handle_t>>,
     server: Weak<Mutex<dyn ActionServer_>>,
 }
 
@@ -384,17 +615,14 @@ impl<T: 'static> ServerGoal<T>
 where
     T: WrappedActionTypeSupport,
 {
-    pub fn is_cancelling(&self) -> bool {
-        let mut state = 0u8; // TODO: int8 STATUS_UNKNOWN   = 0;
-        let ret = unsafe {
-            let handle = self.handle.lock().unwrap();
-            rcl_action_goal_handle_get_status(*handle, &mut state)
-        };
+    pub fn is_cancelling(&self) -> Result<bool> {
+        let action_server = self
+            .server
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
 
-        if ret != RCL_RET_OK as i32 {
-            println!("action server: Failed to get goal handle state: {}", ret);
-        }
-        return state == 3u8; // TODO: int8 STATUS_CANCELING
+        let action_server = action_server.lock().unwrap();
+        action_server.is_cancelling(&self.uuid)
     }
 
     pub fn publish_feedback(&self, msg: T::Feedback) -> Result<()>
@@ -419,26 +647,10 @@ where
             )
         };
 
-        if ret == RCL_RET_OK as i32 {
-            Ok(())
-        } else {
-            eprintln!("coult not publish {}", Error::from_rcl_error(ret));
-            Ok(()) // todo: error codes
-        }
-    }
-
-    fn set_cancel(&mut self) {
-        let ret = unsafe {
-            let handle = self.handle.lock().unwrap();
-            rcl_action_update_goal_state(*handle, rcl_action_goal_event_t::GOAL_EVENT_CANCEL_GOAL)
-        };
-
         if ret != RCL_RET_OK as i32 {
-            println!(
-                "action server: could not cancel goal: {}",
-                Error::from_rcl_error(ret)
-            );
+            eprintln!("coult not publish {}", Error::from_rcl_error(ret));
         }
+        Ok(()) // todo: error codes
     }
 
     pub fn cancel(&mut self, msg: T::Result) -> Result<()> {
@@ -486,19 +698,6 @@ where
     }
 
     pub fn abort(&mut self, msg: T::Result) -> Result<()> {
-        // todo: error handling
-        let ret = unsafe {
-            let handle = self.handle.lock().unwrap();
-            rcl_action_update_goal_state(*handle, rcl_action_goal_event_t::GOAL_EVENT_ABORT)
-        };
-
-        if ret != RCL_RET_OK as i32 {
-            println!(
-                "action server: could not cancel goal: {}",
-                Error::from_rcl_error(ret)
-            );
-        }
-
         // upgrade to actual ref. if still alive
         let action_server = self
             .server
@@ -506,31 +705,7 @@ where
             .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut action_server = action_server.lock().unwrap();
 
-        // todo: check that the goal exists
-        let goal_info = action_msgs::msg::GoalInfo {
-            goal_id: unique_identifier_msgs::msg::UUID {
-                uuid: self.uuid.as_bytes().to_vec(),
-            },
-            ..action_msgs::msg::GoalInfo::default()
-        };
-        let goal_info_native = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::from(&goal_info);
-
-        // does this goal exist?
-        let goal_exists =
-            unsafe { rcl_action_server_goal_exists(action_server.handle(), &*goal_info_native) };
-
-        if !goal_exists {
-            println!("tried to abort without a goal");
-            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
-        }
-
-        // todo: error handling
-        unsafe {
-            rcl_action_notify_goal_done(action_server.handle());
-        }
-
-        // send out updated statues
-        action_server.publish_status();
+        action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_ABORT)?;
 
         // create result message
         let result_msg = T::make_result_response_msg(6, msg); // todo: int8 STATUS_ABORTED   = 6
@@ -553,37 +728,7 @@ where
             .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut action_server = action_server.lock().unwrap();
 
-        // todo: check that the goal exists
-        let goal_info = action_msgs::msg::GoalInfo {
-            goal_id: unique_identifier_msgs::msg::UUID {
-                uuid: self.uuid.as_bytes().to_vec(),
-            },
-            ..action_msgs::msg::GoalInfo::default()
-        };
-        let goal_info_native = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::from(&goal_info);
-
-        // does this goal exist?
-        let goal_exists =
-            unsafe { rcl_action_server_goal_exists(action_server.handle(), &*goal_info_native) };
-
-        if !goal_exists {
-            println!("tried to publish result without a goal");
-            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
-        }
-
-        // todo: error handling
-        unsafe {
-            let handle = self.handle.lock().unwrap();
-            rcl_action_update_goal_state(*handle, rcl_action_goal_event_t::GOAL_EVENT_SUCCEED);
-        }
-
-        // todo: error handling
-        unsafe {
-            rcl_action_notify_goal_done(action_server.handle());
-        }
-
-        // send out updated statues
-        action_server.publish_status();
+        action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_SUCCEED)?;
 
         // create result message
         let result_msg = T::make_result_response_msg(4, msg); // todo: int8 STATUS_SUCCEEDED = 4

@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "responding with: {} + {} = {}",
                         req.message.a, req.message.b, resp.sum
                     );
-                    req.respond(resp);
+                    req.respond(resp).expect("could not send service response");
                 }
                 None => break,
             }
@@ -65,7 +65,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         };
                         // wait a bit before answering...
                         let _ret = timer2.tick().await;
-                        req.respond(resp);
+                        req.respond(resp).expect("could not send service response");
                     }
                 },
                 elapsed = timer2.tick().fuse() => {
