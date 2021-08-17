@@ -1,6 +1,4 @@
 use super::*;
-// use core::pin::Pin;
-// use futures::prelude::*;
 use futures::future::{join_all, JoinAll};
 
 #[derive(Clone)]
@@ -84,6 +82,8 @@ where
     server: Weak<Mutex<dyn ActionServer_>>,
     request_id: rmw_request_id_t,
 }
+
+unsafe impl<T> Send for GoalRequest<T> where T: WrappedActionTypeSupport {}
 
 impl<T: 'static> GoalRequest<T>
 where
