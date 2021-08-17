@@ -18,29 +18,23 @@ where
         T: WrappedServiceTypeSupport,
     {
         // upgrade to actual ref. if still alive
-        let client = self
-            .client
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
         client.request(msg)
     }
 }
 
-pub struct UntypedClient
-{
+pub struct UntypedClient {
     client: Weak<Mutex<UntypedClient_>>,
 }
 
-impl UntypedClient
-{
-    pub fn request(&self, msg: serde_json::Value) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>>
-    {
+impl UntypedClient {
+    pub fn request(
+        &self,
+        msg: serde_json::Value,
+    ) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>> {
         // upgrade to actual ref. if still alive
-        let client = self
-            .client
-            .upgrade()
-            .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();
         client.request(msg)
     }
@@ -50,15 +44,11 @@ pub fn make_client<T>(client: Weak<Mutex<TypedClient<T>>>) -> Client<T>
 where
     T: WrappedServiceTypeSupport,
 {
-    Client {
-        client
-    }
+    Client { client }
 }
 
 pub fn make_untyped_client(client: Weak<Mutex<UntypedClient_>>) -> UntypedClient {
-    UntypedClient {
-        client
-    }
+    UntypedClient { client }
 }
 
 unsafe impl<T> Send for TypedClient<T> where T: WrappedServiceTypeSupport {}
@@ -92,8 +82,10 @@ where
 unsafe impl Send for UntypedClient_ {}
 
 impl UntypedClient_ {
-    pub fn request(&mut self, msg: serde_json::Value) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>>
-    {
+    pub fn request(
+        &mut self,
+        msg: serde_json::Value,
+    ) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>> {
         let mut native_msg = (self.service_type.make_request_msg)();
         native_msg.from_json(msg)?;
 
@@ -184,15 +176,13 @@ where
     }
 }
 
-pub struct UntypedClient_
-{
+pub struct UntypedClient_ {
     pub service_type: UntypedServiceSupport,
     pub rcl_handle: rcl_client_t,
     pub response_channels: Vec<(i64, oneshot::Sender<Result<serde_json::Value>>)>,
 }
 
-impl Client_ for UntypedClient_
-{
+impl Client_ for UntypedClient_ {
     fn handle(&self) -> &rcl_client_t {
         &self.rcl_handle
     }
@@ -273,9 +263,7 @@ pub fn create_client_helper(
 
 pub fn service_available_helper(node: &mut rcl_node_t, client: &rcl_client_t) -> Result<bool> {
     let mut avail = false;
-    let result = unsafe {
-        rcl_service_server_is_available(node, client, &mut avail)
-    };
+    let result = unsafe { rcl_service_server_is_available(node, client, &mut avail) };
 
     if result == RCL_RET_OK as i32 {
         Ok(avail)
@@ -284,7 +272,10 @@ pub fn service_available_helper(node: &mut rcl_node_t, client: &rcl_client_t) ->
     }
 }
 
-pub fn service_available<T: 'static + WrappedServiceTypeSupport>(node: &mut rcl_node_t, client: &Client<T>) -> Result<bool> {
+pub fn service_available<T: 'static + WrappedServiceTypeSupport>(
+    node: &mut rcl_node_t,
+    client: &Client<T>,
+) -> Result<bool> {
     let client = client
         .client
         .upgrade()

@@ -53,12 +53,14 @@ where
         &self,
         goal: T::Goal,
     ) -> Result<
-        impl Future<Output = Result<
-                (
-                    ClientGoal<T>,
-                    impl Future<Output = Result<(GoalStatus, T::Result)>>,
-                    impl Stream<Item = T::Feedback> + Unpin,
-                )>>>
+        impl Future<
+            Output = Result<(
+                ClientGoal<T>,
+                impl Future<Output = Result<(GoalStatus, T::Result)>>,
+                impl Stream<Item = T::Feedback> + Unpin,
+            )>,
+        >,
+    >
     where
         T: WrappedActionTypeSupport,
     {
@@ -112,12 +114,14 @@ where
                                 c.send_result_request(uuid.clone());
                             }
 
-                            Ok((ClientGoal {
-                                client: fut_client,
-                                uuid,
-                            }, result_receiver
-                                .map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID),
-                                feedback_receiver))
+                            Ok((
+                                ClientGoal {
+                                    client: fut_client,
+                                    uuid,
+                                },
+                                result_receiver.map_err(|_| Error::RCL_RET_ACTION_CLIENT_INVALID),
+                                feedback_receiver,
+                            ))
                         } else {
                             println!("goal rejected");
                             Err(Error::RCL_RET_ACTION_GOAL_REJECTED)
@@ -137,9 +141,7 @@ pub fn make_action_client<T>(client: Weak<Mutex<WrappedActionClient<T>>>) -> Act
 where
     T: WrappedActionTypeSupport,
 {
-    ActionClient {
-        client
-    }
+    ActionClient { client }
 }
 
 pub fn action_server_available<T>(node: &rcl_node_t, client: &ActionClient<T>) -> Result<bool>
@@ -152,9 +154,7 @@ where
         .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
     let client = client.lock().unwrap();
     let mut avail = false;
-    let result = unsafe {
-        rcl_action_server_is_available(node, client.handle(), &mut avail)
-    };
+    let result = unsafe { rcl_action_server_is_available(node, client.handle(), &mut avail) };
 
     if result == RCL_RET_OK as i32 {
         Ok(avail)
@@ -230,7 +230,8 @@ where
             <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
         >,
     )>,
-    pub cancel_response_channels: Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
+    pub cancel_response_channels:
+        Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
     pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<T::Feedback>)>,
     pub result_requests: Vec<(i64, uuid::Uuid)>,
     pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<(GoalStatus, T::Result)>)>,
@@ -265,7 +266,10 @@ where
         *self.goal_status.get(uuid).unwrap_or(&GoalStatus::Unknown)
     }
 
-    pub fn send_cancel_request(&mut self, goal: &uuid::Uuid) -> Result<impl Future<Output = Result<()>>>
+    pub fn send_cancel_request(
+        &mut self,
+        goal: &uuid::Uuid,
+    ) -> Result<impl Future<Output = Result<()>>>
     where
         T: WrappedActionTypeSupport,
     {

@@ -44,7 +44,9 @@ pub struct PublisherUntyped {
 }
 
 pub fn make_publisher<T>(handle: Weak<rcl_publisher_t>) -> Publisher<T>
-where T: WrappedTypesupport {
+where
+    T: WrappedTypesupport,
+{
     Publisher {
         handle,
         type_: PhantomData,
@@ -52,10 +54,7 @@ where T: WrappedTypesupport {
 }
 
 pub fn make_publisher_untyped(handle: Weak<rcl_publisher_t>, type_: String) -> PublisherUntyped {
-    PublisherUntyped {
-        handle,
-        type_,
-    }
+    PublisherUntyped { handle, type_ }
 }
 
 pub fn create_publisher_helper(
@@ -83,7 +82,6 @@ pub fn create_publisher_helper(
         Err(Error::from_rcl_error(result))
     }
 }
-
 
 impl PublisherUntyped {
     pub fn publish(&self, msg: serde_json::Value) -> Result<()> {

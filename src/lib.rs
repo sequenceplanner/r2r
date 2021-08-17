@@ -23,7 +23,7 @@ use actions::*;
 use rcl::*;
 
 mod error;
-use error::*;
+pub use error::{Error, Result};
 
 mod msg_types;
 use msg_types::*;
@@ -39,8 +39,10 @@ use subscribers::*;
 
 mod publishers;
 use publishers::*;
+pub use publishers::{Publisher, PublisherUntyped};
 
 mod services;
+pub use services::ServiceRequest;
 use services::*;
 
 mod clients;
@@ -48,18 +50,19 @@ use clients::*;
 pub use clients::{Client, UntypedClient};
 
 mod action_clients;
+pub use action_clients::ActionClient;
 use action_clients::*;
 
 mod action_servers;
 use action_servers::*;
-pub use action_servers::{ActionServer, GoalRequest, ServerGoal, CancelRequest};
+pub use action_servers::{ActionServer, CancelRequest, GoalRequest, ServerGoal};
 
 mod context;
 pub use context::Context;
 
 mod parameters;
-use parameters::*;
 pub use parameters::ParameterValue;
+use parameters::*;
 
 mod clocks;
 pub use clocks::{Clock, ClockType};

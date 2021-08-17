@@ -1,6 +1,5 @@
 use super::*;
 
-
 #[derive(Debug, Clone)]
 pub struct Context {
     pub context_handle: Arc<Mutex<ContextHandle>>,

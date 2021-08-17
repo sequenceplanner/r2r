@@ -127,12 +127,8 @@ impl UntypedServiceSupport {
     where
         T: WrappedServiceTypeSupport,
     {
-        let make_request_msg = || {
-            WrappedNativeMsgUntyped::new::<T::Request>()
-        };
-        let make_response_msg = || {
-            WrappedNativeMsgUntyped::new::<T::Response>()
-        };
+        let make_request_msg = || WrappedNativeMsgUntyped::new::<T::Request>();
+        let make_response_msg = || WrappedNativeMsgUntyped::new::<T::Response>();
 
         UntypedServiceSupport {
             ts: T::get_ts(),

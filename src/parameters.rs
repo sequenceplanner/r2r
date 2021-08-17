@@ -45,18 +45,12 @@ pub fn parameter_value_from_rcl(v: &rcl_variant_t) -> ParameterValue {
         ParameterValue::IntegerArray(vals.iter().cloned().collect())
     } else if v.double_array_value != std::ptr::null_mut() {
         let vals = unsafe {
-            std::slice::from_raw_parts(
-                (*v.double_array_value).values,
-                (*v.double_array_value).size,
-            )
+            std::slice::from_raw_parts((*v.double_array_value).values, (*v.double_array_value).size)
         };
         ParameterValue::DoubleArray(vals.iter().cloned().collect())
     } else if v.string_array_value != std::ptr::null_mut() {
         let vals = unsafe {
-            std::slice::from_raw_parts(
-                (*v.string_array_value).data,
-                (*v.string_array_value).size,
-            )
+            std::slice::from_raw_parts((*v.string_array_value).data, (*v.string_array_value).size)
         };
         let s = vals
             .iter()

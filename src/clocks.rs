@@ -21,7 +21,6 @@ pub fn clock_type_to_rcl(ct: &ClockType) -> rcl_clock_type_t {
     }
 }
 
-
 impl Clock {
     pub fn create(ct: ClockType) -> Result<Clock> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();

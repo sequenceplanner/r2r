@@ -21,7 +21,8 @@ async fn requester_task(c: r2r::UntypedClient) -> Result<(), Box<dyn std::error:
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts")?;
+    let client =
+        node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts")?;
 
     // wait for service to be available
     println!("waiting for service...");

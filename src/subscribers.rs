@@ -130,7 +130,6 @@ impl Subscriber_ for UntypedSubscriber {
     }
 }
 
-
 pub fn create_subscription_helper(
     node: &mut rcl_node_t,
     topic: &str,

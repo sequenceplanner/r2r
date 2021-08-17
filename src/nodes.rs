@@ -162,7 +162,8 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+        let subscription_handle =
+            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
         let (sender, receiver) = mpsc::channel::<T>(10);
 
         let ws = TypedSubscriber {
@@ -180,7 +181,8 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+        let subscription_handle =
+            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
         let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
         let ws = NativeSubscriber {
@@ -198,7 +200,8 @@ impl Node {
         topic_type: &str,
     ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let subscription_handle = create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts)?;
+        let subscription_handle =
+            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
         let ws = UntypedSubscriber {
@@ -217,7 +220,8 @@ impl Node {
     where
         T: WrappedServiceTypeSupport,
     {
-        let service_handle = create_service_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
+        let service_handle =
+            create_service_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
         let (sender, receiver) = mpsc::channel::<ServiceRequest<T>>(10);
 
         let ws = TypedService::<T> {
@@ -234,7 +238,8 @@ impl Node {
     where
         T: WrappedServiceTypeSupport,
     {
-        let client_handle = create_client_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
+        let client_handle =
+            create_client_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
         let ws = TypedClient::<T> {
             rcl_handle: client_handle,
             response_channels: Vec::new(),
@@ -247,10 +252,14 @@ impl Node {
     }
 
     /// Create a service client without having the concrete rust type.
-    pub fn create_client_untyped(&mut self, service_name: &str, service_type: &str) -> Result<UntypedClient>
-    {
+    pub fn create_client_untyped(
+        &mut self,
+        service_name: &str,
+        service_type: &str,
+    ) -> Result<UntypedClient> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
-        let client_handle = create_client_helper(self.node_handle.as_mut(), service_name, service_type.ts)?;
+        let client_handle =
+            create_client_helper(self.node_handle.as_mut(), service_name, service_type.ts)?;
         let client = UntypedClient_ {
             service_type,
             rcl_handle: client_handle,
@@ -263,7 +272,10 @@ impl Node {
         Ok(c)
     }
 
-    pub fn service_available<T: 'static + WrappedServiceTypeSupport>(&mut self, client: &Client<T>) -> Result<bool> {
+    pub fn service_available<T: 'static + WrappedServiceTypeSupport>(
+        &mut self,
+        client: &Client<T>,
+    ) -> Result<bool> {
         service_available(self.node_handle.as_mut(), client)
     }
 
@@ -275,7 +287,8 @@ impl Node {
     where
         T: WrappedActionTypeSupport,
     {
-        let client_handle = create_action_client_helper(self.node_handle.as_mut(), action_name, T::get_ts())?;
+        let client_handle =
+            create_action_client_helper(self.node_handle.as_mut(), action_name, T::get_ts())?;
         let client = WrappedActionClient::<T> {
             rcl_handle: client_handle,
             goal_response_channels: Vec::new(),
@@ -322,8 +335,12 @@ impl Node {
 
         let (goal_request_sender, goal_request_receiver) = mpsc::channel::<GoalRequest<T>>(10);
 
-        let server_handle =
-            create_action_server_helper(self.node_handle.as_mut(), action_name, clock_handle.as_mut(), T::get_ts())?;
+        let server_handle = create_action_server_helper(
+            self.node_handle.as_mut(),
+            action_name,
+            clock_handle.as_mut(),
+            T::get_ts(),
+        )?;
         let server = WrappedActionServer::<T> {
             rcl_handle: server_handle,
             clock_handle,
@@ -344,7 +361,8 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let publisher_handle = create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+        let publisher_handle =
+            create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
         let arc = Arc::new(publisher_handle);
         let p = make_publisher(Arc::downgrade(&arc));
         self.pubs.push(arc);
@@ -501,7 +519,11 @@ impl Node {
         }
         for acs in &self.action_servers {
             unsafe {
-                rcl_action_wait_set_add_action_server(&mut ws, acs.lock().unwrap().handle(), std::ptr::null_mut());
+                rcl_action_wait_set_add_action_server(
+                    &mut ws,
+                    acs.lock().unwrap().handle(),
+                    std::ptr::null_mut(),
+                );
             }
         }
 

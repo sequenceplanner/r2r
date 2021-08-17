@@ -18,7 +18,10 @@ where
 {
     /// Complete the service request, consuming the request in the process.
     pub fn respond(self, msg: T::Response) -> Result<()> {
-        let service = self.service.upgrade().ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
+        let service = self
+            .service
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
         let mut service = service.lock().unwrap();
         let native_msg = WrappedNativeMsg::<T::Response>::from(&msg);
         service.send_response(self.request_id, Box::new(native_msg))
@@ -49,14 +52,13 @@ where
         &self.rcl_handle
     }
 
-    fn send_response(&mut self, mut request_id: rmw_request_id_t, mut msg: Box<dyn VoidPtr>) -> Result<()> {
-        let res = unsafe {
-            rcl_send_response(
-                &self.rcl_handle,
-                &mut request_id,
-                msg.void_ptr_mut(),
-            )
-        };
+    fn send_response(
+        &mut self,
+        mut request_id: rmw_request_id_t,
+        mut msg: Box<dyn VoidPtr>,
+    ) -> Result<()> {
+        let res =
+            unsafe { rcl_send_response(&self.rcl_handle, &mut request_id, msg.void_ptr_mut()) };
         if res == RCL_RET_OK as i32 {
             Ok(())
         } else {
@@ -81,7 +83,7 @@ where
             let request = ServiceRequest::<T> {
                 message: request_msg,
                 request_id,
-                service: Arc::downgrade(&service)
+                service: Arc::downgrade(&service),
             };
             match self.sender.try_send(request) {
                 Err(e) => eprintln!("warning: could not send service request ({})", e),
