@@ -3,6 +3,7 @@ use super::*;
 /// Encapsulates a service request. In contrast to having a simply callback from
 /// Request -> Response types that is called synchronously, the service request
 /// can be moved around and completed asynchronously.
+#[derive(Clone)]
 pub struct ServiceRequest<T>
 where
     T: WrappedServiceTypeSupport,
@@ -11,6 +12,8 @@ where
     request_id: rmw_request_id_t,
     service: Weak<Mutex<dyn Service_>>,
 }
+
+unsafe impl<T> Send for ServiceRequest<T> where T: WrappedServiceTypeSupport {}
 
 impl<T> ServiceRequest<T>
 where
