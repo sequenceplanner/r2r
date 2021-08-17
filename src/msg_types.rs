@@ -481,6 +481,16 @@ mod tests {
         assert_eq!(resp, resp2);
     }
 
+    #[cfg(r2r__std_srvs__srv__Empty)]
+    #[test]
+    fn test_empty_msgs() {
+        use std_srvs::srv::Empty;
+        let req = Empty::Request::default();
+        let resp = Empty::Response::default();
+        println!("req {:?}", req);
+        println!("resp {:?}", resp);
+    }
+
     #[cfg(r2r__example_interfaces__action__Fibonacci)]
     #[test]
     fn test_action_msgs() {

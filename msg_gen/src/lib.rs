@@ -233,8 +233,16 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
 
         let mut fields = String::new();
 
+        let is_empty_msg = members.len() == 1
+            && field_name(CStr::from_ptr(members[0].name_).to_str().unwrap())
+                == "structure_needs_at_least_one_member";
+
         for member in members {
             let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
             let rust_field_type = if rust_field_type == "message" {
                 let (module, prefix, name, _, _) = introspection(member.members_);
@@ -283,14 +291,25 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         }
 
         let mut from_native = String::new();
-        from_native.push_str(&format!(
-            "fn from_native(msg: &Self::CStruct) -> {} {{\n",
-            name
-        ));
+        if is_empty_msg {
+            from_native.push_str(&format!(
+                "fn from_native(_msg: &Self::CStruct) -> {} {{\n",
+                name
+            ));
+        } else {
+            from_native.push_str(&format!(
+                "fn from_native(msg: &Self::CStruct) -> {} {{\n",
+                name
+            ));
+        }
         from_native.push_str(&format!("  {} {{\n", name));
 
         for member in members {
             let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
 
             if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
@@ -368,10 +387,18 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         from_native.push_str("      }\n    }\n");
 
         let mut copy_to_native = String::new();
-        copy_to_native.push_str("fn copy_to_native(&self, msg: &mut Self::CStruct) {");
+        if is_empty_msg {
+            copy_to_native.push_str("fn copy_to_native(&self, _msg: &mut Self::CStruct) {");
+        } else {
+            copy_to_native.push_str("fn copy_to_native(&self, msg: &mut Self::CStruct) {");
+        }
 
         for member in members {
             let field_name = field_name(CStr::from_ptr((*member).name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
 
             if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
