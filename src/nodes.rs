@@ -243,6 +243,7 @@ impl Node {
         let ws = TypedClient::<T> {
             rcl_handle: client_handle,
             response_channels: Vec::new(),
+            poll_available_channels: Vec::new(),
         };
 
         let client_arc = Arc::new(Mutex::new(ws));
@@ -264,6 +265,7 @@ impl Node {
             service_type,
             rcl_handle: client_handle,
             response_channels: Vec::new(),
+            poll_available_channels: Vec::new(),
         };
 
         let client_arc = Arc::new(Mutex::new(client));
@@ -272,15 +274,13 @@ impl Node {
         Ok(c)
     }
 
-    pub fn service_available<T: 'static + WrappedServiceTypeSupport>(
+    pub fn is_available(
         &mut self,
-        client: &Client<T>,
-    ) -> Result<bool> {
-        service_available(self.node_handle.as_mut(), client)
-    }
-
-    pub fn service_available_untyped(&mut self, client: &UntypedClient) -> Result<bool> {
-        service_available_untyped(self.node_handle.as_mut(), client)
+        client: &dyn IsAvailablePollable,
+    ) -> Result<impl Future<Output = Result<()>>> {
+        let (sender, receiver) = oneshot::channel();
+        client.register_poll_available(sender)?;
+        Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
     }
 
     pub fn create_action_client<T: 'static>(&mut self, action_name: &str) -> Result<ActionClient<T>>
@@ -297,19 +297,13 @@ impl Node {
             result_senders: Vec::new(),
             result_requests: Vec::new(),
             goal_status: HashMap::new(),
+            poll_available_channels: Vec::new(),
         };
 
         let client_arc = Arc::new(Mutex::new(client));
         self.action_clients.push(client_arc.clone());
         let c = make_action_client(Arc::downgrade(&client_arc));
         Ok(c)
-    }
-
-    pub fn action_server_available<T: 'static + WrappedActionTypeSupport>(
-        &self,
-        client: &ActionClient<T>,
-    ) -> Result<bool> {
-        action_server_available(self.node_handle.as_ref(), client)
     }
 
     pub fn create_action_server<T: 'static>(
@@ -386,6 +380,15 @@ impl Node {
         // first handle any completed action cancellation responses
         for a in &mut self.action_servers {
             a.lock().unwrap().send_completed_cancel_requests();
+        }
+
+        // as well as polling any services/action servers for availability
+        for c in &mut self.clients {
+            c.lock().unwrap().poll_available(self.node_handle.as_mut());
+        }
+
+        for c in &mut self.action_clients {
+            c.lock().unwrap().poll_available(self.node_handle.as_mut());
         }
 
         let timeout = timeout.as_nanos() as i64;
@@ -815,10 +818,7 @@ impl Timer {
 // wait until there are no other owners in the cleanup procedure. The
 // next time a publisher wants to publish they will fail because the
 // value in the Arc has been dropped. Hacky but works.
-fn wait_until_unwrapped<T>(mut a: Arc<T>) -> T
-where
-    T: std::fmt::Debug,
-{
+fn wait_until_unwrapped<T>(mut a: Arc<T>) -> T {
     loop {
         match Arc::try_unwrap(a) {
             Ok(b) => return b,
@@ -859,4 +859,8 @@ impl Drop for Node {
             rcl_node_fini(self.node_handle.as_mut());
         }
     }
+}
+
+pub trait IsAvailablePollable {
+    fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()>;
 }

@@ -23,16 +23,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut timer = node.create_wall_timer(std::time::Duration::from_millis(250))?;
     let mut timer2 = node.create_wall_timer(std::time::Duration::from_millis(2000))?;
     // wait for service to be available
-    println!("waiting for service...");
-    while !node.service_available(&client)? {
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-    }
-    println!("service available.");
-
+    let service_available = node.is_available(&client)?;
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
 
     spawner.spawn_local(async move {
+        println!("waiting for delayed service...");
+        service_available.await.expect("could not await service");
+        println!("delayed service available.");
+
         loop {
             match service.next().await {
                 Some(req) => {

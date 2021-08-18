@@ -10,19 +10,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
     let client = node.create_action_client::<Fibonacci::Action>("/fibonacci")?;
+    let action_server_available = node.is_available(&client)?;
 
     // signal that we are done
     let done = Arc::new(Mutex::new(false));
-
-    println!("waiting for action service...");
-    while !node.action_server_available(&client)? {
-        std::thread::sleep(std::time::Duration::from_millis(500));
-    }
-    println!("action service available.");
-
-    let goal = Fibonacci::Goal { order: 5 };
-    println!("sending goal: {:?}", goal);
-    let goal_fut = client.send_goal_request(goal)?;
 
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
@@ -30,7 +21,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let task_spawner = spawner.clone();
     let task_done = done.clone();
     spawner.spawn_local(async move {
-        let (goal, result, feedback) = goal_fut.await.unwrap(); // assume success
+        println!("waiting for action service...");
+        action_server_available
+            .await
+            .expect("could not await action server");
+        println!("action service available.");
+
+        let goal = Fibonacci::Goal { order: 5 };
+        println!("sending goal: {:?}", goal);
+        let (goal, result, feedback) = client
+            .send_goal_request(goal)
+            .expect("could not send goal request")
+            .await
+            .expect("did not get goal");
 
         println!("goal accepted: {}", goal.uuid);
         // process feedback stream in its own task

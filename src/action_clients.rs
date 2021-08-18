@@ -144,26 +144,6 @@ where
     ActionClient { client }
 }
 
-pub fn action_server_available<T>(node: &rcl_node_t, client: &ActionClient<T>) -> Result<bool>
-where
-    T: 'static + WrappedActionTypeSupport,
-{
-    let client = client
-        .client
-        .upgrade()
-        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-    let client = client.lock().unwrap();
-    let mut avail = false;
-    let result = unsafe { rcl_action_server_is_available(node, client.handle(), &mut avail) };
-
-    if result == RCL_RET_OK as i32 {
-        Ok(avail)
-    } else {
-        eprintln!("coult not send request {}", result);
-        Err(Error::from_rcl_error(result))
-    }
-}
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum GoalStatus {
     Unknown,
@@ -236,6 +216,8 @@ where
     pub result_requests: Vec<(i64, uuid::Uuid)>,
     pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<(GoalStatus, T::Result)>)>,
     pub goal_status: HashMap<uuid::Uuid, GoalStatus>,
+
+    pub poll_available_channels: Vec<oneshot::Sender<()>>,
 }
 
 pub trait ActionClient_ {
@@ -249,6 +231,9 @@ pub trait ActionClient_ {
     fn handle_result_response(&mut self) -> ();
 
     fn send_result_request(&mut self, uuid: uuid::Uuid) -> ();
+
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
+    fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
 }
 
 use std::convert::TryInto;
@@ -515,6 +500,32 @@ where
         }
     }
 
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>) {
+        self.poll_available_channels.push(s);
+    }
+
+    fn poll_available(&mut self, node: &mut rcl_node_t) {
+        if self.poll_available_channels.is_empty() {
+            return;
+        }
+        let available = action_server_available_helper(node, self.handle());
+        match available {
+            Ok(true) => {
+                // send ok and close channels
+                while let Some(sender) = self.poll_available_channels.pop() {
+                    let _res = sender.send(()); // we ignore if receiver dropped.
+                }
+            }
+            Ok(false) => {
+                // not available...
+            }
+            Err(_) => {
+                // error, close all channels
+                self.poll_available_channels.clear();
+            }
+        }
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_action_client_fini(&mut self.rcl_handle, node);
@@ -570,5 +581,37 @@ pub fn action_client_get_num_waits(
         } else {
             Err(Error::from_rcl_error(result))
         }
+    }
+}
+
+use crate::nodes::IsAvailablePollable;
+
+impl<T: 'static> IsAvailablePollable for ActionClient<T>
+where
+    T: WrappedActionTypeSupport,
+{
+    fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()> {
+        let client = self
+            .client
+            .upgrade()
+            .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        client.register_poll_available(sender);
+        Ok(())
+    }
+}
+
+pub fn action_server_available_helper(
+    node: &rcl_node_t,
+    client: &rcl_action_client_t,
+) -> Result<bool> {
+    let mut avail = false;
+    let result = unsafe { rcl_action_server_is_available(node, client, &mut avail) };
+
+    if result == RCL_RET_OK as i32 {
+        Ok(avail)
+    } else {
+        eprintln!("coult not check if action server is available {}", result);
+        Err(Error::from_rcl_error(result))
     }
 }

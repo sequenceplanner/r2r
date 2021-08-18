@@ -109,6 +109,8 @@ impl UntypedClient_ {
 pub trait Client_ {
     fn handle(&self) -> &rcl_client_t;
     fn handle_response(&mut self) -> ();
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
+    fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 }
 
@@ -118,6 +120,7 @@ where
 {
     pub rcl_handle: rcl_client_t,
     pub response_channels: Vec<(i64, oneshot::Sender<T::Response>)>,
+    pub poll_available_channels: Vec<oneshot::Sender<()>>,
 }
 
 impl<T: 'static> Client_ for TypedClient<T>
@@ -169,6 +172,32 @@ where
         } // TODO handle failure.
     }
 
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>) {
+        self.poll_available_channels.push(s);
+    }
+
+    fn poll_available(&mut self, node: &mut rcl_node_t) {
+        if self.poll_available_channels.is_empty() {
+            return;
+        }
+        let available = service_available_helper(node, self.handle());
+        match available {
+            Ok(true) => {
+                // send ok and close channels
+                while let Some(sender) = self.poll_available_channels.pop() {
+                    let _res = sender.send(()); // we ignore if receiver dropped.
+                }
+            }
+            Ok(false) => {
+                // not available...
+            }
+            Err(_) => {
+                // error, close all channels
+                self.poll_available_channels.clear();
+            }
+        }
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_client_fini(&mut self.rcl_handle, node);
@@ -180,6 +209,7 @@ pub struct UntypedClient_ {
     pub service_type: UntypedServiceSupport,
     pub rcl_handle: rcl_client_t,
     pub response_channels: Vec<(i64, oneshot::Sender<Result<serde_json::Value>>)>,
+    pub poll_available_channels: Vec<oneshot::Sender<()>>,
 }
 
 impl Client_ for UntypedClient_ {
@@ -228,6 +258,32 @@ impl Client_ for UntypedClient_ {
         } // TODO handle failure.
     }
 
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>) {
+        self.poll_available_channels.push(s);
+    }
+
+    fn poll_available(&mut self, node: &mut rcl_node_t) {
+        if self.poll_available_channels.is_empty() {
+            return;
+        }
+        let available = service_available_helper(node, self.handle());
+        match available {
+            Ok(true) => {
+                // send ok and close channels
+                while let Some(sender) = self.poll_available_channels.pop() {
+                    let _res = sender.send(()); // we ignore if receiver dropped.
+                }
+            }
+            Ok(false) => {
+                // not available...
+            }
+            Err(_) => {
+                // error, close all channels
+                self.poll_available_channels.clear();
+            }
+        }
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_client_fini(&mut self.rcl_handle, node);
@@ -272,23 +328,25 @@ pub fn service_available_helper(node: &mut rcl_node_t, client: &rcl_client_t) ->
     }
 }
 
-pub fn service_available<T: 'static + WrappedServiceTypeSupport>(
-    node: &mut rcl_node_t,
-    client: &Client<T>,
-) -> Result<bool> {
-    let client = client
-        .client
-        .upgrade()
-        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-    let client = client.lock().unwrap();
-    service_available_helper(node, client.handle())
+use crate::nodes::IsAvailablePollable;
+
+impl<T: 'static> IsAvailablePollable for Client<T>
+where
+    T: WrappedServiceTypeSupport,
+{
+    fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()> {
+        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        client.register_poll_available(sender);
+        Ok(())
+    }
 }
 
-pub fn service_available_untyped(node: &mut rcl_node_t, client: &UntypedClient) -> Result<bool> {
-    let client = client
-        .client
-        .upgrade()
-        .ok_or(Error::RCL_RET_CLIENT_INVALID)?;
-    let client = client.lock().unwrap();
-    service_available_helper(node, client.handle())
+impl IsAvailablePollable for UntypedClient {
+    fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()> {
+        let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
+        let mut client = client.lock().unwrap();
+        client.register_poll_available(sender);
+        Ok(())
+    }
 }
