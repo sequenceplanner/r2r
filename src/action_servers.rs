@@ -149,7 +149,7 @@ where
         let server = self.server.upgrade().unwrap(); // todo fixme
         let mut server = server.lock().unwrap();
 
-        let response_msg = T::make_goal_response_msg(true, time);
+        let response_msg = T::make_goal_response_msg(false, time);
         let mut response_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
         >::from(&response_msg);
@@ -278,11 +278,8 @@ where
         let mut responses = vec![];
         self.active_cancel_requests
             .retain_mut(|(request_id, msg, fut)| {
-                println!("checking fut?");
                 let boxed = fut.boxed();
                 if let Some(results) = boxed.now_or_never() {
-                    println!("cancel answers: {:?}", results);
-
                     let mut response_msg = msg.clone();
                     let requested_cancels = response_msg.goals_canceling.len();
                     for r in results {
@@ -329,7 +326,6 @@ where
         // send out responses
         for (mut request_id, response_msg) in responses {
             // send out response msg.
-            println!("sending out cancellation msg\n{:?}", response_msg);
             let mut native_msg =
                 WrappedNativeMsg::<action_msgs::srv::CancelGoal::Response>::from(&response_msg);
             let ret = unsafe {

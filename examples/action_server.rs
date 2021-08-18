@@ -49,12 +49,13 @@ async fn fibonacci_server(
                     "Got goal request with order {}, goal id: {}",
                     req.goal.order, req.uuid
                 );
-                // reject high orders
-                if req.goal.order >= 100 {
-                    req.reject().unwrap();
+                // 1/4 chance that we reject the goal for testing.
+                if rand::random::<bool>() && rand::random::<bool>() {
+                    println!("rejecting goal");
+                    req.reject().expect("could not reject goal");
                     continue;
                 }
-                let (mut g, mut cancel) = req.accept().unwrap();
+                let (mut g, mut cancel) = req.accept().expect("could not accept goal");
 
                 let goal_fut = spawner
                     .spawn_local_with_handle(run_goal(node.clone(), g.clone()))

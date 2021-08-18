@@ -18,6 +18,7 @@ pub mod generated_msgs {
         env!("OUT_DIR"),
         "/_r2r_generated_service_helper.rs"
     ));
+    include!(concat!(env!("OUT_DIR"), "/_r2r_generated_action_helper.rs"));
 }
 
 use generated_msgs::{builtin_interfaces, unique_identifier_msgs};
@@ -134,6 +135,135 @@ impl UntypedServiceSupport {
             ts: T::get_ts(),
             make_request_msg,
             make_response_msg,
+        }
+    }
+}
+
+// For now only the client side is implemented.
+pub struct UntypedActionSupport {
+    pub(crate) ts: &'static rosidl_action_type_support_t,
+
+    pub(crate) make_goal_request_msg: Box<
+        dyn Fn(unique_identifier_msgs::msg::UUID, serde_json::Value) -> WrappedNativeMsgUntyped,
+    >,
+    pub(crate) make_goal_response_msg: Box<dyn Fn() -> WrappedNativeMsgUntyped>,
+    pub(crate) destructure_goal_response_msg:
+        Box<dyn Fn(WrappedNativeMsgUntyped) -> (bool, builtin_interfaces::msg::Time)>,
+
+    pub(crate) make_feedback_msg: Box<dyn Fn() -> WrappedNativeMsgUntyped>,
+    pub(crate) destructure_feedback_msg: Box<
+        dyn Fn(
+            WrappedNativeMsgUntyped,
+        ) -> (unique_identifier_msgs::msg::UUID, Result<serde_json::Value>),
+    >,
+
+    pub(crate) make_result_request_msg:
+        Box<dyn Fn(unique_identifier_msgs::msg::UUID) -> WrappedNativeMsgUntyped>,
+    pub(crate) make_result_response_msg: Box<dyn Fn() -> WrappedNativeMsgUntyped>,
+    pub(crate) destructure_result_response_msg:
+        Box<dyn Fn(WrappedNativeMsgUntyped) -> (i8, Result<serde_json::Value>)>,
+}
+
+impl UntypedActionSupport {
+    fn new<T>() -> Self
+    where
+        T: WrappedActionTypeSupport,
+    {
+        // TODO: this is terrible. These closures perform json (de)serialization just to move the data.
+        // FIX.
+
+        let make_goal_request_msg = Box::new(|goal_id, goal| {
+            let goal_msg: T::Goal =
+                serde_json::from_value(goal).expect("TODO: move this error handling");
+            let request_msg = T::make_goal_request_msg(goal_id, goal_msg);
+            let json =
+                serde_json::to_value(request_msg.clone()).expect("TODO: move this error handling");
+            let mut native_untyped = WrappedNativeMsgUntyped::new::<
+                <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
+            >();
+            native_untyped
+                .from_json(json)
+                .expect("TODO: move this error handling");
+            native_untyped
+        });
+
+        let make_goal_response_msg = Box::new(|| {
+            WrappedNativeMsgUntyped::new::<
+                <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
+            >()
+        });
+
+        let destructure_goal_response_msg = Box::new(|msg: WrappedNativeMsgUntyped| {
+            let msg = unsafe {
+                <<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response>
+                 ::from_native(&*(msg.msg as *const <<<T as WrappedActionTypeSupport>::SendGoal as
+                                                      WrappedServiceTypeSupport>::Response as WrappedTypesupport>::CStruct))
+            };
+            T::destructure_goal_response_msg(msg)
+        });
+
+        let make_feedback_msg = Box::new(|| WrappedNativeMsgUntyped::new::<T::FeedbackMessage>());
+
+        let destructure_feedback_msg = Box::new(|msg: WrappedNativeMsgUntyped| {
+            let msg = unsafe {
+                T::FeedbackMessage::from_native(
+                    &*(msg.msg as *const <T::FeedbackMessage as WrappedTypesupport>::CStruct),
+                )
+            };
+            let (uuid, feedback) = T::destructure_feedback_msg(msg);
+            let json = serde_json::to_value(feedback).map_err(|serde_err| Error::SerdeError {
+                err: serde_err.to_string(),
+            });
+            (uuid, json)
+        });
+
+        let make_result_request_msg = Box::new(|uuid_msg: unique_identifier_msgs::msg::UUID| {
+            let request_msg = T::make_result_request_msg(uuid_msg);
+            let json =
+                serde_json::to_value(request_msg.clone()).expect("TODO: move this error handling");
+
+            let mut native_untyped = WrappedNativeMsgUntyped::new::<
+                <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request,
+            >();
+
+            native_untyped
+                .from_json(json)
+                .expect("TODO: move this error handling");
+            native_untyped
+        });
+
+        let make_result_response_msg = Box::new(|| {
+            WrappedNativeMsgUntyped::new::<
+                <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
+            >()
+        });
+
+        let destructure_result_response_msg = Box::new(|msg: WrappedNativeMsgUntyped| {
+            let msg = unsafe {
+                <<<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response>
+                 ::from_native(&*(msg.msg as *const <<<T as WrappedActionTypeSupport>::GetResult as
+                                                      WrappedServiceTypeSupport>::Response as WrappedTypesupport>::CStruct))
+            };
+            let (status, result) = T::destructure_result_response_msg(msg);
+            let json = serde_json::to_value(result).map_err(|serde_err| Error::SerdeError {
+                err: serde_err.to_string(),
+            });
+            (status, json)
+        });
+
+        UntypedActionSupport {
+            ts: T::get_ts(),
+            make_goal_request_msg,
+            make_goal_response_msg,
+            destructure_goal_response_msg,
+            make_feedback_msg,
+            destructure_feedback_msg,
+            make_result_request_msg,
+            make_result_response_msg,
+            destructure_result_response_msg,
+            // destructure_goal_response_msg,
+            // make_request_msg,
+            // make_response_msg,
         }
     }
 }
@@ -520,5 +650,31 @@ mod tests {
         let fb1 = Fibonacci::Feedback::default();
         let fb2 = Fibonacci::Feedback::from_native(&fb);
         assert_eq!(fb1, fb2);
+    }
+
+    #[cfg(r2r__example_interfaces__srv__AddTwoInts)]
+    #[test]
+    fn test_untyped_service_support() {
+        let ts = UntypedServiceSupport::new_from("example_interfaces/srv/AddTwoInts").unwrap();
+        let msg = (ts.make_request_msg)();
+        let json = msg.to_json();
+        // the message should contain something (default msg)
+        assert!(!json.unwrap().to_string().is_empty());
+    }
+
+    #[cfg(r2r__example_interfaces__action__Fibonacci)]
+    #[test]
+    fn test_untyped_action_support() {
+        use example_interfaces::action::Fibonacci;
+
+        let ts = UntypedActionSupport::new_from("example_interfaces/action/Fibonacci").unwrap();
+        let uuid = unique_identifier_msgs::msg::UUID::default();
+        let goal = Fibonacci::Goal { order: 5 };
+        let json_goal = serde_json::to_value(&goal).unwrap();
+        let json_request = (ts.make_goal_request_msg)(uuid, json_goal)
+            .to_json()
+            .unwrap();
+        // the message should contain something (default msg)
+        assert!(!json_request.to_string().is_empty());
     }
 }

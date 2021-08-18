@@ -1,28 +1,23 @@
 use super::*;
 
-unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
+//
+// TODO: refactor this to separate out shared code between action client and this.
+//
+
+unsafe impl Send for ActionClientUntyped {}
 
 #[derive(Clone)]
-pub struct ActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    client: Weak<Mutex<WrappedActionClient<T>>>,
+pub struct ActionClientUntyped {
+    client: Weak<Mutex<WrappedActionClientUntyped>>,
 }
 
 #[derive(Clone)]
-pub struct ClientGoal<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    client: Weak<Mutex<WrappedActionClient<T>>>,
+pub struct ClientGoalUntyped {
+    client: Weak<Mutex<WrappedActionClientUntyped>>,
     pub uuid: uuid::Uuid,
 }
 
-impl<T: 'static> ClientGoal<T>
-where
-    T: WrappedActionTypeSupport,
-{
+impl ClientGoalUntyped {
     pub fn get_status(&self) -> Result<GoalStatus> {
         let client = self
             .client
@@ -45,25 +40,19 @@ where
     }
 }
 
-impl<T: 'static> ActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
+impl ActionClientUntyped {
     pub fn send_goal_request(
         &self,
-        goal: T::Goal,
+        goal: serde_json::Value, // T::Goal
     ) -> Result<
         impl Future<
             Output = Result<(
-                ClientGoal<T>,
-                impl Future<Output = Result<(GoalStatus, T::Result)>>,
-                impl Stream<Item = T::Feedback> + Unpin,
+                ClientGoalUntyped,
+                impl Future<Output = Result<(GoalStatus, Result<serde_json::Value>)>>, // T::Result
+                impl Stream<Item = Result<serde_json::Value>> + Unpin, // T::Feedback
             )>,
         >,
-    >
-    where
-        T: WrappedActionTypeSupport,
-    {
+    > {
         // upgrade to actual ref. if still alive
         let client = self
             .client
@@ -75,10 +64,9 @@ where
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: uuid.as_bytes().to_vec(),
         };
-        let request_msg = T::make_goal_request_msg(uuid_msg, goal);
-        let native_msg = WrappedNativeMsg::<
-            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
-        >::from(&request_msg);
+
+        let native_msg = (client.action_type_support.make_goal_request_msg)(uuid_msg, goal);
+
         let mut seq_no = 0i64;
         let result = unsafe {
             rcl_action_send_goal_request(&client.rcl_handle, native_msg.void_ptr(), &mut seq_no)
@@ -87,9 +75,10 @@ where
         // set up channels
         let (goal_req_sender, goal_req_receiver) =
             oneshot::channel::<(bool, builtin_interfaces::msg::Time)>();
-        let (feedback_sender, feedback_receiver) = mpsc::channel::<T::Feedback>(10);
+        let (feedback_sender, feedback_receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
         client.feedback_senders.push((uuid, feedback_sender));
-        let (result_sender, result_receiver) = oneshot::channel::<(GoalStatus, T::Result)>();
+        let (result_sender, result_receiver) =
+            oneshot::channel::<(GoalStatus, Result<serde_json::Value>)>();
         client.result_senders.push((uuid, result_sender));
 
         if result == RCL_RET_OK as i32 {
@@ -113,7 +102,7 @@ where
                             }
 
                             Ok((
-                                ClientGoal {
+                                ClientGoalUntyped {
                                     client: fut_client,
                                     uuid,
                                 },
@@ -134,111 +123,30 @@ where
     }
 }
 
-pub fn make_action_client<T>(client: Weak<Mutex<WrappedActionClient<T>>>) -> ActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    ActionClient { client }
+pub fn make_action_client_untyped(
+    client: Weak<Mutex<WrappedActionClientUntyped>>,
+) -> ActionClientUntyped {
+    ActionClientUntyped { client }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum GoalStatus {
-    Unknown,
-    Accepted,
-    Executing,
-    Canceling,
-    Succeeded,
-    Canceled,
-    Aborted,
-}
-
-impl GoalStatus {
-    #[allow(dead_code)]
-    pub fn to_rcl(&self) -> i8 {
-        match self {
-            GoalStatus::Unknown => 0,
-            GoalStatus::Accepted => 1,
-            GoalStatus::Executing => 2,
-            GoalStatus::Canceling => 3,
-            GoalStatus::Succeeded => 4,
-            GoalStatus::Canceled => 5,
-            GoalStatus::Aborted => 6,
-        }
-    }
-
-    pub fn from_rcl(s: i8) -> Self {
-        match s {
-            0 => GoalStatus::Unknown,
-            1 => GoalStatus::Accepted,
-            2 => GoalStatus::Executing,
-            3 => GoalStatus::Canceling,
-            4 => GoalStatus::Succeeded,
-            5 => GoalStatus::Canceled,
-            6 => GoalStatus::Aborted,
-            _ => panic!("unknown action status: {}", s),
-        }
-    }
-}
-
-impl std::fmt::Display for GoalStatus {
-    fn fmt(&self, fmtr: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            GoalStatus::Unknown => "unknown",
-            GoalStatus::Accepted => "accepted",
-            GoalStatus::Executing => "executing",
-            GoalStatus::Canceling => "canceling",
-            GoalStatus::Succeeded => "succeeded",
-            GoalStatus::Canceled => "canceled",
-            GoalStatus::Aborted => "aborted",
-        };
-
-        write!(fmtr, "{}", s)
-    }
-}
-
-pub struct WrappedActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
+pub struct WrappedActionClientUntyped {
+    pub action_type_support: UntypedActionSupport,
     pub rcl_handle: rcl_action_client_t,
     pub goal_response_channels: Vec<(i64, oneshot::Sender<(bool, builtin_interfaces::msg::Time)>)>,
     pub cancel_response_channels:
         Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
-    pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<T::Feedback>)>,
+    pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<Result<serde_json::Value>>)>,
     pub result_requests: Vec<(i64, uuid::Uuid)>,
-    pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<(GoalStatus, T::Result)>)>,
+    pub result_senders: Vec<(
+        uuid::Uuid,
+        oneshot::Sender<(GoalStatus, Result<serde_json::Value>)>,
+    )>,
     pub goal_status: HashMap<uuid::Uuid, GoalStatus>,
 
     pub poll_available_channels: Vec<oneshot::Sender<()>>,
 }
 
-pub trait ActionClient_ {
-    fn handle(&self) -> &rcl_action_client_t;
-    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
-
-    fn handle_goal_response(&mut self) -> ();
-    fn handle_cancel_response(&mut self) -> ();
-    fn handle_feedback_msg(&mut self) -> ();
-    fn handle_status_msg(&mut self) -> ();
-    fn handle_result_response(&mut self) -> ();
-
-    fn send_result_request(&mut self, uuid: uuid::Uuid) -> ();
-
-    fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
-    fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
-}
-
-use std::convert::TryInto;
-pub fn vec_to_uuid_bytes<T>(v: Vec<T>) -> [T; 16] {
-    v.try_into().unwrap_or_else(|v: Vec<T>| {
-        panic!("Expected a Vec of length {} but it was {}", 16, v.len())
-    })
-}
-
-impl<T> WrappedActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
+impl WrappedActionClientUntyped {
     pub fn get_goal_status(&self, uuid: &uuid::Uuid) -> GoalStatus {
         *self.goal_status.get(uuid).unwrap_or(&GoalStatus::Unknown)
     }
@@ -246,10 +154,7 @@ where
     pub fn send_cancel_request(
         &mut self,
         goal: &uuid::Uuid,
-    ) -> Result<impl Future<Output = Result<()>>>
-    where
-        T: WrappedActionTypeSupport,
-    {
+    ) -> Result<impl Future<Output = Result<()>>> {
         let msg = action_msgs::srv::CancelGoal::Request {
             goal_info: action_msgs::msg::GoalInfo {
                 goal_id: unique_identifier_msgs::msg::UUID {
@@ -291,19 +196,14 @@ where
     }
 }
 
-impl<T: 'static> ActionClient_ for WrappedActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
+impl ActionClient_ for WrappedActionClientUntyped {
     fn handle(&self) -> &rcl_action_client_t {
         &self.rcl_handle
     }
 
     fn handle_goal_response(&mut self) -> () {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
-        let mut response_msg = WrappedNativeMsg::<
-            <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
-        >::new();
+        let mut response_msg = (self.action_type_support.make_goal_response_msg)();
 
         let ret = unsafe {
             rcl_action_take_goal_response(
@@ -320,8 +220,8 @@ where
                 .position(|(id, _)| id == &request_id.sequence_number)
             {
                 let (_, sender) = self.goal_response_channels.swap_remove(idx);
-                let response = <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
-                let (accept, stamp) = T::destructure_goal_response_msg(response);
+                let (accept, stamp) =
+                    (self.action_type_support.destructure_goal_response_msg)(response_msg);
                 match sender.send((accept, stamp)) {
                     Ok(()) => {}
                     Err(e) => {
@@ -383,12 +283,12 @@ where
     }
 
     fn handle_feedback_msg(&mut self) -> () {
-        let mut feedback_msg = WrappedNativeMsg::<T::FeedbackMessage>::new();
+        let mut feedback_msg = (self.action_type_support.make_feedback_msg)();
         let ret =
             unsafe { rcl_action_take_feedback(&self.rcl_handle, feedback_msg.void_ptr_mut()) };
         if ret == RCL_RET_OK as i32 {
-            let msg = T::FeedbackMessage::from_native(&feedback_msg);
-            let (uuid, feedback) = T::destructure_feedback_msg(msg);
+            let (uuid, feedback) =
+                (self.action_type_support.destructure_feedback_msg)(feedback_msg);
             let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid.uuid));
             if let Some((_, sender)) = self
                 .feedback_senders
@@ -422,10 +322,7 @@ where
 
     fn handle_result_response(&mut self) -> () {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
-        let mut response_msg = WrappedNativeMsg::<
-            <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
-        >::new();
-
+        let mut response_msg = (self.action_type_support.make_result_response_msg)();
         let ret = unsafe {
             rcl_action_take_result_response(
                 &self.rcl_handle,
@@ -448,8 +345,8 @@ where
                     .position(|(suuid, _)| suuid == &uuid)
                 {
                     let (_, sender) = self.result_senders.swap_remove(idx);
-                    let response = <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response::from_native(&response_msg);
-                    let (status, result) = T::destructure_result_response_msg(response);
+                    let (status, result) =
+                        (self.action_type_support.destructure_result_response_msg)(response_msg);
                     let status = GoalStatus::from_rcl(status);
                     match sender.send((status, result)) {
                         Ok(()) => {}
@@ -477,10 +374,7 @@ where
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: uuid.as_bytes().to_vec(),
         };
-        let request_msg = T::make_result_request_msg(uuid_msg);
-        let native_msg = WrappedNativeMsg::<
-            <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request,
-        >::from(&request_msg);
+        let native_msg = (self.action_type_support.make_result_request_msg)(uuid_msg);
         let mut seq_no = 0i64;
         let result = unsafe {
             rcl_action_send_result_request(&self.rcl_handle, native_msg.void_ptr(), &mut seq_no)
@@ -526,63 +420,9 @@ where
     }
 }
 
-pub fn create_action_client_helper(
-    node: &mut rcl_node_t,
-    action_name: &str,
-    action_ts: *const rosidl_action_type_support_t,
-) -> Result<rcl_action_client_t> {
-    let mut client_handle = unsafe { rcl_action_get_zero_initialized_client() };
-    let action_name_c_string =
-        CString::new(action_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
-
-    let result = unsafe {
-        let client_options = rcl_action_client_get_default_options();
-        rcl_action_client_init(
-            &mut client_handle,
-            node,
-            action_ts,
-            action_name_c_string.as_ptr(),
-            &client_options,
-        )
-    };
-    if result == RCL_RET_OK as i32 {
-        Ok(client_handle)
-    } else {
-        Err(Error::from_rcl_error(result))
-    }
-}
-
-pub fn action_client_get_num_waits(
-    rcl_handle: &rcl_action_client_t,
-    num_subs: &mut usize,
-    num_gc: &mut usize,
-    num_timers: &mut usize,
-    num_clients: &mut usize,
-    num_services: &mut usize,
-) -> Result<()> {
-    unsafe {
-        let result = rcl_action_client_wait_set_get_num_entities(
-            rcl_handle,
-            num_subs,
-            num_gc,
-            num_timers,
-            num_clients,
-            num_services,
-        );
-        if result == RCL_RET_OK as i32 {
-            Ok(())
-        } else {
-            Err(Error::from_rcl_error(result))
-        }
-    }
-}
-
 use crate::nodes::IsAvailablePollable;
 
-impl<T: 'static> IsAvailablePollable for ActionClient<T>
-where
-    T: WrappedActionTypeSupport,
-{
+impl IsAvailablePollable for ActionClientUntyped {
     fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()> {
         let client = self
             .client
@@ -591,20 +431,5 @@ where
         let mut client = client.lock().unwrap();
         client.register_poll_available(sender);
         Ok(())
-    }
-}
-
-pub fn action_server_available_helper(
-    node: &rcl_node_t,
-    client: &rcl_action_client_t,
-) -> Result<bool> {
-    let mut avail = false;
-    let result = unsafe { rcl_action_server_is_available(node, client, &mut avail) };
-
-    if result == RCL_RET_OK as i32 {
-        Ok(avail)
-    } else {
-        eprintln!("coult not check if action server is available {}", result);
-        Err(Error::from_rcl_error(result))
     }
 }

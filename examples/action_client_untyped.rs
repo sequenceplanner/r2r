@@ -1,15 +1,18 @@
+//
+// This example is the same as action_client.rs but stripped of all (explicit) type information.
+//
 use futures::executor::LocalPool;
 use futures::future::FutureExt;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
 use r2r;
-use r2r::example_interfaces::action::Fibonacci;
 use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = node.create_action_client::<Fibonacci::Action>("/fibonacci")?;
+    let client =
+        node.create_action_client_untyped("/fibonacci", "example_interfaces/action/Fibonacci")?;
     let action_server_available = node.is_available(&client)?;
 
     // signal that we are done
@@ -27,10 +30,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .expect("could not await action server");
         println!("action service available.");
 
-        let goal = Fibonacci::Goal { order: 5 };
-        println!("sending goal: {:?}", goal);
+        let goal = "{ \"order\": 5 }"; // Fibonacci::Goal { order: 5 };
+        println!("sending goal: {}", goal);
         let (goal, result, feedback) = client
-            .send_goal_request(goal)
+            .send_goal_request(serde_json::from_str(goal).expect("json malformed"))
             .expect("could not send goal request")
             .await
             .expect("goal rejected by server");
@@ -44,23 +47,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let nested_task_done = nested_task_done.clone();
                 let nested_goal = nested_goal.clone();
                 async move {
-                    println!(
-                        "new feedback msg {:?} -- {:?}",
-                        msg,
-                        nested_goal.get_status()
-                    );
+                    if let Ok(msg) = msg {
+                        let sequence = msg
+                            .get("sequence")
+                            .and_then(|s| s.as_array())
+                            .expect("unexpected feedback msg");
+                        println!("new feedback msg {} -- {:?}", msg, nested_goal.get_status());
 
-                    // 50/50 that cancel the goal before it finishes.
-                    if msg.sequence.len() == 4 && rand::random::<bool>() {
-                        nested_goal
-                            .cancel()
-                            .unwrap()
-                            .map(|r| {
-                                println!("goal cancelled: {:?}", r);
-                                // we are done.
-                                *nested_task_done.lock().unwrap() = true;
-                            })
-                            .await;
+                        // 50/50 that cancel the goal before it finishes.
+                        if sequence.len() == 4 && rand::random::<bool>() {
+                            nested_goal
+                                .cancel()
+                                .unwrap()
+                                .map(|r| {
+                                    println!("goal cancelled: {:?}", r);
+                                    // we are done.
+                                    *nested_task_done.lock().unwrap() = true;
+                                })
+                                .await;
+                        }
                     }
                 }
             }))

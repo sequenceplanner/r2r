@@ -306,6 +306,36 @@ impl Node {
         Ok(c)
     }
 
+    /// Create an action client without having the concrete rust type.
+    pub fn create_action_client_untyped(
+        &mut self,
+        action_name: &str,
+        action_type: &str,
+    ) -> Result<ActionClientUntyped> {
+        let action_type_support = UntypedActionSupport::new_from(action_type)?;
+        let client_handle = create_action_client_helper(
+            self.node_handle.as_mut(),
+            action_name,
+            action_type_support.ts,
+        )?;
+        let client = WrappedActionClientUntyped {
+            action_type_support,
+            rcl_handle: client_handle,
+            goal_response_channels: Vec::new(),
+            cancel_response_channels: Vec::new(),
+            feedback_senders: Vec::new(),
+            result_senders: Vec::new(),
+            result_requests: Vec::new(),
+            goal_status: HashMap::new(),
+            poll_available_channels: Vec::new(),
+        };
+
+        let client_arc = Arc::new(Mutex::new(client));
+        self.action_clients.push(client_arc.clone());
+        let c = make_action_client_untyped(Arc::downgrade(&client_arc));
+        Ok(c)
+    }
+
     pub fn create_action_server<T: 'static>(
         &mut self,
         action_name: &str,

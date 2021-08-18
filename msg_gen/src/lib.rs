@@ -591,3 +591,44 @@ impl UntypedServiceSupport {
 
     format!("{}{}{}", open, lines, close)
 }
+
+pub fn generate_untyped_action_helper(msgs: &Vec<common::RosMsg>) -> String {
+    let open = String::from(
+        "
+impl UntypedActionSupport {
+    pub fn new_from(typename: &str) -> Result<Self> {
+",
+    );
+    let close = String::from(
+        "
+        else
+        {
+            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
+        }
+    }
+}
+",
+    );
+
+    let mut lines = String::new();
+    for msg in msgs {
+        if msg.prefix != "action" {
+            continue;
+        }
+
+        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
+        let rustname = format!("{}::{}::{}::Action", msg.module, msg.prefix, msg.name);
+
+        lines.push_str(&format!(
+            "
+        if typename == \"{typename}\" {{
+            return Ok(UntypedActionSupport::new::<{rustname}>());
+        }}
+",
+            typename = typename,
+            rustname = rustname
+        ));
+    }
+
+    format!("{}{}{}", open, lines, close)
+}

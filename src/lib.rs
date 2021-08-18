@@ -53,6 +53,10 @@ mod action_clients;
 pub use action_clients::ActionClient;
 use action_clients::*;
 
+mod action_clients_untyped;
+pub use action_clients_untyped::ActionClientUntyped;
+use action_clients_untyped::*;
+
 mod action_servers;
 use action_servers::*;
 pub use action_servers::{ActionServer, CancelRequest, GoalRequest, ServerGoal};
