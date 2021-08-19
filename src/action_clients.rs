@@ -10,6 +10,8 @@ where
     client: Weak<Mutex<WrappedActionClient<T>>>,
 }
 
+unsafe impl<T> Send for ClientGoal<T> where T: WrappedActionTypeSupport {}
+
 #[derive(Clone)]
 pub struct ClientGoal<T>
 where

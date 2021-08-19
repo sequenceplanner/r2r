@@ -11,6 +11,8 @@ pub struct ActionClientUntyped {
     client: Weak<Mutex<WrappedActionClientUntyped>>,
 }
 
+unsafe impl Send for ClientGoalUntyped {}
+
 #[derive(Clone)]
 pub struct ClientGoalUntyped {
     client: Weak<Mutex<WrappedActionClientUntyped>>,

@@ -117,6 +117,7 @@ pub struct WrappedNativeMsgUntyped {
     ) -> std::result::Result<(), serde_json::error::Error>,
 }
 
+unsafe impl Send for UntypedServiceSupport {}
 pub struct UntypedServiceSupport {
     pub ts: &'static rosidl_service_type_support_t,
     pub make_request_msg: fn() -> WrappedNativeMsgUntyped,
@@ -140,6 +141,7 @@ impl UntypedServiceSupport {
 }
 
 // For now only the client side is implemented.
+unsafe impl Send for UntypedActionSupport {}
 pub struct UntypedActionSupport {
     pub(crate) ts: &'static rosidl_action_type_support_t,
 
