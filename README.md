@@ -21,9 +21,9 @@ Examples of how to use the crate are included in examples/
 ```
 . /opt/ros/foxy/setup.sh
 cargo build
-cargo run --example subscriber_with_thread
+cargo run --example subscriber
 # In other shell
-ros2 topic pub /hi std_msgs/msg/String "data: 'Hello, world!'"
+ros2 topic pub /topic std_msgs/msg/String "data: 'Hello, world'"
 ```
 
 What works?
