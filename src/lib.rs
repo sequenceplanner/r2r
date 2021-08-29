@@ -66,7 +66,6 @@ pub use context::Context;
 
 mod parameters;
 pub use parameters::ParameterValue;
-use parameters::*;
 
 mod clocks;
 pub use clocks::{Clock, ClockType};

@@ -1,8 +1,9 @@
 use super::*;
+use futures::future::{self, join_all};
 
 pub struct Node {
     context: Context,
-    pub params: HashMap<String, ParameterValue>,
+    pub params: Arc<Mutex<HashMap<String, ParameterValue>>>,
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subs: Vec<Box<dyn Subscriber_>>,
@@ -104,11 +105,12 @@ impl Node {
             let param_values =
                 unsafe { std::slice::from_raw_parts(np.parameter_values, np.num_params) };
 
+            let mut params = self.params.lock().unwrap();
             for (s, v) in param_names.iter().zip(param_values) {
                 let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
-                let val = parameter_value_from_rcl(&*v);
-                self.params.insert(key.to_owned(), val);
+                let val = ParameterValue::from_rcl(&*v);
+                params.insert(key.to_owned(), val);
             }
         }
 
@@ -139,7 +141,7 @@ impl Node {
 
         if res == RCL_RET_OK as i32 {
             let mut node = Node {
-                params: HashMap::new(),
+                params: Arc::new(Mutex::new(HashMap::new())),
                 context: ctx,
                 node_handle,
                 subs: Vec::new(),
@@ -156,6 +158,63 @@ impl Node {
             eprintln!("could not create node{}", res);
             Err(Error::from_rcl_error(res))
         }
+    }
+
+    /// Returns a future which handles any parameter change requests. Spawn this onto the executor of choice.
+    pub fn make_parameter_handler(&mut self) -> Result<impl Future<Output = ()>> {
+        let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()>>>> = Vec::new();
+
+        let node_name = self.name()?;
+        let set_params_request_stream = self.create_service::<rcl_interfaces::srv::SetParameters::Service>(
+            &format!("{}/set_parameters", node_name))?;
+
+        let params = self.params.clone();
+        let set_params_future = set_params_request_stream
+            .for_each(move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
+                let mut result = rcl_interfaces::srv::SetParameters::Response::default();
+                for p in &req.message.parameters {
+                    let val = ParameterValue::from_parameter_value_msg(p.value.clone());
+                    params.lock().unwrap().insert(p.name.clone(), val);
+                    let r = rcl_interfaces::msg::SetParametersResult {
+                        successful: true,
+                        reason: "".into(),
+                    };
+                    result.results.push(r);
+                }
+                req.respond(result).expect("could not send reply to set parameter request");
+                future::ready(())
+            });
+        handlers.push(Box::pin(set_params_future));
+
+        // rcl_interfaces/srv/GetParameters
+        let get_params_request_stream = self.create_service::<rcl_interfaces::srv::GetParameters::Service>(
+            &format!("{}/get_parameters", node_name))?;
+
+        let params = self.params.clone();
+        let get_params_future = get_params_request_stream
+            .for_each(move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
+                let params = params.lock().unwrap();
+                let values = req.message.names.iter()
+                    .map(|n| {
+                        match params.get(n) {
+                            Some(v) => v.clone(),
+                            None => ParameterValue::NotSet
+                        }
+                    })
+                    .map(|v| v.clone().to_parameter_value_msg())
+                    .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
+
+                let result = rcl_interfaces::srv::GetParameters::Response {
+                    values
+                };
+                req.respond(result).expect("could not send reply to set parameter request");
+                future::ready(())
+            });
+
+        handlers.push(Box::pin(get_params_future));
+
+        // we don't care about the result, the futures will not complete anyway.
+        Ok(join_all(handlers).map(|_| ()))
     }
 
     pub fn subscribe<T: 'static>(&mut self, topic: &str) -> Result<impl Stream<Item = T> + Unpin>
