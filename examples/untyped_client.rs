@@ -2,24 +2,20 @@ use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
 use futures::Future;
 use r2r;
-use std::io::Write;
-
-use r2r::example_interfaces::srv::AddTwoInts;
 
 async fn requester_task(
     node_available: impl Future<Output = r2r::Result<()>>,
-    c: r2r::Client<AddTwoInts::Service>,
+    c: r2r::UntypedClient,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i64 = 0;
     println!("waiting for service...");
     node_available.await?;
     println!("service available.");
     loop {
-        let req = AddTwoInts::Request { a: 10 * x, b: x };
-        print!("{} + {} = ", req.a, req.b);
-        std::io::stdout().flush()?;
-        let resp = c.request(&req)?.await?;
-        println!("{}", resp.sum);
+        let json = format!("{{ \"a\": {}, \"b\": {} }}", 10 * x, x);
+        let req = serde_json::from_str(&json).unwrap();
+        let resp = c.request(req)?.await?;
+        println!("{}", resp.expect("deserialization error"));
 
         x += 1;
         if x == 10 {
@@ -32,7 +28,8 @@ async fn requester_task(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = node.create_client::<AddTwoInts::Service>("/add_two_ints")?;
+    let client =
+        node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts")?;
 
     let service_available = node.is_available(&client)?;
 

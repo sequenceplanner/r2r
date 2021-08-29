@@ -140,10 +140,10 @@ macro_rules! primitive_sequence {
 primitive_sequence!(rosidl_runtime_c__float32, f32);
 primitive_sequence!(rosidl_runtime_c__float64, f64);
 
-#[cfg(target_arch = "aarch64")]
+#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
 primitive_sequence!(rosidl_runtime_c__long_double, f64);
 
-#[cfg(not(target_arch = "aarch64"))]
+#[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
 primitive_sequence!(rosidl_runtime_c__long_double, u128);
 
 primitive_sequence!(rosidl_runtime_c__char, i8);

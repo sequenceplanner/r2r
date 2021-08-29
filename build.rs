@@ -118,13 +118,21 @@ fn main() {
     }
 
     let untyped_helper = msg_gen::generate_untyped_helper(&msg_list);
+    let untyped_service_helper = msg_gen::generate_untyped_service_helper(&msg_list);
+    let untyped_action_helper = msg_gen::generate_untyped_action_helper(&msg_list);
 
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     let msgs_fn = out_path.join("_r2r_generated_msgs.rs");
     let untyped_fn = out_path.join("_r2r_generated_untyped_helper.rs");
+    let untyped_service_fn = out_path.join("_r2r_generated_service_helper.rs");
+    let untyped_action_fn = out_path.join("_r2r_generated_action_helper.rs");
 
     let mut f = File::create(msgs_fn).unwrap();
     write!(f, "{}", modules).unwrap();
     let mut f = File::create(untyped_fn).unwrap();
     write!(f, "{}", untyped_helper).unwrap();
+    let mut f = File::create(untyped_service_fn).unwrap();
+    write!(f, "{}", untyped_service_helper).unwrap();
+    let mut f = File::create(untyped_action_fn).unwrap();
+    write!(f, "{}", untyped_action_helper).unwrap();
 }

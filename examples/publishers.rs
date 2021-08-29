@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
             ..Default::default()
         };
-        let mut native = r2r::WrappedNativeMsg::<Int32>::new();
+        let mut native = r2r::NativeMsg::<Int32>::new();
         native.data = count;
 
         publisher.publish(&to_send).unwrap();

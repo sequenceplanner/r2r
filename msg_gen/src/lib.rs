@@ -233,8 +233,16 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
 
         let mut fields = String::new();
 
+        let is_empty_msg = members.len() == 1
+            && field_name(CStr::from_ptr(members[0].name_).to_str().unwrap())
+                == "structure_needs_at_least_one_member";
+
         for member in members {
             let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
             let rust_field_type = if rust_field_type == "message" {
                 let (module, prefix, name, _, _) = introspection(member.members_);
@@ -283,14 +291,25 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         }
 
         let mut from_native = String::new();
-        from_native.push_str(&format!(
-            "fn from_native(msg: &Self::CStruct) -> {} {{\n",
-            name
-        ));
+        if is_empty_msg {
+            from_native.push_str(&format!(
+                "fn from_native(_msg: &Self::CStruct) -> {} {{\n",
+                name
+            ));
+        } else {
+            from_native.push_str(&format!(
+                "fn from_native(msg: &Self::CStruct) -> {} {{\n",
+                name
+            ));
+        }
         from_native.push_str(&format!("  {} {{\n", name));
 
         for member in members {
             let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
 
             if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
@@ -368,10 +387,18 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         from_native.push_str("      }\n    }\n");
 
         let mut copy_to_native = String::new();
-        copy_to_native.push_str("fn copy_to_native(&self, msg: &mut Self::CStruct) {");
+        if is_empty_msg {
+            copy_to_native.push_str("fn copy_to_native(&self, _msg: &mut Self::CStruct) {");
+        } else {
+            copy_to_native.push_str("fn copy_to_native(&self, msg: &mut Self::CStruct) {");
+        }
 
         for member in members {
             let field_name = field_name(CStr::from_ptr((*member).name_).to_str().unwrap());
+            if field_name == "structure_needs_at_least_one_member" {
+                // Yay we can have empty structs in rust
+                continue;
+            }
             let rust_field_type = field_type(member.type_id_);
 
             if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
@@ -486,7 +513,7 @@ pub fn generate_untyped_helper(msgs: &Vec<common::RosMsg>) -> String {
     let open = String::from(
         "
 impl WrappedNativeMsgUntyped {
-    fn new_from(typename: &str) -> Result<Self> {
+    pub fn new_from(typename: &str) -> Result<Self> {
 ",
     );
     let close = String::from(
@@ -514,6 +541,88 @@ impl WrappedNativeMsgUntyped {
             "
         if typename == \"{typename}\" {{
             return Ok(WrappedNativeMsgUntyped::new::<{rustname}>());
+        }}
+",
+            typename = typename,
+            rustname = rustname
+        ));
+    }
+
+    format!("{}{}{}", open, lines, close)
+}
+
+pub fn generate_untyped_service_helper(msgs: &Vec<common::RosMsg>) -> String {
+    let open = String::from(
+        "
+impl UntypedServiceSupport {
+    pub fn new_from(typename: &str) -> Result<Self> {
+",
+    );
+    let close = String::from(
+        "
+        else
+        {
+            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
+        }
+    }
+}
+",
+    );
+
+    let mut lines = String::new();
+    for msg in msgs {
+        if msg.prefix != "srv" {
+            continue;
+        }
+
+        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
+        let rustname = format!("{}::{}::{}::Service", msg.module, msg.prefix, msg.name);
+
+        lines.push_str(&format!(
+            "
+        if typename == \"{typename}\" {{
+            return Ok(UntypedServiceSupport::new::<{rustname}>());
+        }}
+",
+            typename = typename,
+            rustname = rustname
+        ));
+    }
+
+    format!("{}{}{}", open, lines, close)
+}
+
+pub fn generate_untyped_action_helper(msgs: &Vec<common::RosMsg>) -> String {
+    let open = String::from(
+        "
+impl UntypedActionSupport {
+    pub fn new_from(typename: &str) -> Result<Self> {
+",
+    );
+    let close = String::from(
+        "
+        else
+        {
+            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
+        }
+    }
+}
+",
+    );
+
+    let mut lines = String::new();
+    for msg in msgs {
+        if msg.prefix != "action" {
+            continue;
+        }
+
+        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
+        let rustname = format!("{}::{}::{}::Action", msg.module, msg.prefix, msg.name);
+
+        lines.push_str(&format!(
+            "
+        if typename == \"{typename}\" {{
+            return Ok(UntypedActionSupport::new::<{rustname}>());
         }}
 ",
             typename = typename,

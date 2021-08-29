@@ -33,10 +33,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     // for sub2 we just print the data
-    let sub2 = node.subscribe::<r2r::std_msgs::msg::String>("/topic2")?;
+    let sub2 = node.subscribe_untyped("/topic2", "std_msgs/msg/String")?;
     spawner.spawn_local(async move {
         sub2.for_each(|msg| {
-            println!("topic2: new msg: {}", msg.data);
+            println!("topic2: new msg: {}", msg.expect("deserialization error"));
             future::ready(())
         })
         .await
