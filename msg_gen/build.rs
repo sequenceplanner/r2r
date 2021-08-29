@@ -6,7 +6,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    common::print_cargo_watches();
+    // if the lock feature is used, do not rebuild the messages
+    if std::env::var("CARGO_FEATURE_LOCK").is_err() {
+        common::print_cargo_watches();
+    }
 
     let mut builder = bindgen::Builder::default();
 

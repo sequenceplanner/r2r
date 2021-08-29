@@ -14,3 +14,6 @@ bindgen = "0.57.0"
 rcl = { path = "../rcl", version = "0.1.0" }
 common = { path = "../common", version = "0.1.0" }
 heck = "0.3.2"
+
+[features]
+lock = []

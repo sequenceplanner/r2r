@@ -31,3 +31,6 @@ common = { path = "common", version = "0.1.0" }
 msg_gen = { path = "msg_gen", version = "0.1.0" }
 
 [workspace]
+
+[features]
+lock = ["msg_gen/lock", "rcl/lock"]

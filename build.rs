@@ -6,7 +6,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    common::print_cargo_watches();
+    // if the lock feature is used, do not rebuild the messages
+    if std::env::var("CARGO_FEATURE_LOCK").is_err() {
+        common::print_cargo_watches();
+    }
 
     let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
         let packages = cmake_includes
