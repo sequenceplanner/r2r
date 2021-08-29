@@ -160,61 +160,93 @@ impl Node {
         }
     }
 
-    /// Returns a future which handles any parameter change requests. Spawn this onto the executor of choice.
-    pub fn make_parameter_handler(&mut self) -> Result<impl Future<Output = ()>> {
+    /// Returns a tuple (parameter_handler_future, parameter_event_stream).
+    /// The user should spawn the parameter_handler_future onto the executor of choice.
+    /// The "event stream" includes the name of the parameter which was updated as well as its  value.
+    pub fn make_parameter_handler(
+        &mut self,
+    ) -> Result<(
+        impl Future<Output = ()>,
+        impl Stream<Item = (String, ParameterValue)>,
+    )> {
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()>>>> = Vec::new();
+        let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
 
         let node_name = self.name()?;
-        let set_params_request_stream = self.create_service::<rcl_interfaces::srv::SetParameters::Service>(
-            &format!("{}/set_parameters", node_name))?;
+        let set_params_request_stream = self
+            .create_service::<rcl_interfaces::srv::SetParameters::Service>(&format!(
+                "{}/set_parameters",
+                node_name
+            ))?;
 
         let params = self.params.clone();
-        let set_params_future = set_params_request_stream
-            .for_each(move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
+        let set_params_future = set_params_request_stream.for_each(
+            move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
                 let mut result = rcl_interfaces::srv::SetParameters::Response::default();
                 for p in &req.message.parameters {
                     let val = ParameterValue::from_parameter_value_msg(p.value.clone());
-                    params.lock().unwrap().insert(p.name.clone(), val);
+                    let changed = params
+                        .lock()
+                        .unwrap()
+                        .get(&p.name)
+                        .and_then(|v| Some(v != &val))
+                        .unwrap_or(true); // changed=true if new
+                    params.lock().unwrap().insert(p.name.clone(), val.clone());
                     let r = rcl_interfaces::msg::SetParametersResult {
                         successful: true,
                         reason: "".into(),
                     };
                     result.results.push(r);
+                    // if the value changed, send out new value on parameter event stream
+                    if changed {
+                        match event_tx.try_send((p.name.clone(), val)) {
+                            Err(e) => {
+                                println!("Warning: could not send parameter event ({}).", e);
+                            }
+                            _ => {} // ok
+                        }
+                    }
                 }
-                req.respond(result).expect("could not send reply to set parameter request");
+                req.respond(result)
+                    .expect("could not send reply to set parameter request");
                 future::ready(())
-            });
+            },
+        );
         handlers.push(Box::pin(set_params_future));
 
         // rcl_interfaces/srv/GetParameters
-        let get_params_request_stream = self.create_service::<rcl_interfaces::srv::GetParameters::Service>(
-            &format!("{}/get_parameters", node_name))?;
+        let get_params_request_stream = self
+            .create_service::<rcl_interfaces::srv::GetParameters::Service>(&format!(
+                "{}/get_parameters",
+                node_name
+            ))?;
 
         let params = self.params.clone();
-        let get_params_future = get_params_request_stream
-            .for_each(move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
+        let get_params_future = get_params_request_stream.for_each(
+            move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
                 let params = params.lock().unwrap();
-                let values = req.message.names.iter()
-                    .map(|n| {
-                        match params.get(n) {
-                            Some(v) => v.clone(),
-                            None => ParameterValue::NotSet
-                        }
+                let values = req
+                    .message
+                    .names
+                    .iter()
+                    .map(|n| match params.get(n) {
+                        Some(v) => v.clone(),
+                        None => ParameterValue::NotSet,
                     })
                     .map(|v| v.clone().to_parameter_value_msg())
                     .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
 
-                let result = rcl_interfaces::srv::GetParameters::Response {
-                    values
-                };
-                req.respond(result).expect("could not send reply to set parameter request");
+                let result = rcl_interfaces::srv::GetParameters::Response { values };
+                req.respond(result)
+                    .expect("could not send reply to set parameter request");
                 future::ready(())
-            });
+            },
+        );
 
         handlers.push(Box::pin(get_params_future));
 
         // we don't care about the result, the futures will not complete anyway.
-        Ok(join_all(handlers).map(|_| ()))
+        Ok((join_all(handlers).map(|_| ()), event_rx))
     }
 
     pub fn subscribe<T: 'static>(&mut self, topic: &str) -> Result<impl Stream<Item = T> + Unpin>

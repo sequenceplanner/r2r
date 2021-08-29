@@ -1,4 +1,5 @@
 use futures::executor::LocalPool;
+use futures::prelude::*;
 use futures::task::LocalSpawnExt;
 use r2r;
 
@@ -17,13 +18,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // set up ros node
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "to_be_replaced", "to_be_replaced")?;
-    let mut timer = node.create_wall_timer(std::time::Duration::from_millis(2000))?;
 
     // make a parameter handler (once per node).
     // the parameter handler is optional, only spawn one if you need it.
-    let paramater_handler = node.make_parameter_handler()?;
+    let (paramater_handler, parameter_events) = node.make_parameter_handler()?;
     // run parameter handler on your executor.
     spawner.spawn_local(paramater_handler)?;
+
+    // parameter event stream. just print them
+    spawner.spawn_local(async move {
+        parameter_events
+            .for_each(|(param_name, param_val)| {
+                println!("parameter event: {} is now {:?}", param_name, param_val);
+                future::ready(())
+            })
+            .await
+    })?;
 
     println!("node name: {}", node.name()?);
     println!(
@@ -32,7 +42,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     println!("node namespace: {}", node.namespace()?);
 
-    // print all params every 2 seconds.
+    // print all params every 5 seconds.
+    let mut timer = node.create_wall_timer(std::time::Duration::from_secs(5))?;
     let params = node.params.clone();
     spawner.spawn_local(async move {
         loop {

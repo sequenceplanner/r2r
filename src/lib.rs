@@ -50,12 +50,12 @@ use clients::*;
 pub use clients::{Client, UntypedClient};
 
 mod action_clients;
-pub use action_clients::{ActionClient, ClientGoal, GoalStatus};
 use action_clients::*;
+pub use action_clients::{ActionClient, ClientGoal, GoalStatus};
 
 mod action_clients_untyped;
-pub use action_clients_untyped::{ActionClientUntyped, ClientGoalUntyped};
 use action_clients_untyped::*;
+pub use action_clients_untyped::{ActionClientUntyped, ClientGoalUntyped};
 
 mod action_servers;
 use action_servers::*;

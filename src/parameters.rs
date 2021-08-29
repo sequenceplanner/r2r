@@ -98,45 +98,44 @@ impl ParameterValue {
         match self {
             ParameterValue::NotSet => {
                 ret.type_ = 0; // uint8 PARAMETER_NOT_SET=0
-            },
+            }
             ParameterValue::Bool(b) => {
                 ret.type_ = 1; // uint8 PARAMETER_BOOL=1
                 ret.bool_value = b;
-            },
+            }
             ParameterValue::Integer(i) => {
                 ret.type_ = 2; // uint8 PARAMETER_INTEGER=2
                 ret.integer_value = i;
-            },
+            }
             ParameterValue::Double(d) => {
                 ret.type_ = 3; // uint8 PARAMETER_DOUBLE=3
                 ret.double_value = d;
-            },
+            }
             ParameterValue::String(s) => {
                 ret.type_ = 4; // uint8 PARAMETER_STRING=4
                 ret.string_value = s;
-            },
+            }
             ParameterValue::ByteArray(ba) => {
                 ret.type_ = 5; // uint8 PARAMETER_BYTE_ARRAY=5
                 ret.byte_array_value = ba;
-            },
+            }
             ParameterValue::BoolArray(ba) => {
-                ret.type_ = 6;  // uint8 PARAMETER_BOOL_ARRAY=6
+                ret.type_ = 6; // uint8 PARAMETER_BOOL_ARRAY=6
                 ret.bool_array_value = ba;
-            },
+            }
             ParameterValue::IntegerArray(ia) => {
-                ret.type_ = 7;  // uint8 PARAMETER_INTEGER_ARRAY=7
+                ret.type_ = 7; // uint8 PARAMETER_INTEGER_ARRAY=7
                 ret.integer_array_value = ia;
-            },
+            }
             ParameterValue::DoubleArray(da) => {
-                ret.type_ = 8;  // uint8 PARAMETER_DOUBLE_ARRAY=8
+                ret.type_ = 8; // uint8 PARAMETER_DOUBLE_ARRAY=8
                 ret.double_array_value = da;
-            },
+            }
             ParameterValue::StringArray(sa) => {
-                ret.type_ = 9;  // int PARAMETER_STRING_ARRAY=9
+                ret.type_ = 9; // int PARAMETER_STRING_ARRAY=9
                 ret.string_array_value = sa;
-            },
+            }
         }
         ret
     }
-
 }
