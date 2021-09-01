@@ -1,13 +1,15 @@
-R2R - Minimal ROS2 Rust bindings
+R2R - Easy to use, runtime-agnostic, async rust bindings for ROS2.
 ====================
 
-Minimal bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure -- `cargo build` is all you need. Convenience Rust types are created by calling into the c introspection libraries. This circumvents the ROS2 .msg/.idl pipeline by relying on already generated C code. The convenience types can be ignored when you need to trade convenience for performance, e.g. treating large chunks of data manually. By default, the behavior is to build bindings to the RCL and all message types that can be found in the currently sourced ros environment.
+Easy to use bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure -- `cargo build` is all you need. Convenience Rust types are created by calling into the c introspection libraries. This circumvents the ROS2 .msg/.idl pipeline by relying on already generated C code. By default, the behavior is to build bindings to the RCL and all message types that can be found in the currently sourced ros environment.
 
 When integration with the colcon build system is desired, a CMakeLists.txt file can be used to limit the generation of bindings to only include specific (idl) dependencies. This is done through additional environment variables. A minimal example of the colcon integration is available here: <https://github.com/m-dahl/r2r_minimal_node/>.
 
+This library differ a bit in style from rclpy and rclcpp as it eliminates all synchronous callbacks in favor of rust futures and streams. Coupled with the rust await syntax, this makes it very pleasant to work with ROS services and actions. The library purposefully does not chose an async runtime -- this means that the user needs to take care of any task spawning. This also limits the API to what futures-rs provides.
+
 Manual is available on github pages <https://sequenceplanner.github.io/r2r/> (documention is lacking though).
 
-These bindings are being written organically when things are needed by me and others so please be aware that the API will change.
+These bindings are being written organically when things are needed by me and others so please be aware that the API will change. As of now I have no intention of wrapping all of the RCL just for the sake of completeness.
 
 How to use
 --------------------
@@ -33,11 +35,11 @@ What works?
 - Publish/subscribe
 - Services
 - Actions
-- Static parameters (e.g. loading from yaml files and parsing launch parameters)
+- Rudimentary parameter handling
 
 TODO
 --------------------
-- Implement the services associated with updating parameters at run-time.
+- Complete the services associated with updating parameters at run-time.
 - Documentation. (For now, look at the examples.)
 - General cleanup and error handling.
 - Expose more of the RCL like QoS settings.

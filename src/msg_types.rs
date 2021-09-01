@@ -90,6 +90,9 @@ pub trait WrappedActionTypeSupport: Debug + Clone {
     ) -> unique_identifier_msgs::msg::UUID;
 }
 
+/// This struct wraps a RCL message.
+///
+/// It contains a pointer to a C struct.
 #[derive(Debug)]
 pub struct WrappedNativeMsg<T>
 where

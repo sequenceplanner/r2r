@@ -1,8 +1,8 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
-use std::rc::Rc;
-use std::cell::RefCell;
 use r2r;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 async fn timer_task(mut t: r2r::Timer) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i32 = 0;
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(()) => {
                 *task_is_done.borrow_mut() = true;
                 println!("exiting");
-            },
+            }
             Err(e) => println!("error: {}", e),
         }
     })?;

@@ -1,12 +1,18 @@
 #![allow(non_camel_case_types)]
+use actions::*;
 use rcl::*;
 use thiserror::Error;
 
+/// r2r Result type.
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// r2r Error type.
+///
+/// These values are mostly copied straight from the RCL headers, but
+/// some are specific to r2r, such as `GoalCancelRejected` which does
+/// not have an analogue in the rcl.
 #[derive(Error, Debug)]
 pub enum Error {
-    // Copied from the generated bindgen
     #[error("RCL_RET_OK")]
     RCL_RET_OK,
     #[error("RCL_RET_ERROR")]
@@ -150,6 +156,17 @@ impl Error {
             _ if e == RCL_RET_INVALID_LOG_LEVEL_RULE => Error::RCL_RET_INVALID_LOG_LEVEL_RULE,
             _ if e == RCL_RET_EVENT_INVALID => Error::RCL_RET_EVENT_INVALID,
             _ if e == RCL_RET_EVENT_TAKE_FAILED => Error::RCL_RET_EVENT_TAKE_FAILED,
+            _ if e == RCL_RET_ACTION_NAME_INVALID => Error::RCL_RET_ACTION_NAME_INVALID,
+            _ if e == RCL_RET_ACTION_GOAL_ACCEPTED => Error::RCL_RET_ACTION_GOAL_ACCEPTED,
+            _ if e == RCL_RET_ACTION_GOAL_REJECTED => Error::RCL_RET_ACTION_GOAL_REJECTED,
+            _ if e == RCL_RET_ACTION_CLIENT_INVALID => Error::RCL_RET_ACTION_CLIENT_INVALID,
+            _ if e == RCL_RET_ACTION_CLIENT_TAKE_FAILED => Error::RCL_RET_ACTION_CLIENT_TAKE_FAILED,
+            _ if e == RCL_RET_ACTION_SERVER_INVALID => Error::RCL_RET_ACTION_SERVER_INVALID,
+            _ if e == RCL_RET_ACTION_SERVER_TAKE_FAILED => Error::RCL_RET_ACTION_SERVER_TAKE_FAILED,
+            _ if e == RCL_RET_ACTION_GOAL_HANDLE_INVALID => {
+                Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID
+            }
+            _ if e == RCL_RET_ACTION_GOAL_EVENT_INVALID => Error::RCL_RET_ACTION_GOAL_EVENT_INVALID,
             _ => panic!("TODO: add error code {}", e),
         }
     }

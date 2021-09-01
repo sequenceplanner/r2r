@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 // main goal handling routine.
 async fn run_goal(
     node: Arc<Mutex<r2r::Node>>,
-    g: r2r::ServerGoal<Fibonacci::Action>,
+    g: r2r::ActionServerGoal<Fibonacci::Action>,
 ) -> Fibonacci::Result {
     let mut timer = node // local timer, will be dropped after this request is processed.
         .lock()
@@ -40,7 +40,7 @@ async fn run_goal(
 async fn fibonacci_server(
     spawner: LocalSpawner,
     node: Arc<Mutex<r2r::Node>>,
-    mut requests: impl Stream<Item = r2r::GoalRequest<Fibonacci::Action>> + Unpin,
+    mut requests: impl Stream<Item = r2r::ActionServerGoalRequest<Fibonacci::Action>> + Unpin,
 ) {
     loop {
         match requests.next().await {

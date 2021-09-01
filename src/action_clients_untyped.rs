@@ -1,25 +1,41 @@
+use futures::channel::{mpsc, oneshot};
+use futures::future::{FutureExt, TryFutureExt};
+use futures::stream::Stream;
+use std::collections::HashMap;
+use std::future::Future;
+use std::sync::{Mutex, Weak};
+use std::mem::MaybeUninit;
+
 use super::*;
 
 //
-// TODO: refactor this to separate out shared code between action client and this.
+// TODO: refactor this to separate out shared code between typed action client and this.
 //
 
 unsafe impl Send for ActionClientUntyped {}
 
+/// Action client (untyped)
+///
+/// Use this to make goal requests to an action server, without having
+/// the concrete types at compile-time.
 #[derive(Clone)]
 pub struct ActionClientUntyped {
     client: Weak<Mutex<WrappedActionClientUntyped>>,
 }
 
-unsafe impl Send for ClientGoalUntyped {}
+unsafe impl Send for ActionClientGoalUntyped {}
 
+/// Action client goal handle (untyped)
+///
+/// This can be used to cancel goals and query the status of goals.
 #[derive(Clone)]
-pub struct ClientGoalUntyped {
+pub struct ActionClientGoalUntyped {
     client: Weak<Mutex<WrappedActionClientUntyped>>,
     pub uuid: uuid::Uuid,
 }
 
-impl ClientGoalUntyped {
+impl ActionClientGoalUntyped {
+    /// Get the current status of this goal.
     pub fn get_status(&self) -> Result<GoalStatus> {
         let client = self
             .client
@@ -30,6 +46,13 @@ impl ClientGoalUntyped {
         Ok(client.get_goal_status(&self.uuid))
     }
 
+    /// Send a cancel request for this goal to the server.
+    ///
+    /// If the server accepts and completes the request, the future completes without error.
+    /// Otherwise, one of these errors can be returned:
+    /// - `GoalCancelRejected`
+    /// - `GoalCancelUnknownGoalID`
+    /// - `GoalCancelAlreadyTerminated`
     pub fn cancel(&self) -> Result<impl Future<Output = Result<()>>> {
         // upgrade to actual ref. if still alive
         let client = self
@@ -43,13 +66,19 @@ impl ClientGoalUntyped {
 }
 
 impl ActionClientUntyped {
+    /// Make a new goal request.
+    ///
+    /// If the server accepts the new goal, the future resolves to a triple of:
+    /// - A goal handle.
+    /// - A new future for the eventual result. (as `serde_json::Value`)
+    /// - A stream of feedback messages. (as `serde_json::Value`)
     pub fn send_goal_request(
         &self,
         goal: serde_json::Value, // T::Goal
     ) -> Result<
         impl Future<
             Output = Result<(
-                ClientGoalUntyped,
+                ActionClientGoalUntyped,
                 impl Future<Output = Result<(GoalStatus, Result<serde_json::Value>)>>, // T::Result
                 impl Stream<Item = Result<serde_json::Value>> + Unpin, // T::Feedback
             )>,
@@ -104,7 +133,7 @@ impl ActionClientUntyped {
                             }
 
                             Ok((
-                                ClientGoalUntyped {
+                                ActionClientGoalUntyped {
                                     client: fut_client,
                                     uuid,
                                 },

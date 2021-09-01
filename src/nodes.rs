@@ -1,8 +1,25 @@
-use super::*;
+use futures::channel::{mpsc, oneshot};
+use futures::future::FutureExt;
+use futures::future::TryFutureExt;
 use futures::future::{self, join_all};
+use futures::stream::{Stream, StreamExt};
+use std::future::Future;
+use std::collections::HashMap;
+use std::ffi::{CStr, CString};
+use std::mem::MaybeUninit;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
+use super::*;
+
+/// A ROS Node.
+///
+/// This struct owns all subscribes, publishers, etc.  To get events
+/// from the ROS network into your ros application, `spin_once` should
+/// be called continously.
 pub struct Node {
     context: Context,
+    /// ROS parameter values.
     pub params: Arc<Mutex<HashMap<String, ParameterValue>>>,
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
@@ -378,7 +395,7 @@ impl Node {
         &mut self,
         service_name: &str,
         service_type: &str,
-    ) -> Result<UntypedClient> {
+    ) -> Result<ClientUntyped> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
         let client_handle =
             create_client_helper(self.node_handle.as_mut(), service_name, service_type.ts)?;
@@ -479,7 +496,7 @@ impl Node {
     pub fn create_action_server<T: 'static>(
         &mut self,
         action_name: &str,
-    ) -> Result<impl Stream<Item = GoalRequest<T>> + Unpin>
+    ) -> Result<impl Stream<Item = ActionServerGoalRequest<T>> + Unpin>
     where
         T: WrappedActionTypeSupport,
     {
@@ -497,7 +514,8 @@ impl Node {
         }
         let mut clock_handle = Box::new(unsafe { clock_handle.assume_init() });
 
-        let (goal_request_sender, goal_request_receiver) = mpsc::channel::<GoalRequest<T>>(10);
+        let (goal_request_sender, goal_request_receiver) =
+            mpsc::channel::<ActionServerGoalRequest<T>>(10);
 
         let server_handle = create_action_server_helper(
             self.node_handle.as_mut(),
@@ -720,7 +738,8 @@ impl Node {
             return;
         }
 
-        let ws_subs = unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subscribers.len()) };
+        let ws_subs =
+            unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subscribers.len()) };
         let mut subs_to_remove = vec![];
         for (s, ws_s) in self.subscribers.iter_mut().zip(ws_subs) {
             if ws_s != &std::ptr::null() {
@@ -731,7 +750,8 @@ impl Node {
                 }
             }
         }
-        self.subscribers.retain(|s| !subs_to_remove.contains(s.handle()));
+        self.subscribers
+            .retain(|s| !subs_to_remove.contains(s.handle()));
 
         let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, self.timers.len()) };
         let mut timers_to_remove = vec![];
@@ -768,7 +788,8 @@ impl Node {
                 }
             }
         }
-        self.services.retain(|s| !services_to_remove.contains(s.lock().unwrap().handle()));
+        self.services
+            .retain(|s| !services_to_remove.contains(s.lock().unwrap().handle()));
 
         for ac in &self.action_clients {
             let mut is_feedback_ready = false;
@@ -968,9 +989,8 @@ impl Timer_ {
             if is_ready {
                 let mut nanos = 0i64;
                 // todo: error handling
-                let ret = unsafe {
-                    rcl_timer_get_time_since_last_call(&self.timer_handle, &mut nanos)
-                };
+                let ret =
+                    unsafe { rcl_timer_get_time_since_last_call(&self.timer_handle, &mut nanos) };
                 if ret == RCL_RET_OK as i32 {
                     let ret = unsafe { rcl_timer_call(&mut self.timer_handle) };
                     if ret == RCL_RET_OK as i32 {

@@ -1,8 +1,17 @@
+use futures::channel::{mpsc, oneshot};
+use std::ffi::CString;
+use std::sync::{Arc, Mutex, Weak};
+use std::mem::MaybeUninit;
+
 use super::*;
 
-/// Encapsulates a service request. In contrast to having a simply callback from
-/// Request -> Response types that is called synchronously, the service request
-/// can be moved around and completed asynchronously.
+/// Encapsulates a service request.
+///
+/// In contrast to having a callback from Request -> Response
+/// types that is called synchronously, the service request can be
+/// moved around and completed asynchronously.
+///
+/// To complete the request, call the `respond` function.
 #[derive(Clone)]
 pub struct ServiceRequest<T>
 where
@@ -95,7 +104,7 @@ where
                         return true;
                     }
                     eprintln!("warning: could not send service request ({})", e)
-                },
+                }
                 _ => (),
             }
         } // TODO handle failure.

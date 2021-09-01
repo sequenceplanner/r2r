@@ -1,7 +1,18 @@
-use super::*;
+use futures::channel::oneshot;
+use futures::TryFutureExt;
+use std::future::Future;
+use std::ffi::CString;
+use std::mem::MaybeUninit;
+use std::sync::{Mutex, Weak};
 
-// Public facing apis
+use crate::msg_types::*;
+use crate::error::*;
+use rcl::*;
 
+/// ROS service client.
+///
+/// This is a handle to a service client wrapped in a `Mutex` inside a
+/// `Weak` `Arc`. As such you can pass it between threads safely.
 pub struct Client<T>
 where
     T: WrappedServiceTypeSupport,
@@ -13,6 +24,9 @@ impl<T: 'static> Client<T>
 where
     T: WrappedServiceTypeSupport,
 {
+    /// Make a service request.
+    ///
+    /// Returns a `Future` of the `Response` type.
     pub fn request(&self, msg: &T::Request) -> Result<impl Future<Output = Result<T::Response>>>
     where
         T: WrappedServiceTypeSupport,
@@ -24,11 +38,24 @@ where
     }
 }
 
-pub struct UntypedClient {
+/// ROS "untyped" service client.
+///
+/// The untyped client is useful when you don't know the concrete type
+/// at compile time. Messages are represented by `serde_json::Value`.
+///
+/// This is a handle to a service client wrapped in a `Mutex` inside a
+/// `Weak` `Arc`. As such you can pass it between threads safely.
+pub struct ClientUntyped {
     client: Weak<Mutex<UntypedClient_>>,
 }
 
-impl UntypedClient {
+impl ClientUntyped {
+    /// Make an "untyped" service request.
+    ///
+    /// The request is a `serde_json::Value`. It is up to the user to
+    /// make sure the fields in the json object are correct.
+    ///
+    /// Returns a `Future` of Result<serde_json::Value>.
     pub fn request(
         &self,
         msg: serde_json::Value,
@@ -47,8 +74,8 @@ where
     Client { client }
 }
 
-pub fn make_untyped_client(client: Weak<Mutex<UntypedClient_>>) -> UntypedClient {
-    UntypedClient { client }
+pub fn make_untyped_client(client: Weak<Mutex<UntypedClient_>>) -> ClientUntyped {
+    ClientUntyped { client }
 }
 
 unsafe impl<T> Send for TypedClient<T> where T: WrappedServiceTypeSupport {}
@@ -342,7 +369,7 @@ where
     }
 }
 
-impl IsAvailablePollable for UntypedClient {
+impl IsAvailablePollable for ClientUntyped {
     fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()> {
         let client = self.client.upgrade().ok_or(Error::RCL_RET_CLIENT_INVALID)?;
         let mut client = client.lock().unwrap();

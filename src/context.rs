@@ -1,13 +1,20 @@
+use std::ffi::CString;
+use std::fmt::Debug;
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
+
 use super::*;
 
+/// A ROS context. Needed to create nodes etc.
 #[derive(Debug, Clone)]
 pub struct Context {
-    pub context_handle: Arc<Mutex<ContextHandle>>,
+    pub(crate) context_handle: Arc<Mutex<ContextHandle>>,
 }
 
 unsafe impl Send for Context {}
 
 impl Context {
+    /// Create a ROS context.
     pub fn create() -> Result<Context> {
         let mut ctx: Box<rcl_context_t> = unsafe { Box::new(rcl_get_zero_initialized_context()) };
         // argc/v
@@ -52,6 +59,9 @@ impl Context {
         }
     }
 
+    /// Check if the ROS context is valid.
+    ///
+    /// (This is abbreviated to rcl_ok() in the other bindings.)
     pub fn is_valid(&self) -> bool {
         let mut ctx = self.context_handle.lock().unwrap();
         unsafe { rcl_context_is_valid(ctx.as_mut()) }

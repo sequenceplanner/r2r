@@ -1,5 +1,10 @@
+use std::fmt::Debug;
+use std::mem::MaybeUninit;
+use std::time::Duration;
+
 use super::*;
 
+/// Different ROS clock types.
 #[derive(Debug)]
 pub enum ClockType {
     RosTime,
@@ -9,6 +14,7 @@ pub enum ClockType {
 
 unsafe impl Send for Clock {}
 
+/// A ROS clock.
 pub struct Clock {
     pub(crate) clock_handle: Box<rcl_clock_t>,
 }
@@ -22,6 +28,7 @@ pub fn clock_type_to_rcl(ct: &ClockType) -> rcl_clock_type_t {
 }
 
 impl Clock {
+    /// Create a new clock with the specified type.
     pub fn create(ct: ClockType) -> Result<Clock> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
 
@@ -60,6 +67,7 @@ impl Clock {
         Ok(dur)
     }
 
+    /// TODO: move to builtin helper methods module.
     pub fn to_builtin_time(d: &Duration) -> builtin_interfaces::msg::Time {
         let sec = d.as_secs() as i32;
         let nanosec = d.subsec_nanos();

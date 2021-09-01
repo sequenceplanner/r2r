@@ -1,29 +1,14 @@
-use super::*;
+use futures::channel::{mpsc, oneshot};
+use futures::future::FutureExt;
 use futures::future::{join_all, JoinAll};
+use futures::stream::Stream;
+use retain_mut::RetainMut;
+use std::collections::HashMap;
+use std::ffi::CString;
+use std::mem::MaybeUninit;
+use std::sync::{Arc, Mutex, Weak};
 
-#[derive(Clone)]
-pub struct ActionServer<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    server: Weak<Mutex<WrappedActionServer<T>>>,
-}
-
-impl<T> ActionServer<T>
-where
-    T: WrappedActionTypeSupport,
-{
-    pub fn is_valid(&self) -> Result<bool> {
-        // upgrade to actual ref. if still alive
-        let action_server = self
-            .server
-            .upgrade()
-            .ok_or(Error::RCL_RET_ACTION_SERVER_INVALID)?;
-        let action_server = action_server.lock().unwrap();
-
-        Ok(unsafe { rcl_action_server_is_valid(&action_server.rcl_handle) })
-    }
-}
+use super::*;
 
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
@@ -50,12 +35,13 @@ pub trait ActionServer_ {
     fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
-pub struct CancelRequest {
+/// Request to cancel an active goal.
+pub struct ActionServerCancelRequest {
     pub uuid: uuid::Uuid,
     response_sender: oneshot::Sender<(uuid::Uuid, bool)>,
 }
 
-impl CancelRequest {
+impl ActionServerCancelRequest {
     /// Accepts the cancel request. The action server should now cancel the corresponding goal.
     pub fn accept(self) {
         match self.response_sender.send((self.uuid, true)) {
@@ -72,26 +58,32 @@ impl CancelRequest {
     }
 }
 
-pub struct GoalRequest<T>
+/// Request to the action server to accept a new `Goal`.
+pub struct ActionServerGoalRequest<T>
 where
     T: WrappedActionTypeSupport,
 {
     pub uuid: uuid::Uuid,
     pub goal: T::Goal,
-    cancel_requests: mpsc::Receiver<CancelRequest>,
+    cancel_requests: mpsc::Receiver<ActionServerCancelRequest>,
     server: Weak<Mutex<dyn ActionServer_>>,
     request_id: rmw_request_id_t,
 }
 
-unsafe impl<T> Send for GoalRequest<T> where T: WrappedActionTypeSupport {}
+unsafe impl<T> Send for ActionServerGoalRequest<T> where T: WrappedActionTypeSupport {}
 
-impl<T: 'static> GoalRequest<T>
+impl<T: 'static> ActionServerGoalRequest<T>
 where
     T: WrappedActionTypeSupport,
 {
     /// Accept the goal request and become a ServerGoal.
     /// Returns a handle to the goal and a stream on which cancel requests can be received.
-    pub fn accept(mut self) -> Result<(ServerGoal<T>, impl Stream<Item = CancelRequest> + Unpin)> {
+    pub fn accept(
+        mut self,
+    ) -> Result<(
+        ActionServerGoal<T>,
+        impl Stream<Item = ActionServerCancelRequest> + Unpin,
+    )> {
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: self.uuid.as_bytes().to_vec(),
         };
@@ -131,7 +123,7 @@ where
 
         server.publish_status();
 
-        let g = ServerGoal {
+        let g = ActionServerGoal {
             uuid: self.uuid.clone(),
             goal: self.goal,
             server: self.server,
@@ -175,8 +167,8 @@ where
 {
     pub rcl_handle: rcl_action_server_t,
     pub clock_handle: Box<rcl_clock_t>,
-    pub goal_request_sender: mpsc::Sender<GoalRequest<T>>,
-    pub cancel_senders: HashMap<uuid::Uuid, mpsc::Sender<CancelRequest>>,
+    pub goal_request_sender: mpsc::Sender<ActionServerGoalRequest<T>>,
+    pub cancel_senders: HashMap<uuid::Uuid, mpsc::Sender<ActionServerCancelRequest>>,
     pub active_cancel_requests: Vec<(
         rmw_request_id_t,
         action_msgs::srv::CancelGoal::Response,
@@ -363,10 +355,10 @@ where
         let (uuid_msg, goal) = T::destructure_goal_request_msg(msg);
         let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid_msg.uuid.clone()));
 
-        let (cancel_sender, cancel_receiver) = mpsc::channel::<CancelRequest>(10);
+        let (cancel_sender, cancel_receiver) = mpsc::channel::<ActionServerCancelRequest>(10);
         self.cancel_senders.insert(uuid.clone(), cancel_sender);
 
-        let gr: GoalRequest<T> = GoalRequest {
+        let gr: ActionServerGoalRequest<T> = ActionServerGoalRequest {
             uuid,
             goal,
             cancel_requests: cancel_receiver,
@@ -422,7 +414,7 @@ where
                     .get_mut(&uuid)
                     .and_then(|cancel_sender| {
                         let (s, r) = oneshot::channel::<(uuid::Uuid, bool)>();
-                        let cr = CancelRequest {
+                        let cr = ActionServerCancelRequest {
                             uuid: uuid.clone(),
                             response_sender: s,
                         };
@@ -595,8 +587,9 @@ where
     }
 }
 
+/// A handle to an active `Goal`
 #[derive(Clone)]
-pub struct ServerGoal<T>
+pub struct ActionServerGoal<T>
 where
     T: WrappedActionTypeSupport,
 {
@@ -605,9 +598,9 @@ where
     server: Weak<Mutex<dyn ActionServer_>>,
 }
 
-unsafe impl<T> Send for ServerGoal<T> where T: WrappedActionTypeSupport {}
+unsafe impl<T> Send for ActionServerGoal<T> where T: WrappedActionTypeSupport {}
 
-impl<T: 'static> ServerGoal<T>
+impl<T: 'static> ActionServerGoal<T>
 where
     T: WrappedActionTypeSupport,
 {

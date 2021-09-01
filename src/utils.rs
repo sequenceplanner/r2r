@@ -12,7 +12,8 @@ pub(crate) fn log_guard() -> MutexGuard<'static, ()> {
     LOG_GUARD.lock().unwrap()
 }
 
-/// Don't call this directly, use the macros below instead.
+/// Don't call this directly, use the logging macros instead.
+#[doc(hidden)]
 pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSeverity) {
     let _guard = log_guard();
     let is_init = unsafe { g_rcutils_logging_initialized };
@@ -47,7 +48,7 @@ pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSev
     }
 }
 
-// pub because of our macros
+/// Logging severity
 pub enum LogSeverity {
     Unset,
     Debug,
@@ -86,6 +87,7 @@ macro_rules! __impl_log {
     }};
 }
 
+/// Debug log message.
 #[macro_export]
 macro_rules! log_debug {
     ($logger_name:expr, $($args:tt)*) => {{
@@ -94,6 +96,7 @@ macro_rules! log_debug {
     }}
 }
 
+/// Info log message.
 #[macro_export]
 macro_rules! log_info {
     ($logger_name:expr, $($args:tt)*) => {{
@@ -102,6 +105,7 @@ macro_rules! log_info {
     }}
 }
 
+/// Warning log message.
 #[macro_export]
 macro_rules! log_warn {
     ($logger_name:expr, $($args:tt)*) => {{
@@ -110,6 +114,7 @@ macro_rules! log_warn {
     }}
 }
 
+/// Error log message.
 #[macro_export]
 macro_rules! log_error {
     ($logger_name:expr, $($args:tt)*) => {{
@@ -118,6 +123,7 @@ macro_rules! log_error {
     }}
 }
 
+/// Fatal log message.
 #[macro_export]
 macro_rules! log_fatal {
     ($logger_name:expr, $($args:tt)*) => {{

@@ -1,7 +1,19 @@
+use futures::channel::{mpsc, oneshot};
+use futures::future::{FutureExt, TryFutureExt};
+use futures::stream::Stream;
+use std::collections::HashMap;
+use std::future::Future;
+use std::sync::{Mutex, Weak};
+use std::mem::MaybeUninit;
+use std::ffi::CString;
+
 use super::*;
 
 unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
 
+/// Action client
+///
+/// Use this to make goal requests to an action server.
 #[derive(Clone)]
 pub struct ActionClient<T>
 where
@@ -10,10 +22,13 @@ where
     client: Weak<Mutex<WrappedActionClient<T>>>,
 }
 
-unsafe impl<T> Send for ClientGoal<T> where T: WrappedActionTypeSupport {}
+unsafe impl<T> Send for ActionClientGoal<T> where T: WrappedActionTypeSupport {}
 
+/// Action client goal handle
+///
+/// This can be used to cancel goals and query the status of goals.
 #[derive(Clone)]
-pub struct ClientGoal<T>
+pub struct ActionClientGoal<T>
 where
     T: WrappedActionTypeSupport,
 {
@@ -21,10 +36,11 @@ where
     pub uuid: uuid::Uuid,
 }
 
-impl<T: 'static> ClientGoal<T>
+impl<T: 'static> ActionClientGoal<T>
 where
     T: WrappedActionTypeSupport,
 {
+    /// Get the current status of this goal.
     pub fn get_status(&self) -> Result<GoalStatus> {
         let client = self
             .client
@@ -35,6 +51,13 @@ where
         Ok(client.get_goal_status(&self.uuid))
     }
 
+    /// Send a cancel request for this goal to the server.
+    ///
+    /// If the server accepts and completes the request, the future completes without error.
+    /// Otherwise, one of these errors can be returned:
+    /// - `GoalCancelRejected`
+    /// - `GoalCancelUnknownGoalID`
+    /// - `GoalCancelAlreadyTerminated`
     pub fn cancel(&self) -> Result<impl Future<Output = Result<()>>> {
         // upgrade to actual ref. if still alive
         let client = self
@@ -51,13 +74,19 @@ impl<T: 'static> ActionClient<T>
 where
     T: WrappedActionTypeSupport,
 {
+    /// Make a new goal request.
+    ///
+    /// If the server accepts the new goal, the future resolves to a triple of:
+    /// - A goal handle.
+    /// - A new future for the eventual result.
+    /// - A stream of feedback messages.
     pub fn send_goal_request(
         &self,
         goal: T::Goal,
     ) -> Result<
         impl Future<
             Output = Result<(
-                ClientGoal<T>,
+                ActionClientGoal<T>,
                 impl Future<Output = Result<(GoalStatus, T::Result)>>,
                 impl Stream<Item = T::Feedback> + Unpin,
             )>,
@@ -115,7 +144,7 @@ where
                             }
 
                             Ok((
-                                ClientGoal {
+                                ActionClientGoal {
                                     client: fut_client,
                                     uuid,
                                 },
@@ -143,6 +172,7 @@ where
     ActionClient { client }
 }
 
+/// The status of a goal.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum GoalStatus {
     Unknown,

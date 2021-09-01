@@ -5,7 +5,7 @@ use r2r;
 
 async fn requester_task(
     node_available: impl Future<Output = r2r::Result<()>>,
-    c: r2r::UntypedClient,
+    c: r2r::ClientUntyped,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i64 = 0;
     println!("waiting for service...");

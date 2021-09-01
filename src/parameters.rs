@@ -1,5 +1,8 @@
+use std::ffi::CStr;
+
 use super::*;
 
+/// ROS parameter value.
 #[derive(Debug, PartialEq, Clone)]
 pub enum ParameterValue {
     NotSet,

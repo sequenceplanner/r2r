@@ -1,3 +1,6 @@
+use futures::channel::mpsc;
+use std::ffi::CString;
+
 use super::*;
 
 pub trait Subscriber_ {

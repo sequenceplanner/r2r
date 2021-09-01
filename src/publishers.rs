@@ -1,4 +1,10 @@
+use std::ffi::CString;
+use std::fmt::Debug;
+use std::sync::Weak;
+use std::marker::PhantomData;
+
 use super::*;
+
 
 // The publish function is thread safe. ROS2 docs state:
 // =============
@@ -27,6 +33,10 @@ use super::*;
 
 unsafe impl<T> Send for Publisher<T> where T: WrappedTypesupport {}
 
+/// A ROS (typed) publisher.
+///
+/// This contains a `Weak Arc` to a typed publisher. As such it is safe to
+/// move between threads.
 #[derive(Debug, Clone)]
 pub struct Publisher<T>
 where
@@ -37,6 +47,11 @@ where
 }
 
 unsafe impl Send for PublisherUntyped {}
+
+/// A ROS (untyped) publisher.
+///
+/// This contains a `Weak Arc` to an "untyped" publisher. As such it is safe to
+/// move between threads.
 #[derive(Debug, Clone)]
 pub struct PublisherUntyped {
     handle: Weak<rcl_publisher_t>,
@@ -84,6 +99,9 @@ pub fn create_publisher_helper(
 }
 
 impl PublisherUntyped {
+    /// Publish an "untyped" ROS message represented by a `serde_json::Value`.
+    ///
+    /// It is up to the user to make sure the fields are correct.
     pub fn publish(&self, msg: serde_json::Value) -> Result<()> {
         // upgrade to actual ref. if still alive
         let publisher = self
@@ -115,6 +133,7 @@ impl<T: 'static> Publisher<T>
 where
     T: WrappedTypesupport,
 {
+    /// Publish a ROS message.
     pub fn publish(&self, msg: &T) -> Result<()>
     where
         T: WrappedTypesupport,
@@ -141,6 +160,10 @@ where
         }
     }
 
+    /// Publish a "native" ROS message.
+    ///
+    /// This function is useful if you want to bypass the generated
+    /// rust types as it lets you work with the raw C struct.
     pub fn publish_native(&self, msg: &WrappedNativeMsg<T>) -> Result<()>
     where
         T: WrappedTypesupport,
