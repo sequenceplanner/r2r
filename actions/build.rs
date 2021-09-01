@@ -78,6 +78,7 @@ fn main() {
         .whitelist_type("rcl_action_client_options_t")
         .whitelist_type("rcl_action_server_options_t")
         .whitelist_var("RCL_RET_ACTION_.*")
+        .generate_comments(false)
         .generate()
         .expect("Unable to generate bindings");
 

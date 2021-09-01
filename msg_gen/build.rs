@@ -145,6 +145,7 @@ fn main() {
         .blacklist_type("rosidl_runtime_c__int64__Sequence")
         .size_t_is_usize(true)
         .no_debug("_OSUnaligned.*")
+        .generate_comments(false)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });

@@ -68,6 +68,7 @@ fn main() {
         .no_debug("_OSUnaligned.*")
         .derive_partialeq(true)
         .derive_copy(true)
+        .generate_comments(false)
         .generate()
         .expect("Unable to generate bindings");
 
