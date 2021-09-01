@@ -10,7 +10,7 @@ pub enum ClockType {
 unsafe impl Send for Clock {}
 
 pub struct Clock {
-    clock_handle: Box<rcl_clock_t>,
+    pub(crate) clock_handle: Box<rcl_clock_t>,
 }
 
 pub fn clock_type_to_rcl(ct: &ClockType) -> rcl_clock_type_t {
