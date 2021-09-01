@@ -1,5 +1,7 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
+use std::rc::Rc;
+use std::cell::RefCell;
 use r2r;
 
 async fn timer_task(mut t: r2r::Timer) -> Result<(), Box<dyn std::error::Error>> {
@@ -29,16 +31,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
 
+    let is_done = Rc::new(RefCell::new(false));
+
+    let task_is_done = is_done.clone();
     spawner.spawn_local(async move {
         match timer_task(timer).await {
-            Ok(()) => println!("exiting"),
+            Ok(()) => {
+                *task_is_done.borrow_mut() = true;
+                println!("exiting");
+            },
             Err(e) => println!("error: {}", e),
         }
     })?;
 
-    loop {
+    while !*is_done.borrow() {
         node.spin_once(std::time::Duration::from_millis(100));
 
         pool.run_until_stalled();
     }
+
+    Ok(())
 }
