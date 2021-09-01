@@ -24,6 +24,7 @@ pub struct Node {
 unsafe impl Send for Node {}
 
 impl Node {
+    /// Returns the name of the node.
     pub fn name(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_name(self.node_handle.as_ref()) };
         if cstr == std::ptr::null() {
@@ -33,6 +34,7 @@ impl Node {
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
+    /// Returns the fully qualified name of the node.
     pub fn fully_qualified_name(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_fully_qualified_name(self.node_handle.as_ref()) };
         if cstr == std::ptr::null() {
@@ -42,6 +44,7 @@ impl Node {
         Ok(s.to_str().unwrap_or("").to_owned())
     }
 
+    /// Returns the namespace of the node.
     pub fn namespace(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_namespace(self.node_handle.as_ref()) };
         if cstr == std::ptr::null() {
@@ -118,6 +121,7 @@ impl Node {
         Ok(())
     }
 
+    /// Creates a ROS node.
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
         let (res, node_handle) = {
             let mut ctx_handle = ctx.context_handle.lock().unwrap();
@@ -160,9 +164,14 @@ impl Node {
         }
     }
 
-    /// Returns a tuple (parameter_handler_future, parameter_event_stream).
-    /// The user should spawn the parameter_handler_future onto the executor of choice.
-    /// The "event stream" includes the name of the parameter which was updated as well as its  value.
+    /// Creates parameter service handlers for the Node.
+    ///
+    /// This function returns a tuple (`Future`, `Stream`), where the
+    /// future should be spawned on onto the executor of choice. The
+    /// `Stream` produces events whenever parameters change from
+    /// external sources. The event elements of the event stream
+    /// include the name of the parameter which was updated as well as
+    /// its new value.
     pub fn make_parameter_handler(
         &mut self,
     ) -> Result<(
@@ -249,6 +258,9 @@ impl Node {
         Ok((join_all(handlers).map(|_| ()), event_rx))
     }
 
+    /// Subscribe to a ROS topic.
+    ///
+    /// This function returns a `Stream` of ros messages.
     pub fn subscribe<T: 'static>(&mut self, topic: &str) -> Result<impl Stream<Item = T> + Unpin>
     where
         T: WrappedTypesupport,
@@ -265,6 +277,9 @@ impl Node {
         Ok(receiver)
     }
 
+    /// Subscribe to a ROS topic.
+    ///
+    /// This function returns a `Stream` of ros messages without the rust convenience types.
     pub fn subscribe_native<T: 'static>(
         &mut self,
         topic: &str,
@@ -284,7 +299,10 @@ impl Node {
         Ok(receiver)
     }
 
-    // Its not really untyped since we know the underlying type... But we throw this info away :)
+    /// Subscribe to a ROS topic.
+    ///
+    /// This function returns a `Stream` of ros messages as `serde_json::Value`:s.
+    /// Useful when you cannot know the type of the message at compile time.
     pub fn subscribe_untyped(
         &mut self,
         topic: &str,
@@ -304,6 +322,10 @@ impl Node {
         Ok(receiver)
     }
 
+    /// Create a ROS service.
+    ///
+    /// This function returns a `Stream` of `ServiceRequest`:s. Call
+    /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
         &mut self,
         service_name: &str,
@@ -325,6 +347,9 @@ impl Node {
         Ok(receiver)
     }
 
+    /// Create a ROS service client.
+    ///
+    /// A service client is used to make requests to a ROS service server.
     pub fn create_client<T: 'static>(&mut self, service_name: &str) -> Result<Client<T>>
     where
         T: WrappedServiceTypeSupport,
@@ -343,7 +368,12 @@ impl Node {
         Ok(c)
     }
 
-    /// Create a service client without having the concrete rust type.
+    /// Create a ROS service client.
+    ///
+    /// A service client is used to make requests to a ROS service
+    /// server. This function returns an `UntypedClient`, which deals
+    /// with `serde_json::Value`s instead of concrete types.  Useful
+    /// when you cannot know the type of the message at compile time.
     pub fn create_client_untyped(
         &mut self,
         service_name: &str,
@@ -365,6 +395,13 @@ impl Node {
         Ok(c)
     }
 
+    /// Register a client for wakeup when the service or action server is available to the node.
+    ///
+    /// Returns a `Future` that completes when the service/action server is available.
+    ///
+    /// This function will register the client to be polled in
+    /// `spin_once` until available, so spin_once must be called
+    /// repeatedly in order to get the wakeup.
     pub fn is_available(
         &mut self,
         client: &dyn IsAvailablePollable,
@@ -374,6 +411,9 @@ impl Node {
         Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
     }
 
+    /// Create a ROS action client.
+    ///
+    /// An action client is used to make requests to a ROS action server.
     pub fn create_action_client<T: 'static>(&mut self, action_name: &str) -> Result<ActionClient<T>>
     where
         T: WrappedActionTypeSupport,
@@ -397,7 +437,12 @@ impl Node {
         Ok(c)
     }
 
-    /// Create an action client without having the concrete rust type.
+    /// Create a ROS action client.
+    ///
+    /// A action client is used to make requests to a ROS service
+    /// server. This function returns a `ActionClientUntyped`, which deals
+    /// with `serde_json::Value`s instead of concrete types.  Useful
+    /// when you cannot know the type of the message at compile time.
     pub fn create_action_client_untyped(
         &mut self,
         action_name: &str,
@@ -427,6 +472,10 @@ impl Node {
         Ok(c)
     }
 
+    /// Create a ROS action server.
+    ///
+    /// This function returns a stream of `GoalRequest`s, which needs
+    /// to be either accepted or rejected.
     pub fn create_action_server<T: 'static>(
         &mut self,
         action_name: &str,
@@ -472,6 +521,7 @@ impl Node {
         Ok(goal_request_receiver)
     }
 
+    /// Create a ROS publisher.
     pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
     where
         T: WrappedTypesupport,
@@ -484,6 +534,7 @@ impl Node {
         Ok(p)
     }
 
+    /// Create a ROS publisher with a type given at runtime.
     pub fn create_publisher_untyped(
         &mut self,
         topic: &str,
@@ -497,6 +548,15 @@ impl Node {
         Ok(p)
     }
 
+    /// Spin the ROS node.
+    ///
+    /// This handles wakeups of all subscribes, services, etc on the
+    /// ros side. In turn, this will complete future and wake up
+    /// streams on the rust side. This needs to be called repeatedly
+    /// (see the examples).
+    ///
+    /// `timeout` is a duration specifying how long the spin should
+    /// block for if there are no pending events.
     pub fn spin_once(&mut self, timeout: Duration) {
         // first handle any completed action cancellation responses
         for a in &mut self.action_servers {
@@ -817,6 +877,8 @@ impl Node {
         }
     }
 
+    /// Returns a map of topic names and type names of the publishers
+    /// visible to this node.
     pub fn get_topic_names_and_types(&self) -> Result<HashMap<String, Vec<String>>> {
         let mut tnat = unsafe { rmw_get_zero_initialized_names_and_types() };
         let ret = unsafe {
@@ -853,6 +915,9 @@ impl Node {
         Ok(res)
     }
 
+    /// Create a ROS wall timer.
+    ///
+    /// Create a ROS timer that is woken up by spin every `period`.
     pub fn create_wall_timer(&mut self, period: Duration) -> Result<Timer> {
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
 
@@ -903,6 +968,7 @@ impl Node {
         Ok(out_timer)
     }
 
+    /// Get the ros logger name for this node.
     pub fn logger<'a>(&'a self) -> &'a str {
         let ptr = unsafe { rcl_node_get_logger_name(self.node_handle.as_ref()) };
         if ptr == std::ptr::null() {
@@ -919,11 +985,15 @@ struct Timer_ {
     sender: mpsc::Sender<Duration>,
 }
 
+/// A ROS timer.
 pub struct Timer {
     receiver: mpsc::Receiver<Duration>,
 }
 
 impl Timer {
+    /// Completes when the next instant in the interval has been reached.
+    ///
+    /// Returns the time passed since the timer was last woken up.
     pub async fn tick(&mut self) -> Result<Duration> {
         let next = self.receiver.next().await;
         if let Some(elapsed) = next {
