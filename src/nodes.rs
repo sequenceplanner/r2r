@@ -721,16 +721,23 @@ impl Node {
         }
 
         let ws_subs = unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subs.len()) };
+        let mut subs_to_remove = vec![];
         for (s, ws_s) in self.subs.iter_mut().zip(ws_subs) {
             if ws_s != &std::ptr::null() {
-                s.handle_incoming();
+                let dropped = s.handle_incoming();
+                if dropped {
+                    s.destroy(&mut self.node_handle);
+                    subs_to_remove.push(*s.handle());
+                }
             }
         }
+        self.subs.retain(|s| !subs_to_remove.contains(s.handle()));
 
         let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, self.timers.len()) };
         let mut timers_to_remove = vec![];
         for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
             if ws_s != &std::ptr::null() {
+                // TODO: move this to impl Timer
                 let mut is_ready = false;
                 let ret = unsafe { rcl_timer_is_ready(&s.timer_handle, &mut is_ready) };
                 if ret == RCL_RET_OK as i32 {
@@ -749,6 +756,10 @@ impl Node {
                                             println!("Warning: timer tick not handled in time - no wakeup will occur");
                                         }
                                         if e.is_disconnected() {
+                                            // TODO: cleanup
+                                            let _ret = unsafe { rcl_timer_fini(&mut s.timer_handle) };
+                                            let _ret = unsafe { rcl_steady_clock_fini(s.clock_handle.as_mut()) };
+
                                             // client dropped the timer handle, let's drop our timer as well.
                                             timers_to_remove.push(s.timer_handle);
                                         }
@@ -774,12 +785,18 @@ impl Node {
         }
 
         let ws_services = unsafe { std::slice::from_raw_parts(ws.services, self.services.len()) };
+        let mut services_to_remove = vec![];
         for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
             if ws_s != &std::ptr::null() {
                 let mut service = s.lock().unwrap();
-                service.handle_request(s.clone());
+                let dropped = service.handle_request(s.clone());
+                if dropped {
+                    service.destroy(&mut self.node_handle);
+                    services_to_remove.push(*service.handle());
+                }
             }
         }
+        self.services.retain(|s| !services_to_remove.contains(s.lock().unwrap().handle()));
 
         for ac in &self.action_clients {
             let mut is_feedback_ready = false;

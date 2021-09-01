@@ -34,7 +34,8 @@ where
 pub trait Service_ {
     fn handle(&self) -> &rcl_service_t;
     fn send_response(&mut self, request_id: rmw_request_id_t, msg: Box<dyn VoidPtr>) -> Result<()>;
-    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> ();
+    /// Returns true if the service stream has been dropped.
+    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> bool;
     fn destroy(&mut self, node: &mut rcl_node_t) -> ();
 }
 
@@ -69,7 +70,7 @@ where
         }
     }
 
-    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> () {
+    fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> bool {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut request_msg = WrappedNativeMsg::<T::Request>::new();
 
@@ -89,10 +90,16 @@ where
                 service: Arc::downgrade(&service),
             };
             match self.sender.try_send(request) {
-                Err(e) => eprintln!("warning: could not send service request ({})", e),
+                Err(e) => {
+                    if e.is_disconnected() {
+                        return true;
+                    }
+                    eprintln!("warning: could not send service request ({})", e)
+                },
                 _ => (),
             }
         } // TODO handle failure.
+        return false;
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
