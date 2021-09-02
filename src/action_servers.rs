@@ -8,7 +8,16 @@ use std::ffi::CString;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, Mutex, Weak};
 
-use super::*;
+use crate::error::*;
+use crate::action_common::*;
+use crate::msg_types::*;
+use crate::msg_types::generated_msgs::{
+    unique_identifier_msgs,
+    action_msgs,
+    builtin_interfaces,
+};
+use r2r_rcl::*;
+use r2r_actions::*;
 
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
@@ -283,9 +292,7 @@ where
                                 }
 
                                 response_msg.goals_canceling.retain(|goal_info| {
-                                    let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(
-                                        goal_info.goal_id.uuid.clone(),
-                                    ));
+                                    let msg_uuid = uuid_msg_to_uuid(&goal_info.goal_id);
                                     do_cancel && msg_uuid == uuid
                                 });
                             }
@@ -353,7 +360,7 @@ where
         }
         let msg = <<<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request>::from_native(&request_msg);
         let (uuid_msg, goal) = T::destructure_goal_request_msg(msg);
-        let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid_msg.uuid.clone()));
+        let uuid = uuid_msg_to_uuid(&uuid_msg);
 
         let (cancel_sender, cancel_receiver) = mpsc::channel::<ActionServerCancelRequest>(10);
         self.cancel_senders.insert(uuid.clone(), cancel_sender);
@@ -408,8 +415,7 @@ where
             .goals_canceling
             .iter()
             .flat_map(|goal_info| {
-                let uuid =
-                    uuid::Uuid::from_bytes(vec_to_uuid_bytes(goal_info.goal_id.uuid.clone()));
+                let uuid = uuid_msg_to_uuid(&goal_info.goal_id);
                 self.cancel_senders
                     .get_mut(&uuid)
                     .and_then(|cancel_sender| {
@@ -448,7 +454,7 @@ where
                 return;
             }
             let gi = action_msgs::msg::GoalInfo::from_native(&goal_info);
-            let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(gi.goal_id.uuid.clone()));
+            let uuid = uuid_msg_to_uuid(&gi.goal_id);
             println!("goal expired: {} - {}", uuid, num_expired);
             // todo
             // self.goals.remove(&uuid);
@@ -539,7 +545,7 @@ where
         let goal_exists =
             unsafe { rcl_action_server_goal_exists(&self.rcl_handle, &*goal_info_native) };
 
-        let uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(goal_info.goal_id.uuid.clone()));
+        let uuid = uuid_msg_to_uuid(&goal_info.goal_id);
 
         let response_msg = if !goal_exists {
             // Goal does not exists

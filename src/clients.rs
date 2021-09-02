@@ -7,7 +7,7 @@ use std::sync::{Mutex, Weak};
 
 use crate::msg_types::*;
 use crate::error::*;
-use rcl::*;
+use r2r_rcl::*;
 
 /// ROS service client.
 ///

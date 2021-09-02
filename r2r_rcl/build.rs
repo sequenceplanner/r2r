@@ -1,12 +1,12 @@
 extern crate bindgen;
 
-use common;
+use r2r_common;
 use itertools::Itertools;
 use std::env;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    common::print_cargo_watches();
+    r2r_common::print_cargo_watches();
 
     let mut builder = bindgen::Builder::default()
         .header("src/rcl_wrapper.h")

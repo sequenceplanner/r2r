@@ -7,7 +7,16 @@ use std::sync::{Mutex, Weak};
 use std::mem::MaybeUninit;
 use std::ffi::CString;
 
-use super::*;
+use crate::error::*;
+use crate::action_common::*;
+use crate::msg_types::*;
+use crate::msg_types::generated_msgs::{
+    unique_identifier_msgs,
+    action_msgs,
+    builtin_interfaces,
+};
+use r2r_rcl::*;
+use r2r_actions::*;
 
 unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
 
@@ -172,62 +181,6 @@ where
     ActionClient { client }
 }
 
-/// The status of a goal.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum GoalStatus {
-    Unknown,
-    Accepted,
-    Executing,
-    Canceling,
-    Succeeded,
-    Canceled,
-    Aborted,
-}
-
-impl GoalStatus {
-    #[allow(dead_code)]
-    pub fn to_rcl(&self) -> i8 {
-        match self {
-            GoalStatus::Unknown => 0,
-            GoalStatus::Accepted => 1,
-            GoalStatus::Executing => 2,
-            GoalStatus::Canceling => 3,
-            GoalStatus::Succeeded => 4,
-            GoalStatus::Canceled => 5,
-            GoalStatus::Aborted => 6,
-        }
-    }
-
-    pub fn from_rcl(s: i8) -> Self {
-        match s {
-            0 => GoalStatus::Unknown,
-            1 => GoalStatus::Accepted,
-            2 => GoalStatus::Executing,
-            3 => GoalStatus::Canceling,
-            4 => GoalStatus::Succeeded,
-            5 => GoalStatus::Canceled,
-            6 => GoalStatus::Aborted,
-            _ => panic!("unknown action status: {}", s),
-        }
-    }
-}
-
-impl std::fmt::Display for GoalStatus {
-    fn fmt(&self, fmtr: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            GoalStatus::Unknown => "unknown",
-            GoalStatus::Accepted => "accepted",
-            GoalStatus::Executing => "executing",
-            GoalStatus::Canceling => "canceling",
-            GoalStatus::Succeeded => "succeeded",
-            GoalStatus::Canceled => "canceled",
-            GoalStatus::Aborted => "aborted",
-        };
-
-        write!(fmtr, "{}", s)
-    }
-}
-
 pub struct WrappedActionClient<T>
 where
     T: WrappedActionTypeSupport,
@@ -258,13 +211,6 @@ pub trait ActionClient_ {
 
     fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
     fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
-}
-
-use std::convert::TryInto;
-pub fn vec_to_uuid_bytes<T>(v: Vec<T>) -> [T; 16] {
-    v.try_into().unwrap_or_else(|v: Vec<T>| {
-        panic!("Expected a Vec of length {} but it was {}", 16, v.len())
-    })
 }
 
 impl<T> WrappedActionClient<T>
@@ -421,7 +367,7 @@ where
         if ret == RCL_RET_OK as i32 {
             let msg = T::FeedbackMessage::from_native(&feedback_msg);
             let (uuid, feedback) = T::destructure_feedback_msg(msg);
-            let msg_uuid = uuid::Uuid::from_bytes(vec_to_uuid_bytes(uuid.uuid));
+            let msg_uuid = uuid_msg_to_uuid(&uuid);
             if let Some((_, sender)) = self
                 .feedback_senders
                 .iter_mut()
@@ -441,8 +387,7 @@ where
         if ret == RCL_RET_OK as i32 {
             let arr = action_msgs::msg::GoalStatusArray::from_native(&status_array);
             for a in &arr.status_list {
-                let uuid =
-                    uuid::Uuid::from_bytes(vec_to_uuid_bytes(a.goal_info.goal_id.uuid.clone()));
+                let uuid = uuid_msg_to_uuid(&a.goal_info.goal_id);
                 if !self.result_senders.iter().any(|(suuid, _)| suuid == &uuid) {
                     continue;
                 }

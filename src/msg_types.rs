@@ -1,11 +1,12 @@
 use crate::error::*;
-use msg_gen::*;
-use rcl::{
+use r2r_msg_gen::*;
+use r2r_rcl::{
     rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_service_type_support_t,
 };
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
+use std::convert::TryInto;
 
 pub mod generated_msgs {
     use super::*;
@@ -22,6 +23,18 @@ pub mod generated_msgs {
 }
 
 use generated_msgs::{builtin_interfaces, unique_identifier_msgs};
+
+fn vec_to_uuid_bytes<T>(v: Vec<T>) -> [T; 16] {
+    v.try_into().unwrap_or_else(|v: Vec<T>| {
+        panic!("Expected a Vec of length {} but it was {}", 16, v.len())
+    })
+}
+
+/// TODO: maybe expose this somewhere.
+pub(crate) fn uuid_msg_to_uuid(msg: &unique_identifier_msgs::msg::UUID) -> uuid::Uuid {
+    let bytes = vec_to_uuid_bytes(msg.uuid.clone());
+    uuid::Uuid::from_bytes(bytes)
+}
 
 pub trait WrappedTypesupport:
     Serialize + serde::de::DeserializeOwned + Default + Debug + Clone
@@ -396,7 +409,7 @@ where
 mod tests {
     use super::generated_msgs::*;
     use super::*;
-    use rcl::*;
+    use r2r_rcl::*;
 
     #[test]
     fn test_ros_str() -> () {

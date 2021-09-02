@@ -5,11 +5,11 @@ Easy to use bindings for ROS2 that do *not* require hooking in to the ROS2 build
 
 When integration with the colcon build system is desired, a CMakeLists.txt file can be used to limit the generation of bindings to only include specific (idl) dependencies. This is done through additional environment variables. A minimal example of the colcon integration is available here: <https://github.com/m-dahl/r2r_minimal_node/>.
 
-This library differ a bit in style from rclpy and rclcpp as it eliminates all synchronous callbacks in favor of rust futures and streams. Coupled with the rust await syntax, this makes it very pleasant to work with ROS services and actions. The library purposefully does not chose an async runtime -- this means that the user needs to take care of any task spawning. This also limits the API to what futures-rs provides.
+This library differ a bit in style from rclpy and rclcpp as it eliminates all synchronous callbacks in favor of rust futures and streams. Coupled with the rust await syntax, this makes it very pleasant to work with ROS services and actions, even in a single threaded setup (see service.rs example). The library purposefully does not chose an async runtime -- this means that the user needs to take care of any task spawning. This also limits the API to what futures-rs provides.
 
 Manual is available on github pages <https://sequenceplanner.github.io/r2r/> (documention is lacking though).
 
-These bindings are being written organically when things are needed by me and others so please be aware that the API will change. As of now I have no intention of wrapping all of the RCL just for the sake of completeness.
+These bindings are being written organically when things are needed by me and others so please be aware that the API will change. As of now I have no intention of wrapping all of the RCL just for the sake of completeness. However, if you need some specific functionality, feel free to open an issue or a PR!
 
 How to use
 --------------------

@@ -1,12 +1,12 @@
 use bindgen;
-use common;
+use r2r_common;
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    common::print_cargo_watches();
+    r2r_common::print_cargo_watches();
 
     let mut builder = bindgen::Builder::default();
 
@@ -20,8 +20,8 @@ fn main() {
         }
         let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
         let deps = deps.split(":").collect::<Vec<_>>();
-        let msgs = common::get_ros_msgs(&packages);
-        common::parse_msgs(&msgs)
+        let msgs = r2r_common::get_ros_msgs(&packages);
+        r2r_common::parse_msgs(&msgs)
             .into_iter()
             .filter(|msg| deps.contains(&msg.module.as_str()))
             .collect::<Vec<_>>()
@@ -35,11 +35,11 @@ fn main() {
             .map(|i| Path::new(i))
             .collect::<Vec<_>>();
 
-        let msgs = common::get_ros_msgs(&paths);
-        common::parse_msgs(&msgs)
+        let msgs = r2r_common::get_ros_msgs(&paths);
+        r2r_common::parse_msgs(&msgs)
     };
 
-    let msg_map = common::as_map(&msg_list);
+    let msg_map = r2r_common::as_map(&msg_list);
 
     for module in msg_map.keys() {
         println!(

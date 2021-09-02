@@ -1,7 +1,9 @@
 use futures::channel::mpsc;
 use std::ffi::CString;
 
-use super::*;
+use crate::msg_types::*;
+use crate::error::*;
+use r2r_rcl::*;
 
 pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;

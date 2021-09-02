@@ -3,7 +3,9 @@ use std::ffi::CString;
 use std::sync::{Arc, Mutex, Weak};
 use std::mem::MaybeUninit;
 
-use super::*;
+use crate::msg_types::*;
+use crate::error::*;
+use r2r_rcl::*;
 
 /// Encapsulates a service request.
 ///

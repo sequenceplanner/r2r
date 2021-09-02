@@ -1,6 +1,6 @@
 #![allow(non_camel_case_types)]
-use actions::*;
-use rcl::*;
+use r2r_actions::*;
+use r2r_rcl::*;
 use thiserror::Error;
 
 /// r2r Result type.

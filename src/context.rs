@@ -3,7 +3,9 @@ use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 
-use super::*;
+use crate::error::*;
+use crate::log_guard;
+use r2r_rcl::*;
 
 /// A ROS context. Needed to create nodes etc.
 #[derive(Debug, Clone)]
@@ -89,8 +91,8 @@ impl Drop for ContextHandle {
     fn drop(&mut self) {
         // TODO: error handling? atleast probably need rcl_reset_error
         unsafe {
-            rcl::rcl_shutdown(self.0.as_mut());
-            rcl::rcl_context_fini(self.0.as_mut());
+            rcl_shutdown(self.0.as_mut());
+            rcl_context_fini(self.0.as_mut());
         }
     }
 }

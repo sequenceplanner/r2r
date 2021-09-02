@@ -3,8 +3,9 @@ use std::fmt::Debug;
 use std::sync::Weak;
 use std::marker::PhantomData;
 
-use super::*;
-
+use crate::msg_types::*;
+use crate::error::*;
+use r2r_rcl::*;
 
 // The publish function is thread safe. ROS2 docs state:
 // =============

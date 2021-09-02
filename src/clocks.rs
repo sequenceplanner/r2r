@@ -2,7 +2,9 @@ use std::fmt::Debug;
 use std::mem::MaybeUninit;
 use std::time::Duration;
 
-use super::*;
+use crate::error::*;
+use crate::msg_types::generated_msgs::builtin_interfaces;
+use r2r_rcl::*;
 
 /// Different ROS clock types.
 #[derive(Debug)]

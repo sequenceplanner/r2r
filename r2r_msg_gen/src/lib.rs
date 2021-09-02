@@ -9,7 +9,7 @@ include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 #[macro_use]
 extern crate lazy_static;
 
-use rcl::*;
+use r2r_rcl::*;
 use std::collections::HashMap;
 
 use std::ffi::CStr;
@@ -509,7 +509,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
     }
 }
 
-pub fn generate_untyped_helper(msgs: &Vec<common::RosMsg>) -> String {
+pub fn generate_untyped_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
     let open = String::from(
         "
 impl WrappedNativeMsgUntyped {
@@ -551,7 +551,7 @@ impl WrappedNativeMsgUntyped {
     format!("{}{}{}", open, lines, close)
 }
 
-pub fn generate_untyped_service_helper(msgs: &Vec<common::RosMsg>) -> String {
+pub fn generate_untyped_service_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
     let open = String::from(
         "
 impl UntypedServiceSupport {
@@ -592,7 +592,7 @@ impl UntypedServiceSupport {
     format!("{}{}{}", open, lines, close)
 }
 
-pub fn generate_untyped_action_helper(msgs: &Vec<common::RosMsg>) -> String {
+pub fn generate_untyped_action_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
     let open = String::from(
         "
 impl UntypedActionSupport {

@@ -1,0 +1,11 @@
+[package]
+name = "r2r_common"
+version = "0.2.0"
+authors = ["Martin Dahl <martin.dahl@gmail.com>"]
+description = "Minimal ros2 bindings."
+license = "Apache-2.0/MIT"
+edition = "2018"
+readme = "README.md"
+homepage = "https://github.com/sequenceplanner/r2r"
+repository = "https://github.com/sequenceplanner/r2r"
+documentation = "https://sequenceplanner.github.io/r2r/"

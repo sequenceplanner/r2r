@@ -60,7 +60,7 @@
 //!        }
 //!    })?;
 //!
-//!    // Main thread spins ros.
+//!    // Main loop spins ros.
 //!    loop {
 //!        node.spin_once(std::time::Duration::from_millis(100));
 //!        pool.run_until_stalled();
@@ -73,15 +73,10 @@
 // this crate depend on, which seem like bad user experience.
 pub extern crate uuid;
 
-use actions::*;
-use rcl::*;
-
 mod error;
 pub use error::{Error, Result};
 
 mod msg_types;
-use msg_types::*;
-
 pub use msg_types::generated_msgs::*;
 pub use msg_types::WrappedNativeMsg as NativeMsg;
 
@@ -89,30 +84,26 @@ mod utils;
 pub use utils::*;
 
 mod subscribers;
-use subscribers::*;
 
 mod publishers;
-use publishers::*;
 pub use publishers::{Publisher, PublisherUntyped};
 
 mod services;
 pub use services::ServiceRequest;
-use services::*;
 
 mod clients;
-use clients::*;
 pub use clients::{Client, ClientUntyped};
 
+mod action_common;
+pub use action_common::GoalStatus;
+
 mod action_clients;
-use action_clients::*;
-pub use action_clients::{ActionClient, ActionClientGoal, GoalStatus};
+pub use action_clients::{ActionClient, ActionClientGoal};
 
 mod action_clients_untyped;
-use action_clients_untyped::*;
 pub use action_clients_untyped::{ActionClientGoalUntyped, ActionClientUntyped};
 
 mod action_servers;
-use action_servers::*;
 pub use action_servers::{ActionServerCancelRequest, ActionServerGoal, ActionServerGoalRequest};
 
 mod context;

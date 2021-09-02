@@ -1,6 +1,7 @@
 use std::ffi::CStr;
 
-use super::*;
+use crate::msg_types::generated_msgs::rcl_interfaces;
+use r2r_rcl::*;
 
 /// ROS parameter value.
 #[derive(Debug, PartialEq, Clone)]
