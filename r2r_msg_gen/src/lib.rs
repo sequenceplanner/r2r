@@ -518,10 +518,7 @@ impl WrappedNativeMsgUntyped {
     );
     let close = String::from(
         "
-        else
-        {
-            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
-        }
+        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
     }
 }
 ",
@@ -560,10 +557,7 @@ impl UntypedServiceSupport {
     );
     let close = String::from(
         "
-        else
-        {
-            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
-        }
+        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
     }
 }
 ",
@@ -601,10 +595,7 @@ impl UntypedActionSupport {
     );
     let close = String::from(
         "
-        else
-        {
-            return Err(Error::InvalidMessageType{ msgtype: typename.into() })
-        }
+        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
     }
 }
 ",
