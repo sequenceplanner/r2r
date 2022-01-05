@@ -1,5 +1,3 @@
-use r2r;
-
 /// try to run like this
 /// cargo run --example logging -- --ros-args --log-level DEBUG
 /// The logs produced with the node logger should show up in /rosout

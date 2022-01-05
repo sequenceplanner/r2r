@@ -4,7 +4,6 @@ use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
 use futures::FutureExt;
 
-use r2r;
 use r2r::example_interfaces::srv::AddTwoInts;
 
 ///

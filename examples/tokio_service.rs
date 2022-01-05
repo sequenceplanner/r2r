@@ -1,7 +1,4 @@
-use r2r;
 use futures::stream::StreamExt;
-
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None => break,
         }
     }
-    
+
     handle.await?;
 
     Ok(())

@@ -14,23 +14,6 @@ impl Default for rmw_message_info_t {
     }
 }
 
-impl Default for rmw_qos_profile_t {
-    fn default() -> Self {
-        let mut profile: rmw_qos_profile_t = unsafe { std::mem::zeroed() };
-        profile.history = rmw_qos_history_policy_t::RMW_QOS_POLICY_HISTORY_SYSTEM_DEFAULT;
-        profile.depth = 10;
-        profile.reliability =
-            rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT;
-        profile.durability = rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT;
-        profile.avoid_ros_namespace_conventions = false;
-        profile.deadline = rmw_time_t { sec: 0, nsec: 0 };
-        profile.lifespan = rmw_time_t { sec: 0, nsec: 0 };
-        profile.liveliness = rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT;
-        profile.liveliness_lease_duration = rmw_time_t { sec: 0, nsec: 0 };
-        profile
-    }
-}
-
 // special treatment to convert to/from rust strings.
 // ros strings are owned by ros, assignment is a copy
 impl rosidl_runtime_c__String {

@@ -4,9 +4,9 @@ use r2r_rcl::{
     rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_service_type_support_t,
 };
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use std::convert::TryInto;
 
 pub mod generated_msgs {
     use super::*;

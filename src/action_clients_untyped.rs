@@ -3,20 +3,16 @@ use futures::future::{FutureExt, TryFutureExt};
 use futures::stream::Stream;
 use std::collections::HashMap;
 use std::future::Future;
-use std::sync::{Mutex, Weak};
 use std::mem::MaybeUninit;
+use std::sync::{Mutex, Weak};
 
-use crate::error::*;
-use crate::action_common::*;
-use crate::msg_types::*;
 use crate::action_clients::*;
-use crate::msg_types::generated_msgs::{
-    unique_identifier_msgs,
-    action_msgs,
-    builtin_interfaces,
-};
-use r2r_rcl::*;
+use crate::action_common::*;
+use crate::error::*;
+use crate::msg_types::generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs};
+use crate::msg_types::*;
 use r2r_actions::*;
+use r2r_rcl::*;
 //
 // TODO: refactor this to separate out shared code between typed action client and this.
 //

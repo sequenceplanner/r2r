@@ -2,21 +2,17 @@ use futures::channel::{mpsc, oneshot};
 use futures::future::{FutureExt, TryFutureExt};
 use futures::stream::Stream;
 use std::collections::HashMap;
-use std::future::Future;
-use std::sync::{Mutex, Weak};
-use std::mem::MaybeUninit;
 use std::ffi::CString;
+use std::future::Future;
+use std::mem::MaybeUninit;
+use std::sync::{Mutex, Weak};
 
-use crate::error::*;
 use crate::action_common::*;
+use crate::error::*;
+use crate::msg_types::generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs};
 use crate::msg_types::*;
-use crate::msg_types::generated_msgs::{
-    unique_identifier_msgs,
-    action_msgs,
-    builtin_interfaces,
-};
-use r2r_rcl::*;
 use r2r_actions::*;
+use r2r_rcl::*;
 
 unsafe impl<T> Send for ActionClient<T> where T: WrappedActionTypeSupport {}
 

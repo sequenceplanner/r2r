@@ -2,7 +2,6 @@ use futures::executor::LocalPool;
 use futures::future;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
-use r2r;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;

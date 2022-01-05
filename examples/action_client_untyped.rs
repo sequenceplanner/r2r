@@ -5,7 +5,7 @@ use futures::executor::LocalPool;
 use futures::future::FutureExt;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
-use r2r;
+
 use std::sync::{Arc, Mutex};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

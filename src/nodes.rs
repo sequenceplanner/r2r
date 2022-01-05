@@ -3,29 +3,30 @@ use futures::future::FutureExt;
 use futures::future::TryFutureExt;
 use futures::future::{self, join_all};
 use futures::stream::{Stream, StreamExt};
-use std::future::Future;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
+use std::future::Future;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use r2r_rcl::*;
 use r2r_actions::*;
+use r2r_rcl::*;
 
-use crate::error::*;
-use crate::msg_types::*;
-use crate::msg_types::generated_msgs::rcl_interfaces;
-use crate::subscribers::*;
-use crate::publishers::*;
-use crate::services::*;
-use crate::clients::*;
 use crate::action_clients::*;
 use crate::action_clients_untyped::*;
 use crate::action_servers::*;
-use crate::context::*;
-use crate::parameters::*;
+use crate::clients::*;
 use crate::clocks::*;
+use crate::context::*;
+use crate::error::*;
+use crate::msg_types::generated_msgs::rcl_interfaces;
+use crate::msg_types::*;
+use crate::parameters::*;
+use crate::publishers::*;
+use crate::qos::QosProfile;
+use crate::services::*;
+use crate::subscribers::*;
 
 /// A ROS Node.
 ///
@@ -293,12 +294,16 @@ impl Node {
     /// Subscribe to a ROS topic.
     ///
     /// This function returns a `Stream` of ros messages.
-    pub fn subscribe<T: 'static>(&mut self, topic: &str) -> Result<impl Stream<Item = T> + Unpin>
+    pub fn subscribe<T: 'static>(
+        &mut self,
+        topic: &str,
+        qos_profile: QosProfile,
+    ) -> Result<impl Stream<Item = T> + Unpin>
     where
         T: WrappedTypesupport,
     {
         let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<T>(10);
 
         let ws = TypedSubscriber {
@@ -315,12 +320,13 @@ impl Node {
     pub fn subscribe_native<T: 'static>(
         &mut self,
         topic: &str,
+        qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = WrappedNativeMsg<T>> + Unpin>
     where
         T: WrappedTypesupport,
     {
         let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
         let ws = NativeSubscriber {
@@ -339,10 +345,11 @@ impl Node {
         &mut self,
         topic: &str,
         topic_type: &str,
+        qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts)?;
+            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
         let ws = UntypedSubscriber {
@@ -555,12 +562,16 @@ impl Node {
     }
 
     /// Create a ROS publisher.
-    pub fn create_publisher<T>(&mut self, topic: &str) -> Result<Publisher<T>>
+    pub fn create_publisher<T>(
+        &mut self,
+        topic: &str,
+        qos_profile: QosProfile,
+    ) -> Result<Publisher<T>>
     where
         T: WrappedTypesupport,
     {
         let publisher_handle =
-            create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts())?;
+            create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let arc = Arc::new(publisher_handle);
         let p = make_publisher(Arc::downgrade(&arc));
         self.pubs.push(arc);
@@ -572,9 +583,11 @@ impl Node {
         &mut self,
         topic: &str,
         topic_type: &str,
+        qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let publisher_handle = create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts)?;
+        let publisher_handle =
+            create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
         let arc = Arc::new(publisher_handle);
         let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
         self.pubs.push(arc);

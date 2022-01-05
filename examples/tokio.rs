@@ -1,6 +1,6 @@
 use futures::future;
 use futures::stream::StreamExt;
-use r2r;
+
 use std::sync::{Arc, Mutex};
 use tokio::task;
 
@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut timer = node
         .create_wall_timer(std::time::Duration::from_millis(2500))
         .unwrap();
-    let state_t2 = state.clone();
+    let state_t2 = state;
     task::spawn(async move {
         loop {
             let time_passed = timer.tick().await.unwrap();

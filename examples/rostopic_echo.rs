@@ -2,7 +2,7 @@ use futures::executor::LocalPool;
 use futures::future;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
-use r2r;
+
 use std::collections::HashMap;
 use std::env;
 use std::thread;

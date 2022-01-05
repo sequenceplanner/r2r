@@ -1,8 +1,9 @@
 use futures::channel::mpsc;
 use std::ffi::CString;
 
-use crate::msg_types::*;
 use crate::error::*;
+use crate::msg_types::*;
+use crate::qos::QosProfile;
 use r2r_rcl::*;
 
 pub trait Subscriber_ {
@@ -161,13 +162,14 @@ pub fn create_subscription_helper(
     node: &mut rcl_node_t,
     topic: &str,
     ts: *const rosidl_message_type_support_t,
+    qos_profile: QosProfile,
 ) -> Result<rcl_subscription_t> {
     let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
     let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
     let result = unsafe {
         let mut subscription_options = rcl_subscription_get_default_options();
-        subscription_options.qos = rmw_qos_profile_t::default();
+        subscription_options.qos = qos_profile.into();
         rcl_subscription_init(
             &mut subscription_handle,
             node,

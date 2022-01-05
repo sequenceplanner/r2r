@@ -1,6 +1,6 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
-use r2r;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 

@@ -1,5 +1,3 @@
-use r2r;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut clock = r2r::Clock::create(r2r::ClockType::RosTime)?;

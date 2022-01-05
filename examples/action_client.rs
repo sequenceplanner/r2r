@@ -2,7 +2,7 @@ use futures::executor::LocalPool;
 use futures::future::FutureExt;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
-use r2r;
+
 use r2r::example_interfaces::action::Fibonacci;
 use std::sync::{Arc, Mutex};
 

@@ -1,7 +1,7 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
 use futures::Future;
-use r2r;
+
 use std::io::Write;
 
 use r2r::example_interfaces::srv::AddTwoInts;

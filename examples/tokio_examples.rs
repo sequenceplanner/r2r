@@ -2,10 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use futures::future;
 use futures::stream::StreamExt;
-use r2r;
+
 use tokio::task;
-
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -14,28 +12,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arc_node = Arc::new(Mutex::new(node));
 
     let an = arc_node.clone();
-    task::spawn(async move {
-        subscriber(an).await.unwrap()
-    });
-    
-    let an = arc_node.clone();
-    task::spawn(async move {
-        publisher(an).await.unwrap()
-    });
+    task::spawn(async move { subscriber(an).await.unwrap() });
 
     let an = arc_node.clone();
-    task::spawn(async move {
-        client(an).await.unwrap()
-    });
+    task::spawn(async move { publisher(an).await.unwrap() });
 
     let an = arc_node.clone();
-    task::spawn(async move {
-        service(an).await.unwrap()
-    });
+    task::spawn(async move { client(an).await.unwrap() });
+
+    let an = arc_node.clone();
+    task::spawn(async move { service(an).await.unwrap() });
 
     let handle = tokio::task::spawn_blocking(move || loop {
         {
-            arc_node.lock().unwrap().spin_once(std::time::Duration::from_millis(10));
+            arc_node
+                .lock()
+                .unwrap()
+                .spin_once(std::time::Duration::from_millis(10));
         }
         std::thread::sleep(std::time::Duration::from_millis(100))
     });
@@ -45,13 +38,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-
 async fn subscriber(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
-    let sub = arc_node.lock().unwrap().subscribe::<r2r::std_msgs::msg::String>("/topic")?;
+    let sub = arc_node
+        .lock()
+        .unwrap()
+        .subscribe::<r2r::std_msgs::msg::String>("/topic")?;
     sub.for_each(|msg| {
         println!("topic: new msg: {}", msg.data);
         future::ready(())
-    }).await;
+    })
+    .await;
     Ok(())
 }
 
@@ -65,9 +61,11 @@ async fn publisher(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
     };
     for _ in 1..10 {
         timer.tick().await?;
-        let msg = r2r::std_msgs::msg::String{data: "hello from r2r".to_string() };
+        let msg = r2r::std_msgs::msg::String {
+            data: "hello from r2r".to_string(),
+        };
         publisher.publish(&msg)?;
-    };
+    }
     Ok(())
 }
 
@@ -85,12 +83,12 @@ async fn client(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
     service_available.await?;
     println!("service available.");
     for i in 1..10 {
-        let req = AddTwoInts::Request { a: i , b: 5 };
+        let req = AddTwoInts::Request { a: i, b: 5 };
         if let Ok(resp) = client.request(&req).unwrap().await {
             println!("{}", resp.sum);
         }
         timer.tick().await?;
-    };
+    }
     Ok(())
 }
 
@@ -111,7 +109,6 @@ async fn service(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
             }
             None => break,
         }
-    } 
+    }
     Ok(())
 }
-

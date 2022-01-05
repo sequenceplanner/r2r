@@ -28,13 +28,13 @@
 //!use futures::future;
 //!use futures::stream::StreamExt;
 //!use futures::task::LocalSpawnExt;
-//!use r2r;
+//!use r2r::QosProfile;
 //!
 //!fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!    let ctx = r2r::Context::create()?;
 //!    let mut node = r2r::Node::create(ctx, "node", "namespace")?;
-//!    let subscriber = node.subscribe::<r2r::std_msgs::msg::String>("/topic")?;
-//!    let publisher = node.create_publisher::<r2r::std_msgs::msg::String>("/topic")?;
+//!    let subscriber = node.subscribe::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
+//!    let publisher = node.create_publisher::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
 //!    let mut timer = node.create_wall_timer(std::time::Duration::from_millis(1000))?;
 //!
 //!    // Set up a simple task executor.
@@ -67,7 +67,6 @@
 //!    }
 //!}
 //! ```
-
 
 // otherwise crates using r2r needs to specify the same version of uuid as
 // this crate depend on, which seem like bad user experience.
@@ -117,3 +116,6 @@ pub use clocks::{Clock, ClockType};
 
 mod nodes;
 pub use nodes::{Node, Timer};
+
+pub mod qos;
+pub use qos::QosProfile;

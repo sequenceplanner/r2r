@@ -1,7 +1,3 @@
-use r2r;
-
-
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
@@ -21,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     waiting.await?;
     println!("service available.");
     for i in 1..10 {
-        let req = AddTwoInts::Request { a: i , b: 5 };
+        let req = AddTwoInts::Request { a: i, b: 5 };
         if let Ok(resp) = client.request(&req)?.await {
             println!("{}", resp.sum);
         }

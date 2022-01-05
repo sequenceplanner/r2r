@@ -1,5 +1,5 @@
 use futures::stream::StreamExt;
-use r2r;
+
 use std::sync::{Arc, Mutex};
 use tokio::task;
 
@@ -60,7 +60,7 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        state.lock().unwrap().clone()
+        *state.lock().unwrap()
     });
     let x = handle.join().unwrap();
     assert_eq!(x, 19);

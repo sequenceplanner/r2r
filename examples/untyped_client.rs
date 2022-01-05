@@ -1,7 +1,6 @@
 use futures::executor::LocalPool;
 use futures::task::LocalSpawnExt;
 use futures::Future;
-use r2r;
 
 async fn requester_task(
     node_available: impl Future<Output = r2r::Result<()>>,

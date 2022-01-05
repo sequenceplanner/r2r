@@ -1,5 +1,3 @@
-use r2r_common;
-use r2r_msg_gen;
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -8,13 +6,13 @@ use std::path::{Path, PathBuf};
 fn main() {
     r2r_common::print_cargo_watches();
 
-    let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+    let msg_list = if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         let packages = cmake_includes
-            .split(":")
+            .split(':')
             .flat_map(|i| Path::new(i).parent())
             .collect::<Vec<_>>();
-        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
-        let deps = deps.split(":").collect::<Vec<_>>();
+        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or_default();
+        let deps = deps.split(':').collect::<Vec<_>>();
         let msgs = r2r_common::get_ros_msgs(&packages);
         r2r_common::parse_msgs(&msgs)
             .into_iter()
@@ -23,8 +21,8 @@ fn main() {
     } else {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
         let paths = ament_prefix_var
-            .split(":")
-            .map(|i| Path::new(i))
+            .split(':')
+            .map(Path::new)
             .collect::<Vec<_>>();
         let msgs = r2r_common::get_ros_msgs(&paths);
         r2r_common::parse_msgs(&msgs)
@@ -65,11 +63,15 @@ fn main() {
                         codegen.push_str("    use super::super::super::super::*;\n");
 
                         let srvname = format!("{}_{}", msg, srv);
-                        codegen.push_str(&r2r_msg_gen::generate_rust_service(module, prefix, &srvname));
+                        codegen.push_str(&r2r_msg_gen::generate_rust_service(
+                            module, prefix, &srvname,
+                        ));
 
                         for s in &["Request", "Response"] {
                             let msgname = format!("{}_{}_{}", msg, srv, s);
-                            codegen.push_str(&r2r_msg_gen::generate_rust_msg(module, prefix, &msgname));
+                            codegen.push_str(&r2r_msg_gen::generate_rust_msg(
+                                module, prefix, &msgname,
+                            ));
                         }
                         codegen.push_str("    }\n");
                     }

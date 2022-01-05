@@ -1,10 +1,11 @@
 use std::ffi::CString;
 use std::fmt::Debug;
-use std::sync::Weak;
 use std::marker::PhantomData;
+use std::sync::Weak;
 
-use crate::msg_types::*;
 use crate::error::*;
+use crate::msg_types::*;
+use crate::qos::QosProfile;
 use r2r_rcl::*;
 
 // The publish function is thread safe. ROS2 docs state:
@@ -77,13 +78,14 @@ pub fn create_publisher_helper(
     node: &mut rcl_node_t,
     topic: &str,
     typesupport: *const rosidl_message_type_support_t,
+    qos_profile: QosProfile,
 ) -> Result<rcl_publisher_t> {
     let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
     let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
     let result = unsafe {
         let mut publisher_options = rcl_publisher_get_default_options();
-        publisher_options.qos = rmw_qos_profile_t::default();
+        publisher_options.qos = qos_profile.into();
         rcl_publisher_init(
             &mut publisher_handle,
             node,

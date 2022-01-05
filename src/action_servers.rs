@@ -8,16 +8,12 @@ use std::ffi::CString;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, Mutex, Weak};
 
-use crate::error::*;
 use crate::action_common::*;
+use crate::error::*;
+use crate::msg_types::generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs};
 use crate::msg_types::*;
-use crate::msg_types::generated_msgs::{
-    unique_identifier_msgs,
-    action_msgs,
-    builtin_interfaces,
-};
-use r2r_rcl::*;
 use r2r_actions::*;
+use r2r_rcl::*;
 
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;

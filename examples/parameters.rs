@@ -1,7 +1,6 @@
 use futures::executor::LocalPool;
 use futures::prelude::*;
 use futures::task::LocalSpawnExt;
-use r2r;
 
 // try to run like this
 // cargo run --example parameters -- --ros-args -p key1:=[hello,world] -p key2:=5.5 -r __ns:=/demo -r __node:=my_node

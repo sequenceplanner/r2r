@@ -1,4 +1,3 @@
-use r2r;
 use std::thread;
 use std::time::Duration;
 

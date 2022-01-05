@@ -1,7 +1,7 @@
 extern crate bindgen;
 
-use r2r_common;
 use itertools::Itertools;
+use r2r_common;
 use std::env;
 use std::path::{Path, PathBuf};
 
