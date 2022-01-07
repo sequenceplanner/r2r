@@ -169,7 +169,7 @@ pub struct UntypedActionSupport {
     pub(crate) destructure_goal_response_msg:
         Box<dyn Fn(WrappedNativeMsgUntyped) -> (bool, builtin_interfaces::msg::Time)>,
 
-    pub(crate) make_feedback_msg: Box<dyn Fn() -> WrappedNativeMsgUntyped>,
+    pub(crate) make_feedback_msg: fn() -> WrappedNativeMsgUntyped,
     pub(crate) destructure_feedback_msg: Box<
         dyn Fn(
             WrappedNativeMsgUntyped,
@@ -186,7 +186,7 @@ pub struct UntypedActionSupport {
 impl UntypedActionSupport {
     fn new<T>() -> Self
     where
-        T: WrappedActionTypeSupport + 'static,
+        T: WrappedActionTypeSupport,
     {
         // TODO: this is terrible. These closures perform json (de)serialization just to move the data.
         // FIX.
@@ -220,7 +220,7 @@ impl UntypedActionSupport {
             T::destructure_goal_response_msg(msg)
         });
 
-        let make_feedback_msg = Box::new(WrappedNativeMsgUntyped::new::<T::FeedbackMessage>);
+        let make_feedback_msg = WrappedNativeMsgUntyped::new::<T::FeedbackMessage>;
 
         let destructure_feedback_msg = Box::new(|msg: WrappedNativeMsgUntyped| {
             let msg = unsafe {
