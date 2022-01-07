@@ -10,7 +10,7 @@ pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;
     /// Returns true if the subscriber stream has been dropped.
     fn handle_incoming(&mut self) -> bool;
-    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+    fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
 pub struct TypedSubscriber<T>
@@ -56,18 +56,15 @@ where
         };
         if ret == RCL_RET_OK as i32 {
             let msg = T::from_native(&msg);
-            match self.sender.try_send(msg) {
-                Err(e) => {
-                    if e.is_disconnected() {
-                        // user dropped the handle to the stream, signal removal.
-                        return true;
-                    }
-                    println!("error {:?}", e)
+            if let Err(e) = self.sender.try_send(msg) {
+                if e.is_disconnected() {
+                    // user dropped the handle to the stream, signal removal.
+                    return true;
                 }
-                _ => (),
+                println!("error {:?}", e)
             }
         }
-        return false;
+        false
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -97,18 +94,15 @@ where
             )
         };
         if ret == RCL_RET_OK as i32 {
-            match self.sender.try_send(msg) {
-                Err(e) => {
-                    if e.is_disconnected() {
-                        // user dropped the handle to the stream, signal removal.
-                        return true;
-                    }
-                    println!("error {:?}", e)
+            if let Err(e) = self.sender.try_send(msg) {
+                if e.is_disconnected() {
+                    // user dropped the handle to the stream, signal removal.
+                    return true;
                 }
-                _ => (),
+                println!("error {:?}", e)
             }
         }
-        return false;
+        false
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -126,7 +120,7 @@ impl Subscriber_ for UntypedSubscriber {
     fn handle_incoming(&mut self) -> bool {
         let mut msg_info = rmw_message_info_t::default(); // we dont care for now
         let mut msg = WrappedNativeMsgUntyped::new_from(&self.topic_type)
-            .expect(&format!("no typesupport for {}", self.topic_type));
+            .unwrap_or_else(|_| panic!("no typesupport for {}", self.topic_type));
         let ret = unsafe {
             rcl_take(
                 &self.rcl_handle,
@@ -137,18 +131,15 @@ impl Subscriber_ for UntypedSubscriber {
         };
         if ret == RCL_RET_OK as i32 {
             let json = msg.to_json();
-            match self.sender.try_send(json) {
-                Err(e) => {
-                    if e.is_disconnected() {
-                        // user dropped the handle to the stream, signal removal.
-                        return true;
-                    }
-                    println!("error {:?}", e)
+            if let Err(e) = self.sender.try_send(json) {
+                if e.is_disconnected() {
+                    // user dropped the handle to the stream, signal removal.
+                    return true;
                 }
-                _ => (),
+                println!("error {:?}", e)
             }
         }
-        return false;
+        false
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {

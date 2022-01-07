@@ -134,7 +134,7 @@ impl ActionClientUntyped {
                                     .upgrade()
                                     .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
                                 let mut c = c.lock().unwrap();
-                                c.send_result_request(uuid.clone());
+                                c.send_result_request(uuid);
                             }
 
                             Ok((
@@ -165,6 +165,10 @@ pub fn make_action_client_untyped(
     ActionClientUntyped { client }
 }
 
+pub type ResultSender = (
+    uuid::Uuid,
+    oneshot::Sender<(GoalStatus, Result<serde_json::Value>)>,
+);
 pub struct WrappedActionClientUntyped {
     pub action_type_support: UntypedActionSupport,
     pub rcl_handle: rcl_action_client_t,
@@ -173,10 +177,7 @@ pub struct WrappedActionClientUntyped {
         Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
     pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<Result<serde_json::Value>>)>,
     pub result_requests: Vec<(i64, uuid::Uuid)>,
-    pub result_senders: Vec<(
-        uuid::Uuid,
-        oneshot::Sender<(GoalStatus, Result<serde_json::Value>)>,
-    )>,
+    pub result_senders: Vec<ResultSender>,
     pub goal_status: HashMap<uuid::Uuid, GoalStatus>,
 
     pub poll_available_channels: Vec<oneshot::Sender<()>>,
@@ -237,7 +238,7 @@ impl ActionClient_ for WrappedActionClientUntyped {
         &self.rcl_handle
     }
 
-    fn handle_goal_response(&mut self) -> () {
+    fn handle_goal_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = (self.action_type_support.make_goal_response_msg)();
 
@@ -279,7 +280,7 @@ impl ActionClient_ for WrappedActionClientUntyped {
         }
     }
 
-    fn handle_cancel_response(&mut self) -> () {
+    fn handle_cancel_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = WrappedNativeMsg::<action_msgs::srv::CancelGoal::Response>::new();
 
@@ -299,9 +300,8 @@ impl ActionClient_ for WrappedActionClientUntyped {
             {
                 let (_, sender) = self.cancel_response_channels.swap_remove(idx);
                 let response = action_msgs::srv::CancelGoal::Response::from_native(&response_msg);
-                match sender.send(response) {
-                    Err(e) => eprintln!("warning: could not send cancel response msg ({:?})", e),
-                    _ => (),
+                if let Err(e) = sender.send(response) {
+                    eprintln!("warning: could not send cancel response msg ({:?})", e)
                 }
             } else {
                 let we_have: String = self
@@ -318,7 +318,7 @@ impl ActionClient_ for WrappedActionClientUntyped {
         }
     }
 
-    fn handle_feedback_msg(&mut self) -> () {
+    fn handle_feedback_msg(&mut self) {
         let mut feedback_msg = (self.action_type_support.make_feedback_msg)();
         let ret =
             unsafe { rcl_action_take_feedback(&self.rcl_handle, feedback_msg.void_ptr_mut()) };
@@ -331,15 +331,14 @@ impl ActionClient_ for WrappedActionClientUntyped {
                 .iter_mut()
                 .find(|(uuid, _)| uuid == &msg_uuid)
             {
-                match sender.try_send(feedback) {
-                    Err(e) => eprintln!("warning: could not send feedback msg ({})", e),
-                    _ => (),
+                if let Err(e) = sender.try_send(feedback) {
+                    eprintln!("warning: could not send feedback msg ({})", e)
                 }
             }
         }
     }
 
-    fn handle_status_msg(&mut self) -> () {
+    fn handle_status_msg(&mut self) {
         let mut status_array = WrappedNativeMsg::<action_msgs::msg::GoalStatusArray>::new();
         let ret = unsafe { rcl_action_take_status(&self.rcl_handle, status_array.void_ptr_mut()) };
         if ret == RCL_RET_OK as i32 {
@@ -355,7 +354,7 @@ impl ActionClient_ for WrappedActionClientUntyped {
         }
     }
 
-    fn handle_result_response(&mut self) -> () {
+    fn handle_result_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = (self.action_type_support.make_result_response_msg)();
         let ret = unsafe {
@@ -405,7 +404,7 @@ impl ActionClient_ for WrappedActionClientUntyped {
         }
     }
 
-    fn send_result_request(&mut self, uuid: uuid::Uuid) -> () {
+    fn send_result_request(&mut self, uuid: uuid::Uuid) {
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: uuid.as_bytes().to_vec(),
         };

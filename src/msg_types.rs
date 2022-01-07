@@ -9,6 +9,7 @@ use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 
 pub mod generated_msgs {
+    #![allow(clippy::all)]
     use super::*;
     include!(concat!(env!("OUT_DIR"), "/_r2r_generated_msgs.rs"));
     include!(concat!(
@@ -145,8 +146,8 @@ impl UntypedServiceSupport {
     where
         T: WrappedServiceTypeSupport,
     {
-        let make_request_msg = || WrappedNativeMsgUntyped::new::<T::Request>();
-        let make_response_msg = || WrappedNativeMsgUntyped::new::<T::Response>();
+        let make_request_msg = WrappedNativeMsgUntyped::new::<T::Request>;
+        let make_response_msg = WrappedNativeMsgUntyped::new::<T::Response>;
 
         UntypedServiceSupport {
             ts: T::get_ts(),
@@ -185,7 +186,7 @@ pub struct UntypedActionSupport {
 impl UntypedActionSupport {
     fn new<T>() -> Self
     where
-        T: WrappedActionTypeSupport,
+        T: WrappedActionTypeSupport + 'static,
     {
         // TODO: this is terrible. These closures perform json (de)serialization just to move the data.
         // FIX.
@@ -194,8 +195,7 @@ impl UntypedActionSupport {
             let goal_msg: T::Goal =
                 serde_json::from_value(goal).expect("TODO: move this error handling");
             let request_msg = T::make_goal_request_msg(goal_id, goal_msg);
-            let json =
-                serde_json::to_value(request_msg.clone()).expect("TODO: move this error handling");
+            let json = serde_json::to_value(request_msg).expect("TODO: move this error handling");
             let mut native_untyped = WrappedNativeMsgUntyped::new::<
                 <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
             >();
@@ -220,7 +220,7 @@ impl UntypedActionSupport {
             T::destructure_goal_response_msg(msg)
         });
 
-        let make_feedback_msg = Box::new(|| WrappedNativeMsgUntyped::new::<T::FeedbackMessage>());
+        let make_feedback_msg = Box::new(WrappedNativeMsgUntyped::new::<T::FeedbackMessage>);
 
         let destructure_feedback_msg = Box::new(|msg: WrappedNativeMsgUntyped| {
             let msg = unsafe {
@@ -237,8 +237,7 @@ impl UntypedActionSupport {
 
         let make_result_request_msg = Box::new(|uuid_msg: unique_identifier_msgs::msg::UUID| {
             let request_msg = T::make_result_request_msg(uuid_msg);
-            let json =
-                serde_json::to_value(request_msg.clone()).expect("TODO: move this error handling");
+            let json = serde_json::to_value(request_msg).expect("TODO: move this error handling");
 
             let mut native_untyped = WrappedNativeMsgUntyped::new::<
                 <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request,
@@ -363,6 +362,15 @@ where
     }
 }
 
+impl<T> Default for WrappedNativeMsg<T>
+where
+    T: WrappedTypesupport,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: 'static> VoidPtr for WrappedNativeMsg<T>
 where
     T: WrappedTypesupport,
@@ -412,7 +420,7 @@ mod tests {
     use r2r_rcl::*;
 
     #[test]
-    fn test_ros_str() -> () {
+    fn test_ros_str() {
         let hej = "hej hopp";
         let mut msg = WrappedNativeMsg::<std_msgs::msg::String>::new();
         msg.data.assign(hej);
@@ -420,7 +428,7 @@ mod tests {
     }
 
     #[test]
-    fn test_copy_fields() -> () {
+    fn test_copy_fields() {
         let msg_orig = std_msgs::msg::String { data: "hej".into() };
         let rosmsg = WrappedNativeMsg::<std_msgs::msg::String>::from(&msg_orig);
         let msg2 = std_msgs::msg::String::from_native(&rosmsg);
@@ -428,7 +436,7 @@ mod tests {
     }
 
     #[test]
-    fn test_introspection_string() -> () {
+    fn test_introspection_string() {
         unsafe {
             use std::ffi::CStr;
 
@@ -456,13 +464,13 @@ mod tests {
                 type_id,
                 rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8
             );
-            assert_eq!(is_array, false);
+            assert!(!is_array);
         }
     }
 
     #[test]
     #[should_panic] // we are testing that we cannot have to many elements in a fixed sized field
-    fn test_fixedsizearray() -> () {
+    fn test_fixedsizearray() {
         unsafe {
             let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__geometry_msgs__msg__AccelWithCovariance();
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
@@ -490,7 +498,7 @@ mod tests {
 
     #[test]
     #[should_panic] // we are testing that we cannot have to many elements in a fixed sized field
-    fn test_capped_sequence() -> () {
+    fn test_capped_sequence() {
         // float64[<=3] dimensions in the .msg translates to a float64 sequence AND an array size field. handle it...
         unsafe {
             let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__shape_msgs__msg__SolidPrimitive();
@@ -515,7 +523,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generation_string_use() -> () {
+    fn test_generation_string_use() {
         let msg = std_msgs::msg::String { data: "hej".into() };
         let msg2 = msg.clone();
         let msg_native = WrappedNativeMsg::<std_msgs::msg::String>::from(&msg2);
@@ -524,7 +532,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generation_bool_use() -> () {
+    fn test_generation_bool_use() {
         let msg = std_msgs::msg::Bool { data: true };
         let msg_native = WrappedNativeMsg::<std_msgs::msg::Bool>::from(&msg);
         let msg2 = std_msgs::msg::Bool::from_native(&msg_native);
@@ -532,7 +540,7 @@ mod tests {
     }
 
     #[test]
-    fn test_float_sequence() -> () {
+    fn test_float_sequence() {
         use trajectory_msgs::msg::*;
         let native = WrappedNativeMsg::<JointTrajectoryPoint>::new();
         let mut msg = JointTrajectoryPoint::from_native(&native);
@@ -545,7 +553,7 @@ mod tests {
     }
 
     #[test]
-    fn test_deault() -> () {
+    fn test_deault() {
         use trajectory_msgs::msg::*;
         let mut msg: JointTrajectoryPoint = Default::default();
         msg.positions.push(39.0);
@@ -558,7 +566,7 @@ mod tests {
     }
 
     #[test]
-    fn test_untyped_json() -> () {
+    fn test_untyped_json() {
         let mut msg = trajectory_msgs::msg::JointTrajectoryPoint::default();
         msg.positions.push(39.0);
         msg.positions.push(34.0);

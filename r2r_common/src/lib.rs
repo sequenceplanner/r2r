@@ -91,19 +91,10 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
     msgs
 }
 
-pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {
+pub fn parse_msgs(msgs: &[String]) -> Vec<RosMsg> {
     let v: Vec<Vec<&str>> = msgs
         .iter()
         .map(|l| l.split('/').into_iter().take(3).collect())
-        .collect();
-    let v: Vec<_> = v
-        .iter()
-        .filter(|v| v.len() == 3)
-        .map(|v| RosMsg {
-            module: v[0].into(),
-            prefix: v[1].into(),
-            name: v[2].into(),
-        })
         .collect();
 
     // hack because I don't have time to find out the root cause of this at the moment.
@@ -111,7 +102,13 @@ pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {
     // liblibstatistics_collector_test_msgs__..., but I don't know where test_msgs come from.
     // (this seems to be a useless package anyway)
     // also affects message generation below.
-    v.into_iter()
+    v.iter()
+        .filter(|v| v.len() == 3)
+        .map(|v| RosMsg {
+            module: v[0].into(),
+            prefix: v[1].into(),
+            name: v[2].into(),
+        })
         .filter(|v| v.module != "libstatistics_collector")
         .collect()
 }
@@ -120,9 +117,9 @@ pub fn as_map(included_msgs: &[RosMsg]) -> HashMap<&str, HashMap<&str, Vec<&str>
     let mut msgs = HashMap::new();
     for msg in included_msgs {
         msgs.entry(msg.module.as_str())
-            .or_insert(HashMap::new())
+            .or_insert_with(HashMap::new)
             .entry(msg.prefix.as_str())
-            .or_insert(Vec::new())
+            .or_insert_with(Vec::new)
             .push(msg.name.as_str());
     }
     msgs
@@ -139,7 +136,7 @@ std_msgs/msg/Bool
 x/y
 std_msgs/msg/String
 ";
-        let msgs = msgs.lines().map(|l| l.to_string()).collect();
+        let msgs = msgs.lines().map(|l| l.to_string()).collect::<Vec<_>>();
         let parsed = parse_msgs(&msgs);
         assert_eq!(parsed[0].module, "std_msgs");
         assert_eq!(parsed[0].prefix, "msg");

@@ -145,7 +145,7 @@ where
                                     .upgrade()
                                     .ok_or(Error::RCL_RET_ACTION_CLIENT_INVALID)?;
                                 let mut c = c.lock().unwrap();
-                                c.send_result_request(uuid.clone());
+                                c.send_result_request(uuid);
                             }
 
                             Ok((
@@ -177,6 +177,7 @@ where
     ActionClient { client }
 }
 
+pub type ResultSender<R> = (uuid::Uuid, oneshot::Sender<(GoalStatus, R)>);
 pub struct WrappedActionClient<T>
 where
     T: WrappedActionTypeSupport,
@@ -187,7 +188,7 @@ where
         Vec<(i64, oneshot::Sender<action_msgs::srv::CancelGoal::Response>)>,
     pub feedback_senders: Vec<(uuid::Uuid, mpsc::Sender<T::Feedback>)>,
     pub result_requests: Vec<(i64, uuid::Uuid)>,
-    pub result_senders: Vec<(uuid::Uuid, oneshot::Sender<(GoalStatus, T::Result)>)>,
+    pub result_senders: Vec<ResultSender<T::Result>>,
     pub goal_status: HashMap<uuid::Uuid, GoalStatus>,
 
     pub poll_available_channels: Vec<oneshot::Sender<()>>,
@@ -195,18 +196,18 @@ where
 
 pub trait ActionClient_ {
     fn handle(&self) -> &rcl_action_client_t;
-    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+    fn destroy(&mut self, node: &mut rcl_node_t);
 
-    fn handle_goal_response(&mut self) -> ();
-    fn handle_cancel_response(&mut self) -> ();
-    fn handle_feedback_msg(&mut self) -> ();
-    fn handle_status_msg(&mut self) -> ();
-    fn handle_result_response(&mut self) -> ();
+    fn handle_goal_response(&mut self);
+    fn handle_cancel_response(&mut self);
+    fn handle_feedback_msg(&mut self);
+    fn handle_status_msg(&mut self);
+    fn handle_result_response(&mut self);
 
-    fn send_result_request(&mut self, uuid: uuid::Uuid) -> ();
+    fn send_result_request(&mut self, uuid: uuid::Uuid);
 
-    fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
-    fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>);
+    fn poll_available(&mut self, node: &mut rcl_node_t);
 }
 
 impl<T> WrappedActionClient<T>
@@ -273,7 +274,7 @@ where
         &self.rcl_handle
     }
 
-    fn handle_goal_response(&mut self) -> () {
+    fn handle_goal_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response,
@@ -317,7 +318,7 @@ where
         }
     }
 
-    fn handle_cancel_response(&mut self) -> () {
+    fn handle_cancel_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = WrappedNativeMsg::<action_msgs::srv::CancelGoal::Response>::new();
 
@@ -337,9 +338,8 @@ where
             {
                 let (_, sender) = self.cancel_response_channels.swap_remove(idx);
                 let response = action_msgs::srv::CancelGoal::Response::from_native(&response_msg);
-                match sender.send(response) {
-                    Err(e) => eprintln!("warning: could not send cancel response msg ({:?})", e),
-                    _ => (),
+                if let Err(e) = sender.send(response) {
+                    eprintln!("warning: could not send cancel response msg ({:?})", e)
                 }
             } else {
                 let we_have: String = self
@@ -356,7 +356,7 @@ where
         }
     }
 
-    fn handle_feedback_msg(&mut self) -> () {
+    fn handle_feedback_msg(&mut self) {
         let mut feedback_msg = WrappedNativeMsg::<T::FeedbackMessage>::new();
         let ret =
             unsafe { rcl_action_take_feedback(&self.rcl_handle, feedback_msg.void_ptr_mut()) };
@@ -369,15 +369,14 @@ where
                 .iter_mut()
                 .find(|(uuid, _)| uuid == &msg_uuid)
             {
-                match sender.try_send(feedback) {
-                    Err(e) => eprintln!("warning: could not send feedback msg ({})", e),
-                    _ => (),
+                if let Err(e) = sender.try_send(feedback) {
+                    eprintln!("warning: could not send feedback msg ({})", e)
                 }
             }
         }
     }
 
-    fn handle_status_msg(&mut self) -> () {
+    fn handle_status_msg(&mut self) {
         let mut status_array = WrappedNativeMsg::<action_msgs::msg::GoalStatusArray>::new();
         let ret = unsafe { rcl_action_take_status(&self.rcl_handle, status_array.void_ptr_mut()) };
         if ret == RCL_RET_OK as i32 {
@@ -393,7 +392,7 @@ where
         }
     }
 
-    fn handle_result_response(&mut self) -> () {
+    fn handle_result_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
@@ -446,7 +445,7 @@ where
         }
     }
 
-    fn send_result_request(&mut self, uuid: uuid::Uuid) -> () {
+    fn send_result_request(&mut self, uuid: uuid::Uuid) {
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: uuid.as_bytes().to_vec(),
         };

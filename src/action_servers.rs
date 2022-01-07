@@ -18,25 +18,21 @@ use r2r_rcl::*;
 pub trait ActionServer_ {
     fn handle(&self) -> &rcl_action_server_t;
     fn handle_mut(&mut self) -> &mut rcl_action_server_t;
-    fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> ();
-    fn send_completed_cancel_requests(&mut self) -> ();
-    fn handle_cancel_request(&mut self) -> ();
-    fn handle_result_request(&mut self) -> ();
-    fn handle_goal_expired(&mut self) -> ();
-    fn publish_status(&self) -> ();
+    fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>);
+    fn send_completed_cancel_requests(&mut self);
+    fn handle_cancel_request(&mut self);
+    fn handle_result_request(&mut self);
+    fn handle_goal_expired(&mut self);
+    fn publish_status(&self);
     fn set_goal_state(
         &mut self,
         uuid: &uuid::Uuid,
         new_state: rcl_action_goal_event_t,
     ) -> Result<()>;
-    fn add_result(&mut self, uuid: uuid::Uuid, msg: Box<dyn VoidPtr>) -> ();
+    fn add_result(&mut self, uuid: uuid::Uuid, msg: Box<dyn VoidPtr>);
     fn cancel_goal(&mut self, uuid: &uuid::Uuid);
     fn is_cancelling(&self, uuid: &uuid::Uuid) -> Result<bool>;
-    fn add_goal_handle(
-        &mut self,
-        uuid: uuid::Uuid,
-        goal_handle: *mut rcl_action_goal_handle_t,
-    ) -> ();
+    fn add_goal_handle(&mut self, uuid: uuid::Uuid, goal_handle: *mut rcl_action_goal_handle_t);
     fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
@@ -49,16 +45,14 @@ pub struct ActionServerCancelRequest {
 impl ActionServerCancelRequest {
     /// Accepts the cancel request. The action server should now cancel the corresponding goal.
     pub fn accept(self) {
-        match self.response_sender.send((self.uuid, true)) {
-            Err(_) => eprintln!("warning: could not send goal canellation accept msg"),
-            _ => (),
+        if self.response_sender.send((self.uuid, true)).is_err() {
+            eprintln!("warning: could not send goal canellation accept msg")
         }
     }
     /// Rejects the cancel request.
     pub fn reject(self) {
-        match self.response_sender.send((self.uuid, false)) {
-            Err(_) => eprintln!("warning: could not send goal cancellation rejection"),
-            _ => (),
+        if self.response_sender.send((self.uuid, false)).is_err() {
+            eprintln!("warning: could not send goal cancellation rejection")
         }
     }
 }
@@ -129,15 +123,15 @@ where
         server.publish_status();
 
         let g = ActionServerGoal {
-            uuid: self.uuid.clone(),
+            uuid: self.uuid,
             goal: self.goal,
             server: self.server,
         };
 
         // server.goals.insert(g.uuid.clone(), goal_handle);
-        server.add_goal_handle(g.uuid.clone(), goal_handle);
+        server.add_goal_handle(g.uuid, goal_handle);
 
-        return Ok((g, self.cancel_requests));
+        Ok((g, self.cancel_requests))
     }
 
     /// reject the goal request and be consumed in the process
@@ -165,6 +159,11 @@ where
         Ok(())
     }
 }
+pub type ActiveCancelRequest = (
+    rmw_request_id_t,
+    action_msgs::srv::CancelGoal::Response,
+    JoinAll<oneshot::Receiver<(uuid::Uuid, bool)>>,
+);
 
 pub struct WrappedActionServer<T>
 where
@@ -174,11 +173,7 @@ where
     pub clock_handle: Box<rcl_clock_t>,
     pub goal_request_sender: mpsc::Sender<ActionServerGoalRequest<T>>,
     pub cancel_senders: HashMap<uuid::Uuid, mpsc::Sender<ActionServerCancelRequest>>,
-    pub active_cancel_requests: Vec<(
-        rmw_request_id_t,
-        action_msgs::srv::CancelGoal::Response,
-        JoinAll<oneshot::Receiver<(uuid::Uuid, bool)>>,
-    )>,
+    pub active_cancel_requests: Vec<ActiveCancelRequest>,
     pub goals: HashMap<uuid::Uuid, *mut rcl_action_goal_handle_t>,
     pub result_msgs: HashMap<uuid::Uuid, Box<dyn VoidPtr>>,
     pub result_requests: HashMap<uuid::Uuid, Vec<rmw_request_id_t>>,
@@ -266,7 +261,7 @@ where
 
             Ok(())
         } else {
-            return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
+            Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID)
         }
     }
 
@@ -284,7 +279,7 @@ where
                             Ok((uuid, do_cancel)) => {
                                 // cancel goal and filter response msg.
                                 if do_cancel {
-                                    canceled.push(uuid.clone());
+                                    canceled.push(uuid);
                                 }
 
                                 response_msg.goals_canceling.retain(|goal_info| {
@@ -312,7 +307,7 @@ where
                 }
             });
 
-        canceled.iter().for_each(|uuid| self.cancel_goal(&uuid));
+        canceled.iter().for_each(|uuid| self.cancel_goal(uuid));
         if !canceled.is_empty() {
             // at least one goal state changed, publish a new status message
             self.publish_status();
@@ -337,7 +332,7 @@ where
         }
     }
 
-    fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) -> () {
+    fn handle_goal_request(&mut self, server: Arc<Mutex<dyn ActionServer_>>) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut request_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
@@ -359,7 +354,7 @@ where
         let uuid = uuid_msg_to_uuid(&uuid_msg);
 
         let (cancel_sender, cancel_receiver) = mpsc::channel::<ActionServerCancelRequest>(10);
-        self.cancel_senders.insert(uuid.clone(), cancel_sender);
+        self.cancel_senders.insert(uuid, cancel_sender);
 
         let gr: ActionServerGoalRequest<T> = ActionServerGoalRequest {
             uuid,
@@ -370,13 +365,12 @@ where
         };
 
         // send out request.
-        match self.goal_request_sender.try_send(gr) {
-            Err(e) => eprintln!("warning: could not send service request ({})", e),
-            _ => (),
+        if let Err(e) = self.goal_request_sender.try_send(gr) {
+            eprintln!("warning: could not send service request ({})", e)
         }
     }
 
-    fn handle_cancel_request(&mut self) -> () {
+    fn handle_cancel_request(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut request_msg = WrappedNativeMsg::<action_msgs::srv::CancelGoal::Request>::new();
         let ret = unsafe {
@@ -417,7 +411,7 @@ where
                     .and_then(|cancel_sender| {
                         let (s, r) = oneshot::channel::<(uuid::Uuid, bool)>();
                         let cr = ActionServerCancelRequest {
-                            uuid: uuid.clone(),
+                            uuid,
                             response_sender: s,
                         };
                         match cancel_sender.try_send(cr) {
@@ -485,16 +479,12 @@ where
         }
     }
 
-    fn add_goal_handle(
-        &mut self,
-        uuid: uuid::Uuid,
-        goal_handle: *mut rcl_action_goal_handle_t,
-    ) -> () {
+    fn add_goal_handle(&mut self, uuid: uuid::Uuid, goal_handle: *mut rcl_action_goal_handle_t) {
         self.goals.insert(uuid, goal_handle);
     }
 
     // bit of a hack...
-    fn add_result(&mut self, uuid: uuid::Uuid, mut msg: Box<dyn VoidPtr>) -> () {
+    fn add_result(&mut self, uuid: uuid::Uuid, mut msg: Box<dyn VoidPtr>) {
         // if there are already requests for this goal, send the result immediately.
         if let Some(rr) = self.result_requests.remove(&uuid) {
             for mut req in rr {
@@ -512,7 +502,7 @@ where
         self.result_msgs.insert(uuid, msg);
     }
 
-    fn handle_result_request(&mut self) -> () {
+    fn handle_result_request(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut request_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request,
@@ -569,14 +559,13 @@ where
                     "action server: could send result request response. {}",
                     Error::from_rcl_error(ret)
                 );
-                return;
             }
         } else {
             // keep request for later when result comes in
             // todo: add logic that replies to the requests
             self.result_requests
                 .entry(uuid)
-                .or_insert(vec![])
+                .or_insert_with(Vec::new)
                 .push(request_id);
         }
     }
@@ -683,7 +672,7 @@ where
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
-        action_server.add_result(self.uuid.clone(), Box::new(native_msg));
+        action_server.add_result(self.uuid, Box::new(native_msg));
 
         Ok(())
     }
@@ -703,7 +692,7 @@ where
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
-        action_server.add_result(self.uuid.clone(), Box::new(native_msg));
+        action_server.add_result(self.uuid, Box::new(native_msg));
 
         Ok(())
     }
@@ -726,7 +715,7 @@ where
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
-        action_server.add_result(self.uuid.clone(), Box::new(native_msg));
+        action_server.add_result(self.uuid, Box::new(native_msg));
 
         Ok(())
     }

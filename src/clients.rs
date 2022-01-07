@@ -135,10 +135,10 @@ impl UntypedClient_ {
 
 pub trait Client_ {
     fn handle(&self) -> &rcl_client_t;
-    fn handle_response(&mut self) -> ();
-    fn register_poll_available(&mut self, s: oneshot::Sender<()>) -> ();
-    fn poll_available(&mut self, node: &mut rcl_node_t) -> ();
-    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+    fn handle_response(&mut self);
+    fn register_poll_available(&mut self, s: oneshot::Sender<()>);
+    fn poll_available(&mut self, node: &mut rcl_node_t);
+    fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
 pub struct TypedClient<T>
@@ -158,7 +158,7 @@ where
         &self.rcl_handle
     }
 
-    fn handle_response(&mut self) -> () {
+    fn handle_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = WrappedNativeMsg::<T::Response>::new();
 
@@ -244,7 +244,7 @@ impl Client_ for UntypedClient_ {
         &self.rcl_handle
     }
 
-    fn handle_response(&mut self) -> () {
+    fn handle_response(&mut self) {
         let mut request_id = MaybeUninit::<rmw_request_id_t>::uninit();
         let mut response_msg = (self.service_type.make_response_msg)();
 

@@ -60,7 +60,7 @@ impl Node {
     /// Returns the name of the node.
     pub fn name(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_name(self.node_handle.as_ref()) };
-        if cstr == std::ptr::null() {
+        if cstr.is_null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
         let s = unsafe { CStr::from_ptr(cstr) };
@@ -70,7 +70,7 @@ impl Node {
     /// Returns the fully qualified name of the node.
     pub fn fully_qualified_name(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_fully_qualified_name(self.node_handle.as_ref()) };
-        if cstr == std::ptr::null() {
+        if cstr.is_null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
         let s = unsafe { CStr::from_ptr(cstr) };
@@ -80,7 +80,7 @@ impl Node {
     /// Returns the namespace of the node.
     pub fn namespace(&self) -> Result<String> {
         let cstr = unsafe { rcl_node_get_namespace(self.node_handle.as_ref()) };
-        if cstr == std::ptr::null() {
+        if cstr.is_null() {
             return Err(Error::RCL_RET_NODE_INVALID);
         }
         let s = unsafe { CStr::from_ptr(cstr) };
@@ -98,7 +98,7 @@ impl Node {
             return Err(Error::from_rcl_error(ret));
         }
 
-        if *params == std::ptr::null_mut() {
+        if params.is_null() {
             return Ok(());
         }
 
@@ -231,7 +231,7 @@ impl Node {
                         .lock()
                         .unwrap()
                         .get(&p.name)
-                        .and_then(|v| Some(v != &val))
+                        .map(|v| v != &val)
                         .unwrap_or(true); // changed=true if new
                     params.lock().unwrap().insert(p.name.clone(), val.clone());
                     let r = rcl_interfaces::msg::SetParametersResult {
@@ -241,11 +241,8 @@ impl Node {
                     result.results.push(r);
                     // if the value changed, send out new value on parameter event stream
                     if changed {
-                        match event_tx.try_send((p.name.clone(), val)) {
-                            Err(e) => {
-                                println!("Warning: could not send parameter event ({}).", e);
-                            }
-                            _ => {} // ok
+                        if let Err(e) = event_tx.try_send((p.name.clone(), val)) {
+                            println!("Warning: could not send parameter event ({}).", e);
                         }
                     }
                 }
@@ -275,7 +272,7 @@ impl Node {
                         Some(v) => v.clone(),
                         None => ParameterValue::NotSet,
                     })
-                    .map(|v| v.clone().to_parameter_value_msg())
+                    .map(|v| v.into_parameter_value_msg())
                     .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
 
                 let result = rcl_interfaces::srv::GetParameters::Response { values };
@@ -993,9 +990,9 @@ impl Node {
     }
 
     /// Get the ros logger name for this node.
-    pub fn logger<'a>(&'a self) -> &'a str {
+    pub fn logger(&self) -> &str {
         let ptr = unsafe { rcl_node_get_logger_name(self.node_handle.as_ref()) };
-        if ptr == std::ptr::null() {
+        if ptr.is_null() {
             return "";
         }
         let s = unsafe { CStr::from_ptr(ptr) };
@@ -1013,32 +1010,28 @@ impl Timer_ {
     fn handle_incoming(&mut self) -> bool {
         let mut is_ready = false;
         let ret = unsafe { rcl_timer_is_ready(&self.timer_handle, &mut is_ready) };
-        if ret == RCL_RET_OK as i32 {
-            if is_ready {
-                let mut nanos = 0i64;
-                // todo: error handling
-                let ret =
-                    unsafe { rcl_timer_get_time_since_last_call(&self.timer_handle, &mut nanos) };
+        if ret == RCL_RET_OK as i32 && is_ready {
+            let mut nanos = 0i64;
+            // todo: error handling
+            let ret = unsafe { rcl_timer_get_time_since_last_call(&self.timer_handle, &mut nanos) };
+            if ret == RCL_RET_OK as i32 {
+                let ret = unsafe { rcl_timer_call(&mut self.timer_handle) };
                 if ret == RCL_RET_OK as i32 {
-                    let ret = unsafe { rcl_timer_call(&mut self.timer_handle) };
-                    if ret == RCL_RET_OK as i32 {
-                        match self.sender.try_send(Duration::from_nanos(nanos as u64)) {
-                            Err(e) => {
-                                if e.is_disconnected() {
-                                    // client dropped the timer handle, let's drop our timer as well.
-                                    return true;
-                                }
-                                if e.is_full() {
-                                    println!("Warning: timer tick not handled in time - no wakeup will occur");
-                                }
-                            }
-                            _ => {} // ok
+                    if let Err(e) = self.sender.try_send(Duration::from_nanos(nanos as u64)) {
+                        if e.is_disconnected() {
+                            // client dropped the timer handle, let's drop our timer as well.
+                            return true;
+                        }
+                        if e.is_full() {
+                            println!(
+                                "Warning: timer tick not handled in time - no wakeup will occur"
+                            );
                         }
                     }
                 }
             }
         }
-        return false;
+        false
     }
 }
 

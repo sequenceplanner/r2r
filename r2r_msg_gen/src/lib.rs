@@ -3,6 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
+#![allow(clippy::all)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 

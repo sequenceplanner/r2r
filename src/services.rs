@@ -47,7 +47,7 @@ pub trait Service_ {
     fn send_response(&mut self, request_id: rmw_request_id_t, msg: Box<dyn VoidPtr>) -> Result<()>;
     /// Returns true if the service stream has been dropped.
     fn handle_request(&mut self, service: Arc<Mutex<dyn Service_>>) -> bool;
-    fn destroy(&mut self, node: &mut rcl_node_t) -> ();
+    fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
 pub struct TypedService<T>
@@ -100,17 +100,14 @@ where
                 request_id,
                 service: Arc::downgrade(&service),
             };
-            match self.sender.try_send(request) {
-                Err(e) => {
-                    if e.is_disconnected() {
-                        return true;
-                    }
-                    eprintln!("warning: could not send service request ({})", e)
+            if let Err(e) = self.sender.try_send(request) {
+                if e.is_disconnected() {
+                    return true;
                 }
-                _ => (),
+                eprintln!("warning: could not send service request ({})", e)
             }
         } // TODO handle failure.
-        return false;
+        false
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {

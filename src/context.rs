@@ -76,13 +76,13 @@ pub struct ContextHandle(Box<rcl_context_t>);
 impl Deref for ContextHandle {
     type Target = Box<rcl_context_t>;
 
-    fn deref<'a>(&'a self) -> &'a Box<rcl_context_t> {
+    fn deref(&self) -> &Box<rcl_context_t> {
         &self.0
     }
 }
 
 impl DerefMut for ContextHandle {
-    fn deref_mut<'a>(&'a mut self) -> &'a mut Box<rcl_context_t> {
+    fn deref_mut(&mut self) -> &mut Box<rcl_context_t> {
         &mut self.0
     }
 }

@@ -20,43 +20,43 @@ pub enum ParameterValue {
 
 impl ParameterValue {
     pub(crate) fn from_rcl(v: &rcl_variant_t) -> Self {
-        if v.bool_value != std::ptr::null_mut() {
+        if !v.bool_value.is_null() {
             ParameterValue::Bool(unsafe { *v.bool_value })
-        } else if v.integer_value != std::ptr::null_mut() {
+        } else if !v.integer_value.is_null() {
             ParameterValue::Integer(unsafe { *v.integer_value })
-        } else if v.double_value != std::ptr::null_mut() {
+        } else if !v.double_value.is_null() {
             ParameterValue::Double(unsafe { *v.double_value })
-        } else if v.string_value != std::ptr::null_mut() {
+        } else if !v.string_value.is_null() {
             let s = unsafe { CStr::from_ptr(v.string_value) };
             let string = s.to_str().unwrap_or("").to_owned();
             ParameterValue::String(string)
-        } else if v.byte_array_value != std::ptr::null_mut() {
+        } else if !v.byte_array_value.is_null() {
             let vals = unsafe {
                 std::slice::from_raw_parts((*v.byte_array_value).values, (*v.byte_array_value).size)
             };
-            ParameterValue::ByteArray(vals.iter().cloned().collect())
-        } else if v.bool_array_value != std::ptr::null_mut() {
+            ParameterValue::ByteArray(vals.to_vec())
+        } else if !v.bool_array_value.is_null() {
             let vals = unsafe {
                 std::slice::from_raw_parts((*v.bool_array_value).values, (*v.bool_array_value).size)
             };
-            ParameterValue::BoolArray(vals.iter().cloned().collect())
-        } else if v.integer_array_value != std::ptr::null_mut() {
+            ParameterValue::BoolArray(vals.to_vec())
+        } else if !v.integer_array_value.is_null() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.integer_array_value).values,
                     (*v.integer_array_value).size,
                 )
             };
-            ParameterValue::IntegerArray(vals.iter().cloned().collect())
-        } else if v.double_array_value != std::ptr::null_mut() {
+            ParameterValue::IntegerArray(vals.to_vec())
+        } else if !v.double_array_value.is_null() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.double_array_value).values,
                     (*v.double_array_value).size,
                 )
             };
-            ParameterValue::DoubleArray(vals.iter().cloned().collect())
-        } else if v.string_array_value != std::ptr::null_mut() {
+            ParameterValue::DoubleArray(vals.to_vec())
+        } else if !v.string_array_value.is_null() {
             let vals = unsafe {
                 std::slice::from_raw_parts(
                     (*v.string_array_value).data,
@@ -96,7 +96,7 @@ impl ParameterValue {
         }
     }
 
-    pub(crate) fn to_parameter_value_msg(self) -> rcl_interfaces::msg::ParameterValue {
+    pub(crate) fn into_parameter_value_msg(self) -> rcl_interfaces::msg::ParameterValue {
         let mut ret = rcl_interfaces::msg::ParameterValue::default();
 
         match self {
