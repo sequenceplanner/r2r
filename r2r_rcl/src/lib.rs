@@ -22,7 +22,7 @@ impl rosidl_runtime_c__String {
         s.to_str().unwrap_or("")
     }
 
-    pub fn assign(&mut self, other: &str) -> () {
+    pub fn assign(&mut self, other: &str) {
         let q = CString::new(other).unwrap();
         unsafe {
             rosidl_runtime_c__String__assign(self as *mut _, q.as_ptr());
@@ -40,7 +40,7 @@ impl rosidl_runtime_c__U16String {
         s.to_string_lossy()
     }
 
-    pub fn assign(&mut self, other: &str) -> () {
+    pub fn assign(&mut self, other: &str) {
         let wstr = U16String::from_str(other);
         let to_send_ptr = wstr.as_ptr() as *const uint_least16_t;
         unsafe {
@@ -59,7 +59,7 @@ impl rosidl_runtime_c__U16String__Sequence {
         }
         let strs = unsafe { std::slice::from_raw_parts_mut(self.data, values.len()) };
         for (target, source) in strs.iter_mut().zip(values) {
-            target.assign(&source);
+            target.assign(source);
         }
     }
 
@@ -83,7 +83,7 @@ impl rosidl_runtime_c__String__Sequence {
         }
         let strs = unsafe { std::slice::from_raw_parts_mut(self.data, values.len()) };
         for (target, source) in strs.iter_mut().zip(values) {
-            target.assign(&source);
+            target.assign(source);
         }
     }
 

@@ -1,4 +1,4 @@
-use bindgen;
+
 use itertools::Itertools;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -12,10 +12,10 @@ fn main() {
             non_exhaustive: false,
         });
 
-    if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+    if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         // we are running from cmake, do special thing.
-        let mut includes = cmake_includes.split(":").collect::<Vec<_>>();
-        includes.sort();
+        let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
+        includes.sort_unstable();
         includes.dedup();
 
         for x in &includes {
@@ -25,8 +25,8 @@ fn main() {
         }
 
         env::var("CMAKE_LIBRARIES")
-            .unwrap_or(String::new())
-            .split(":")
+            .unwrap_or_default()
+            .split(':')
             .into_iter()
             .filter(|s| s.contains(".so") || s.contains(".dylib"))
             .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
@@ -42,7 +42,7 @@ fn main() {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
 
-        for ament_prefix_path in ament_prefix_var.split(":") {
+        for ament_prefix_path in ament_prefix_var.split(':') {
             builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
             println!(
                 "added include search dir: {}",
@@ -58,26 +58,26 @@ fn main() {
         .no_debug("_OSUnaligned.*")
         .derive_partialeq(true)
         .derive_copy(true)
-        // whitelist a few specific things that we need.
-        .whitelist_recursively(false)
-        .whitelist_type("rcl_action_client_t")
+        // allowlist a few specific things that we need.
+        .allowlist_recursively(false)
+        .allowlist_type("rcl_action_client_t")
         .opaque_type("rcl_action_client_t")
-        .whitelist_type("rcl_action_server_t")
+        .allowlist_type("rcl_action_server_t")
         .opaque_type("rcl_action_server_t")
-        .whitelist_type("rcl_action_goal_info_t")
-        .whitelist_type("rcl_action_goal_handle_t")
+        .allowlist_type("rcl_action_goal_info_t")
+        .allowlist_type("rcl_action_goal_handle_t")
         .opaque_type("rcl_action_goal_handle_t")
-        .whitelist_type("rcl_action_cancel_request_t")
-        .whitelist_type("rcl_action_cancel_response_t")
-        .whitelist_type("rcl_action_goal_event_t")
-        .whitelist_type("rcl_action_goal_state_t")
+        .allowlist_type("rcl_action_cancel_request_t")
+        .allowlist_type("rcl_action_cancel_response_t")
+        .allowlist_type("rcl_action_goal_event_t")
+        .allowlist_type("rcl_action_goal_state_t")
         .opaque_type("rcl_action_goal_state_t")
-        .whitelist_type("rcl_action_goal_status_array_t")
+        .allowlist_type("rcl_action_goal_status_array_t")
         .opaque_type("rcl_action_goal_status_array_t")
-        .whitelist_function("rcl_action_.*")
-        .whitelist_type("rcl_action_client_options_t")
-        .whitelist_type("rcl_action_server_options_t")
-        .whitelist_var("RCL_RET_ACTION_.*")
+        .allowlist_function("rcl_action_.*")
+        .allowlist_type("rcl_action_client_options_t")
+        .allowlist_type("rcl_action_server_options_t")
+        .allowlist_var("RCL_RET_ACTION_.*")
         .generate_comments(false)
         .generate()
         .expect("Unable to generate bindings");

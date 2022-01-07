@@ -207,7 +207,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
     let key = format!("{}__{}__{}", module_, prefix_, name_);
     let ptr = INTROSPECTION_FNS
         .get(key.as_str())
-        .expect(&format!("code generation error: {}", key));
+        .unwrap_or_else(|| panic!("code generation error: {}", key));
     let ptr = *ptr as *const i32 as *const rosidl_message_type_support_t;
     unsafe {
         let (module, prefix, mut name, c_struct, members) = introspection(ptr);
@@ -221,7 +221,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             // same for actions with _Goal, _Result, _Feedback
             // TODO: refactor...
             // handle special case of ActionName_ServiceName_Response
-            let nn = name.splitn(3, "_").collect::<Vec<&str>>();
+            let nn = name.splitn(3, '_').collect::<Vec<&str>>();
             if let [_mod_name, _srv_name, msg_name] = &nn[..] {
                 name = msg_name.to_string();
             } else if let [_mod_name, msg_name] = &nn[..] {

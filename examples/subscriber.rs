@@ -2,12 +2,14 @@ use futures::executor::LocalPool;
 use futures::future;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
+use r2r::QosProfile;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let mut sub = node.subscribe::<r2r::std_msgs::msg::String>("/topic")?;
-    let p = node.create_publisher::<r2r::std_msgs::msg::String>("/topic2")?;
+    let mut sub = node.subscribe::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
+    let p =
+        node.create_publisher::<r2r::std_msgs::msg::String>("/topic2", QosProfile::default())?;
 
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
@@ -32,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     // for sub2 we just print the data
-    let sub2 = node.subscribe_untyped("/topic2", "std_msgs/msg/String")?;
+    let sub2 = node.subscribe_untyped("/topic2", "std_msgs/msg/String", QosProfile::default())?;
     spawner.spawn_local(async move {
         sub2.for_each(|msg| {
             println!("topic2: new msg: {}", msg.expect("deserialization error"));

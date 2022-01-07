@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use futures::future;
 use futures::stream::StreamExt;
 
+use r2r::QosProfile;
 use tokio::task;
 
 #[tokio::main]
@@ -42,7 +43,7 @@ async fn subscriber(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
     let sub = arc_node
         .lock()
         .unwrap()
-        .subscribe::<r2r::std_msgs::msg::String>("/topic")?;
+        .subscribe::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
     sub.for_each(|msg| {
         println!("topic: new msg: {}", msg.data);
         future::ready(())
@@ -56,7 +57,8 @@ async fn publisher(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
         // Limiting the scope when locking the arc
         let mut node = arc_node.lock().unwrap();
         let timer = node.create_wall_timer(std::time::Duration::from_secs(2))?;
-        let publisher = node.create_publisher::<r2r::std_msgs::msg::String>("/topic")?;
+        let publisher =
+            node.create_publisher::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
         (timer, publisher)
     };
     for _ in 1..10 {

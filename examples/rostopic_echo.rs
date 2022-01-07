@@ -2,6 +2,7 @@ use futures::executor::LocalPool;
 use futures::future;
 use futures::stream::StreamExt;
 use futures::task::LocalSpawnExt;
+use r2r::QosProfile;
 
 use std::collections::HashMap;
 use std::env;
@@ -42,9 +43,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // create echo topic
     let echo = &format!("{}_echo", topic);
-    let echo_pub = node.create_publisher_untyped(echo, type_name)?;
+    let echo_pub = node.create_publisher_untyped(echo, type_name, QosProfile::default())?;
 
-    let sub = node.subscribe_untyped(topic, type_name)?;
+    let sub = node.subscribe_untyped(topic, type_name, QosProfile::default())?;
     spawner.spawn_local(async move {
         sub.for_each(|msg| {
             match msg {

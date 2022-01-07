@@ -1,5 +1,6 @@
-use bindgen;
-use r2r_common;
+
+use heck::ToSnakeCase;
+
 use std::env;
 use std::fs::File;
 use std::io::Write;
@@ -10,16 +11,16 @@ fn main() {
 
     let mut builder = bindgen::Builder::default();
 
-    let msg_list = if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+    let msg_list = if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         let packages = cmake_includes
-            .split(":")
+            .split(':')
             .flat_map(|i| Path::new(i).parent())
             .collect::<Vec<_>>();
-        for p in cmake_includes.split(":") {
+        for p in cmake_includes.split(':') {
             builder = builder.clang_arg(format!("-I{}", p));
         }
-        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or(String::default());
-        let deps = deps.split(":").collect::<Vec<_>>();
+        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or_default();
+        let deps = deps.split(':').collect::<Vec<_>>();
         let msgs = r2r_common::get_ros_msgs(&packages);
         r2r_common::parse_msgs(&msgs)
             .into_iter()
@@ -27,12 +28,12 @@ fn main() {
             .collect::<Vec<_>>()
     } else {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
-        for p in ament_prefix_var.split(":") {
+        for p in ament_prefix_var.split(':') {
             builder = builder.clang_arg(format!("-I{}/include", p));
         }
         let paths = ament_prefix_var
-            .split(":")
-            .map(|i| Path::new(i))
+            .split(':')
+            .map(Path::new)
             .collect::<Vec<_>>();
 
         let msgs = r2r_common::get_ros_msgs(&paths);
@@ -63,7 +64,6 @@ fn main() {
 
     for msg in msg_list {
         // filename is certainly CamelCase -> snake_case. convert
-        use heck::SnakeCase;
         let include_filename = msg.name.to_snake_case();
 
         includes.push_str(&format!(
@@ -119,30 +119,30 @@ fn main() {
         .header(msg_includes_fn.to_str().unwrap())
         .derive_copy(false)
         // blacklist types that are handled by rcl bindings
-        .blacklist_type("rosidl_message_type_support_t")
-        .blacklist_type("rosidl_service_type_support_t")
-        .blacklist_type("rosidl_action_type_support_t")
-        .blacklist_type("rosidl_runtime_c__String")
-        .blacklist_type("rosidl_runtime_c__String__Sequence")
-        .blacklist_type("rosidl_runtime_c__U16String")
-        .blacklist_type("rosidl_runtime_c__U16String__Sequence")
-        .blacklist_type("rosidl_runtime_c__float32__Sequence")
-        .blacklist_type("rosidl_runtime_c__float__Sequence")
-        .blacklist_type("rosidl_runtime_c__float64__Sequence")
-        .blacklist_type("rosidl_runtime_c__double__Sequence")
-        .blacklist_type("rosidl_runtime_c__long_double__Sequence")
-        .blacklist_type("rosidl_runtime_c__char__Sequence")
-        .blacklist_type("rosidl_runtime_c__wchar__Sequence")
-        .blacklist_type("rosidl_runtime_c__boolean__Sequence")
-        .blacklist_type("rosidl_runtime_c__octet__Sequence")
-        .blacklist_type("rosidl_runtime_c__uint8__Sequence")
-        .blacklist_type("rosidl_runtime_c__int8__Sequence")
-        .blacklist_type("rosidl_runtime_c__uint16__Sequence")
-        .blacklist_type("rosidl_runtime_c__int16__Sequence")
-        .blacklist_type("rosidl_runtime_c__uint32__Sequence")
-        .blacklist_type("rosidl_runtime_c__int32__Sequence")
-        .blacklist_type("rosidl_runtime_c__uint64__Sequence")
-        .blacklist_type("rosidl_runtime_c__int64__Sequence")
+        .blocklist_type("rosidl_message_type_support_t")
+        .blocklist_type("rosidl_service_type_support_t")
+        .blocklist_type("rosidl_action_type_support_t")
+        .blocklist_type("rosidl_runtime_c__String")
+        .blocklist_type("rosidl_runtime_c__String__Sequence")
+        .blocklist_type("rosidl_runtime_c__U16String")
+        .blocklist_type("rosidl_runtime_c__U16String__Sequence")
+        .blocklist_type("rosidl_runtime_c__float32__Sequence")
+        .blocklist_type("rosidl_runtime_c__float__Sequence")
+        .blocklist_type("rosidl_runtime_c__float64__Sequence")
+        .blocklist_type("rosidl_runtime_c__double__Sequence")
+        .blocklist_type("rosidl_runtime_c__long_double__Sequence")
+        .blocklist_type("rosidl_runtime_c__char__Sequence")
+        .blocklist_type("rosidl_runtime_c__wchar__Sequence")
+        .blocklist_type("rosidl_runtime_c__boolean__Sequence")
+        .blocklist_type("rosidl_runtime_c__octet__Sequence")
+        .blocklist_type("rosidl_runtime_c__uint8__Sequence")
+        .blocklist_type("rosidl_runtime_c__int8__Sequence")
+        .blocklist_type("rosidl_runtime_c__uint16__Sequence")
+        .blocklist_type("rosidl_runtime_c__int16__Sequence")
+        .blocklist_type("rosidl_runtime_c__uint32__Sequence")
+        .blocklist_type("rosidl_runtime_c__int32__Sequence")
+        .blocklist_type("rosidl_runtime_c__uint64__Sequence")
+        .blocklist_type("rosidl_runtime_c__int64__Sequence")
         .size_t_is_usize(true)
         .no_debug("_OSUnaligned.*")
         .generate_comments(false)

@@ -1,3 +1,5 @@
+use r2r::QosProfile;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
@@ -5,7 +7,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let duration = std::time::Duration::from_millis(2500);
 
     let mut timer = node.create_wall_timer(duration)?;
-    let publisher = node.create_publisher::<r2r::std_msgs::msg::String>("/topic")?;
+    let publisher =
+        node.create_publisher::<r2r::std_msgs::msg::String>("/topic", QosProfile::default())?;
 
     let handle = tokio::task::spawn_blocking(move || loop {
         node.spin_once(std::time::Duration::from_millis(100));

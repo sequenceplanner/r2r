@@ -4,17 +4,17 @@ version = "0.2.0"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT OR Apache-2.0"
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 homepage = "https://github.com/sequenceplanner/r2r"
 repository = "https://github.com/sequenceplanner/r2r"
 documentation = "https://sequenceplanner.github.io/r2r/"
 
 [dependencies]
-paste = "1.0.4"
-widestring = "0.4.3"
+paste = "1.0.6"
+widestring = "0.5.1"
 
 [build-dependencies]
-bindgen = "0.57.0"
-itertools = "0.10.0"
+bindgen = "0.59.2"
+itertools = "0.10.3"
 r2r_common = { path = "../r2r_common", version = "0.2.0" }

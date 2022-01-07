@@ -1,7 +1,7 @@
 extern crate bindgen;
 
 use itertools::Itertools;
-use r2r_common;
+
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -16,10 +16,10 @@ fn main() {
             non_exhaustive: false,
         });
 
-    if let Some(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS").ok() {
+    if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         // we are running from cmake, do special thing.
-        let mut includes = cmake_includes.split(":").collect::<Vec<_>>();
-        includes.sort();
+        let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
+        includes.sort_unstable();
         includes.dedup();
 
         for x in &includes {
@@ -28,9 +28,8 @@ fn main() {
             builder = builder.clang_arg(clang_arg);
         }
 
-        env::var("CMAKE_LIBRARIES")
-            .unwrap_or(String::new())
-            .split(":")
+        env::var("CMAKE_LIBRARIES").unwrap_or_default()
+            .split(':')
             .into_iter()
             .filter(|s| s.contains(".so") || s.contains(".dylib"))
             .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
@@ -46,7 +45,7 @@ fn main() {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
 
-        for ament_prefix_path in ament_prefix_var.split(":") {
+        for ament_prefix_path in ament_prefix_var.split(':') {
             builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
             println!(
                 "added include search dir: {}",

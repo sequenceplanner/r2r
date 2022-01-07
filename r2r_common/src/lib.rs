@@ -94,7 +94,7 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
 pub fn parse_msgs(msgs: &Vec<String>) -> Vec<RosMsg> {
     let v: Vec<Vec<&str>> = msgs
         .iter()
-        .map(|l| l.split("/").into_iter().take(3).collect())
+        .map(|l| l.split('/').into_iter().take(3).collect())
         .collect();
     let v: Vec<_> = v
         .iter()
@@ -133,7 +133,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_msgs() -> () {
+    fn test_parse_msgs() {
         let msgs = "
 std_msgs/msg/Bool
 x/y
@@ -150,7 +150,7 @@ std_msgs/msg/String
     }
 
     #[test]
-    fn test_as_map() -> () {
+    fn test_as_map() {
         let msgs = "
 std_msgs/msg/Bool
 x/y

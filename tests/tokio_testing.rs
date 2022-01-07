@@ -1,4 +1,5 @@
 use futures::stream::StreamExt;
+use r2r::QosProfile;
 
 use std::sync::{Arc, Mutex};
 use tokio::task;
@@ -7,10 +8,14 @@ use tokio::task;
 async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let mut s_the_no = node.subscribe::<r2r::std_msgs::msg::Int32>("/the_no")?;
-    let mut s_new_no = node.subscribe::<r2r::std_msgs::msg::Int32>("/new_no")?;
-    let p_the_no = node.create_publisher::<r2r::std_msgs::msg::Int32>("/the_no")?;
-    let p_new_no = node.create_publisher::<r2r::std_msgs::msg::Int32>("/new_no")?;
+    let mut s_the_no =
+        node.subscribe::<r2r::std_msgs::msg::Int32>("/the_no", QosProfile::default())?;
+    let mut s_new_no =
+        node.subscribe::<r2r::std_msgs::msg::Int32>("/new_no", QosProfile::default())?;
+    let p_the_no =
+        node.create_publisher::<r2r::std_msgs::msg::Int32>("/the_no", QosProfile::default())?;
+    let p_new_no =
+        node.create_publisher::<r2r::std_msgs::msg::Int32>("/new_no", QosProfile::default())?;
     let state = Arc::new(Mutex::new(0));
 
     task::spawn(async move {

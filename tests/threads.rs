@@ -1,6 +1,8 @@
 use std::thread;
 use std::time::Duration;
 
+use r2r::QosProfile;
+
 #[test]
 // Let's create and drop a lot of node and publishers for a while to see that we can cope.
 fn doesnt_crash() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,7 +23,10 @@ fn doesnt_crash() -> Result<(), Box<dyn std::error::Error>> {
                 // each with 10 publishers
                 for _j in 0..10 {
                     let p = node
-                        .create_publisher::<r2r::std_msgs::msg::String>(&format!("/r2r{}", i))
+                        .create_publisher::<r2r::std_msgs::msg::String>(
+                            &format!("/r2r{}", i),
+                            QosProfile::default(),
+                        )
                         .unwrap();
                     let to_send = r2r::std_msgs::msg::String {
                         data: format!("[node{}]: {}", i, c),
