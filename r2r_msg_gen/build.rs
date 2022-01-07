@@ -1,4 +1,3 @@
-
 use heck::ToSnakeCase;
 
 use std::env;

@@ -28,7 +28,8 @@ fn main() {
             builder = builder.clang_arg(clang_arg);
         }
 
-        env::var("CMAKE_LIBRARIES").unwrap_or_default()
+        env::var("CMAKE_LIBRARIES")
+            .unwrap_or_default()
             .split(':')
             .into_iter()
             .filter(|s| s.contains(".so") || s.contains(".dylib"))
