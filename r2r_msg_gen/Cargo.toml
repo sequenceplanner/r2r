@@ -1,9 +1,9 @@
 [package]
 name = "r2r_msg_gen"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
-license = "MIT OR Apache-2.0"
+license = "MIT"
 edition = "2021"
 readme = "README.md"
 homepage = "https://github.com/sequenceplanner/r2r"
@@ -12,11 +12,11 @@ documentation = "https://sequenceplanner.github.io/r2r/"
 
 [dependencies]
 lazy_static = "1.4.0"
-r2r_rcl = { path = "../r2r_rcl", version = "0.2.0" }
-r2r_common = { path = "../r2r_common", version = "0.2.0" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.3.0" }
+r2r_common = { path = "../r2r_common", version = "0.3.0" }
 
 [build-dependencies]
 bindgen = "0.59.2"
-r2r_rcl = { path = "../r2r_rcl", version = "0.2.0" }
-r2r_common = { path = "../r2r_common", version = "0.2.0" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.3.0" }
+r2r_common = { path = "../r2r_common", version = "0.3.0" }
 heck = "0.4.0"
