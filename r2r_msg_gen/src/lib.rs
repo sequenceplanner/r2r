@@ -494,6 +494,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         let module_str = format!(
             "
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
                           pub struct {msgname} {{\n
                               {fields}
                           }}\n

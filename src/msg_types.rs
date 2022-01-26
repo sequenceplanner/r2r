@@ -583,6 +583,36 @@ mod tests {
         assert_eq!(msg, msg2);
     }
 
+    #[cfg(r2r__test_msgs__msg__Defaults)]
+    #[test]
+    fn test_untyped_json_default() {
+        // from the msg definition file:
+        // bool bool_value true
+        // byte byte_value 50
+        // char char_value 100
+        // float32 float32_value 1.125
+        // ...
+
+        // let's try to change only a few fields.
+        let json = r#"
+        {
+            "byte_value": 255,
+            "float32_value": 3.14
+        }"#;
+
+        let mut native =
+            WrappedNativeMsgUntyped::new_from("test_msgs/msg/Defaults").unwrap();
+        let v: serde_json::Value = serde_json::from_str(json).unwrap();
+        native.from_json(v).expect("could make default msg");
+        let json2 = native.to_json().unwrap();
+        let msg2: test_msgs::msg::Defaults = serde_json::from_value(json2).unwrap();
+
+        assert_eq!(msg2.bool_value, true); // the default
+        assert_eq!(msg2.byte_value, 255); // from our json
+        assert_eq!(msg2.char_value, 100); // the default
+        assert_eq!(msg2.float32_value, 3.14); // from our json
+    }
+
     #[cfg(r2r__test_msgs__msg__Arrays)]
     #[test]
     fn test_test_msgs_array() -> () {
