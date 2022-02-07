@@ -28,7 +28,10 @@ fn main() {
     } else {
         let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
         for p in ament_prefix_var.split(':') {
-            builder = builder.clang_arg(format!("-I{}/include", p));
+            let path = Path::new(p).join("include");
+            if let Some(s) = path.to_str() {
+                builder = builder.clang_arg(format!("-I{}", s));
+            }
         }
         let paths = ament_prefix_var
             .split(':')

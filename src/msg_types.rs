@@ -460,10 +460,7 @@ mod tests {
             let type_id = (*member).type_id_;
             let is_array = (*member).is_array_;
             assert_eq!(field_name, "data");
-            assert_eq!(
-                type_id,
-                rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8
-            );
+            assert_eq!(type_id, 16u8); // rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8
             assert!(!is_array);
         }
     }

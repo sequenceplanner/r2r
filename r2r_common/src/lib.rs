@@ -1,7 +1,35 @@
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+// Hack to build rolling after https://github.com/ros2/rcl/pull/959 was merged.
+//
+// The problem is that now we need to use CMAKE to properly find the
+// include paths. But we don't want to do that so we hope that the ros
+// developers use the same convention everytime they move the include
+// files to a subdirectory.
+//
+// The convention is to put include files in include/${PROJECT_NAME}
+//
+// So we check if there is a double directory on the form
+// include/${PROJECT_NAME}/${PROJECT_NAME}, and if so append it only once.
+//
+// Should work mostly, and shouldn't really change often, so manual
+// intervention could be applied. But yes it is hacky.
+pub fn guess_cmake_include_path(path: &Path) -> Option<PathBuf> {
+    if let Some(leaf) = path.file_name() {
+        let double_include_path = Path::new(path).join("include").join(leaf).join(leaf);
+        if double_include_path.is_dir() {
+            // double dir detected, append the package name
+            return Some(path.to_owned().join("include").join(leaf));
+        } else {
+            // dont append
+            return Some(path.to_owned().join("include"));
+        }
+    }
+    return None;
+}
 
 pub fn print_cargo_watches() {
     println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");

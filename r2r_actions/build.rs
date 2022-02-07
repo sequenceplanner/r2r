@@ -42,12 +42,15 @@ fn main() {
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
 
         for ament_prefix_path in ament_prefix_var.split(':') {
-            builder = builder.clang_arg(format!("-I{}/include", ament_prefix_path));
-            println!(
-                "added include search dir: {}",
-                format!("-I{}/include", ament_prefix_path)
-            );
-            println!("cargo:rustc-link-search=native={}/lib", ament_prefix_path);
+            if let Some(include_path) = r2r_common::guess_cmake_include_path(Path::new(ament_prefix_path)) {
+                if let Some(s) = include_path.to_str() {
+                    builder = builder.clang_arg(format!("-I{}", s));
+                };
+            }
+            let lib_path = Path::new(ament_prefix_path).join("lib");
+            lib_path.to_str().map(|s| {
+                println!("cargo:rustc-link-search=native={}", s);
+            });
         }
     }
 
@@ -67,15 +70,21 @@ fn main() {
         .allowlist_type("rcl_action_goal_handle_t")
         .opaque_type("rcl_action_goal_handle_t")
         .allowlist_type("rcl_action_cancel_request_t")
+        .allowlist_type("rcl_action_cancel_request_s")
+        .opaque_type("rcl_action_cancel_request_s")
         .allowlist_type("rcl_action_cancel_response_t")
+        .allowlist_type("rcl_action_cancel_response_s")
         .allowlist_type("rcl_action_goal_event_t")
+        .allowlist_type("rcl_action_goal_event_e")
         .allowlist_type("rcl_action_goal_state_t")
         .opaque_type("rcl_action_goal_state_t")
         .allowlist_type("rcl_action_goal_status_array_t")
         .opaque_type("rcl_action_goal_status_array_t")
         .allowlist_function("rcl_action_.*")
         .allowlist_type("rcl_action_client_options_t")
+        .opaque_type("rcl_action_client_options_t")
         .allowlist_type("rcl_action_server_options_t")
+        .opaque_type("rcl_action_server_options_t")
         .allowlist_var("RCL_RET_ACTION_.*")
         .generate_comments(false)
         .generate()

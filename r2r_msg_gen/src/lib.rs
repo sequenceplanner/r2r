@@ -15,45 +15,66 @@ use std::collections::HashMap;
 
 use std::ffi::CStr;
 
+// because the c enum has been named between galactic and the next release,
+// we cannot know its name. therefor we use the constants as is and hope we notice
+// when they change.
+// rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT = 1,
+// rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE = 2,
+// rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE = 3,
+// rosidl_typesupport_introspection_c__ROS_TYPE_CHAR = 4,
+// rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR = 5,
+// rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN = 6,
+// rosidl_typesupport_introspection_c__ROS_TYPE_OCTET = 7,
+// rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 = 8,
+// rosidl_typesupport_introspection_c__ROS_TYPE_INT8 = 9,
+// rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 = 10,
+// rosidl_typesupport_introspection_c__ROS_TYPE_INT16 = 11,
+// rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 = 12,
+// rosidl_typesupport_introspection_c__ROS_TYPE_INT32 = 13,
+// rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 = 14,
+// rosidl_typesupport_introspection_c__ROS_TYPE_INT64 = 15,
+// rosidl_typesupport_introspection_c__ROS_TYPE_STRING = 16,
+// rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING = 17,
+// rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE = 18,
 fn field_type(t: u8) -> String {
     // lovely...
     // move to common
-    if t == (rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u8) {
+    if t == 16 {
         "std::string::String".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING as u8) {
+    } else if t == 17 {
         "std::string::String".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u8) {
+    } else if t == 6 {
         "bool".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_CHAR as u8) {
+    } else if t == 4 {
         "i8".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR as u8) {
-        "u16".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_OCTET as u8) {
-        "u8".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 as u8) {
-        "u8".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT8 as u8) {
-        "i8".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 as u8) {
-        "u16".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT16 as u8) {
+    } else if t == 5 {
         "i16".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 as u8) {
+    } else if t == 7 {
+        "u8".to_owned()
+    } else if t == 8 {
+        "u8".to_owned()
+    } else if t == 9 {
+        "i8".to_owned()
+    } else if t == 10 {
+        "u16".to_owned()
+    } else if t == 11 {
+        "i16".to_owned()
+    } else if t == 12 {
         "u32".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT32 as u8) {
+    } else if t == 13 {
         "i32".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 as u8) {
+    } else if t == 14 {
         "u64".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_INT64 as u8) {
+    } else if t == 15 {
         "i64".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u8) {
+    } else if t == 1 {
         "f32".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u8) {
+    } else if t == 2 {
         "f64".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE as u8) {
+    } else if t == 3 {
         // f128 does not exist in rust
         "u128".to_owned()
-    } else if t == (rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u8) {
+    } else if t == 18 {
         "message".to_owned()
     } else {
         panic!("ros native type not implemented: {}", t);
