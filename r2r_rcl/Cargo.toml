@@ -1,6 +1,6 @@
 [package]
 name = "r2r_rcl"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
@@ -17,4 +17,4 @@ widestring = "0.5.1"
 [build-dependencies]
 bindgen = "0.59.2"
 itertools = "0.10.3"
-r2r_common = { path = "../r2r_common", version = "0.3.0" }
+r2r_common = { path = "../r2r_common", version = "0.3.1" }
