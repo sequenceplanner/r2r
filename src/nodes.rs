@@ -208,10 +208,10 @@ impl Node {
     pub fn make_parameter_handler(
         &mut self,
     ) -> Result<(
-        impl Future<Output = ()>,
+        impl Future<Output = ()> + Send,
         impl Stream<Item = (String, ParameterValue)>,
     )> {
-        let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()>>>> = Vec::new();
+        let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
         let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
 
         let node_name = self.name()?;
