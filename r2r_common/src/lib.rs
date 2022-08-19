@@ -1,41 +1,124 @@
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::{Path, PathBuf};
-
-// Hack to build rolling after https://github.com/ros2/rcl/pull/959 was merged.
-//
-// The problem is that now we need to use CMAKE to properly find the
-// include paths. But we don't want to do that so we hope that the ros
-// developers use the same convention everytime they move the include
-// files to a subdirectory.
-//
-// The convention is to put include files in include/${PROJECT_NAME}
-//
-// So we check if there is a double directory on the form
-// include/${PROJECT_NAME}/${PROJECT_NAME}, and if so append it only once.
-//
-// Should work mostly, and shouldn't really change often, so manual
-// intervention could be applied. But yes it is hacky.
-pub fn guess_cmake_include_path(path: &Path) -> Option<PathBuf> {
-    if let Some(leaf) = path.file_name() {
-        let double_include_path = Path::new(path).join("include").join(leaf).join(leaf);
-        if double_include_path.is_dir() {
-            // double dir detected, append the package name
-            return Some(path.to_owned().join("include").join(leaf));
-        } else {
-            // dont append
-            return Some(path.to_owned().join("include"));
-        }
-    }
-    return None;
-}
+use std::path::Path;
+use std::env;
+use itertools::Itertools;
 
 pub fn print_cargo_watches() {
     println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
     println!("cargo:rerun-if-env-changed=CMAKE_INCLUDE_DIRS");
     println!("cargo:rerun-if-env-changed=CMAKE_LIBRARIES");
     println!("cargo:rerun-if-env-changed=CMAKE_RECURSIVE_DEPENDENCIES");
+}
+
+pub fn setup_bindgen_builder() -> bindgen::Builder {
+    let mut builder = bindgen::Builder::default()
+        .derive_copy(false)
+        .size_t_is_usize(true)
+        .default_enum_style(bindgen::EnumVariation::Rust {
+            non_exhaustive: false,
+        });
+
+    if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
+        // we are running from cmake, do special thing.
+        let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
+        includes.sort_unstable();
+        includes.dedup();
+
+        for x in &includes {
+            let clang_arg = format!("-I{}", x);
+            println!("adding clang arg: {}", clang_arg);
+            builder = builder.clang_arg(clang_arg);
+        }
+
+        env::var("CMAKE_LIBRARIES")
+            .unwrap_or_default()
+            .split(':')
+            .into_iter()
+            .filter(|s| s.contains(".so") || s.contains(".dylib"))
+            .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
+            .unique()
+            .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
+    } else {
+        let ament_prefix_var_name = "AMENT_PREFIX_PATH";
+        let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
+
+        for p in ament_prefix_var.split(':') {
+            let path = Path::new(p).join("include");
+
+            let entries = std::fs::read_dir(path.clone());
+            if let Ok(e) = entries {
+                let dirs = e.filter_map(|a| {
+                    let path = a.unwrap().path();
+                    if path.is_dir() {
+                        Some(path)
+                    } else {
+                        None
+                    }
+                }).collect::<Vec<_>>();
+
+                builder = dirs.iter().fold(builder, |builder, d| {
+                    // Hack to build rolling after https://github.com/ros2/rcl/pull/959 was merged.
+                    //
+                    // The problem is that now we need to use CMAKE to properly find the
+                    // include paths. But we don't want to do that so we hope that the ros
+                    // developers use the same convention everytime they move the include
+                    // files to a subdirectory.
+                    //
+                    // The convention is to put include files in include/${PROJECT_NAME}
+                    //
+                    // So we check if there is a double directory on the form
+                    // include/${PROJECT_NAME}/${PROJECT_NAME}, and if so append it only once.
+                    //
+                    // Should work mostly, and shouldn't really change often, so manual
+                    // intervention could be applied. But yes it is hacky.
+                    if let Some(leaf) = d.file_name() {
+                        let double_include_path = Path::new(d).join(leaf);
+                        if double_include_path.is_dir() {
+                            let temp = d.to_str().unwrap();
+                            builder.clang_arg(format!("-I{}", temp))
+                        } else {
+                            // pre humble case, where we did not have include/package/package
+                            let temp = d.parent().unwrap().to_str().unwrap();
+                            builder.clang_arg(format!("-I{}", temp))
+                        }
+                    } else { builder }
+                });
+            }
+
+            let lib_path = Path::new(p).join("lib");
+            lib_path.to_str().map(|s| {
+                println!("cargo:rustc-link-search=native={}", s);
+            });
+        }
+    }
+
+    return builder;
+}
+
+pub fn get_wanted_messages() -> Vec<RosMsg> {
+    let msgs = if let Ok(cmake_package_dirs) = env::var("CMAKE_IDL_PACKAGES") {
+        // CMAKE_PACKAGE_DIRS should be a (cmake) list of "cmake" dirs
+        // e.g. For each dir install/r2r_minimal_node_msgs/share/r2r_minimal_node_msgs/cmake
+        // we can traverse back and then look for .msg files in msg/ srv/ action/
+        let dirs = cmake_package_dirs.split(':')
+            .flat_map(|i| Path::new(i).parent())
+            .collect::<Vec<_>>();
+
+        get_ros_msgs_files(&dirs)
+    } else {
+        // Else we look for all msgs we can find using the ament prefix path.
+        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
+        let paths = ament_prefix_var
+            .split(':')
+            .map(Path::new)
+            .collect::<Vec<_>>();
+
+        get_ros_msgs(&paths)
+    };
+
+    parse_msgs(&msgs)
 }
 
 #[derive(Debug)]
@@ -57,13 +140,10 @@ fn get_msgs_from_package(package: &Path) -> Vec<String> {
 
     if let Ok(paths) = fs::read_dir(path) {
         for path in paths {
-            // println!("PATH Name: {}", path.unwrap().path().display());
-
             let path = path.unwrap().path();
             let path2 = path.clone();
             let file_name = path2.file_name().unwrap();
 
-            // println!("Messages for: {:?}", file_name);
             if let Ok(mut file) = File::open(path) {
                 let mut s = String::new();
                 file.read_to_string(&mut s).unwrap();
@@ -109,10 +189,49 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
     let mut msgs: Vec<String> = Vec::new();
 
     for p in paths {
-        println!("looking at prefix: {:?}", p);
         let package_msgs = get_msgs_from_package(p);
-        println!("... found {:?}", package_msgs);
         msgs.extend(package_msgs)
+    }
+    msgs.sort();
+    msgs.dedup();
+    msgs
+}
+
+
+fn get_msgs_in_dir(base: &Path, subdir: &str, package: &str) -> Vec<String> {
+    let path = base.to_owned();
+    let path = path.join(subdir);
+
+    let mut msgs = vec![];
+
+    if let Ok(paths) = fs::read_dir(path) {
+        for path in paths {
+            let path = path.unwrap().path();
+            let filename = path.file_name().unwrap().to_str().unwrap();
+
+            // message name.idl or name.msg
+            if !filename.ends_with(".idl") {
+                continue;
+            }
+
+            let substr = &filename[0..filename.len() - 4];
+
+            msgs.push(format!("{}/{}/{}",package, subdir, substr));
+        }
+    }
+    msgs
+}
+
+pub fn get_ros_msgs_files(paths: &[&Path]) -> Vec<String> {
+    let mut msgs: Vec<String> = Vec::new();
+
+    for p in paths {
+        if let Some(package_name) = p.file_name() {
+            let package_name = package_name.to_str().unwrap();
+            msgs.extend(get_msgs_in_dir(p, "msg", package_name));
+            msgs.extend(get_msgs_in_dir(p, "srv", package_name));
+            msgs.extend(get_msgs_in_dir(p, "action", package_name));
+        }
     }
     msgs.sort();
     msgs.dedup();

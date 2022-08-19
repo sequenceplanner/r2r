@@ -3,45 +3,14 @@ use heck::ToSnakeCase;
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn main() {
     r2r_common::print_cargo_watches();
 
-    let mut builder = bindgen::Builder::default();
+    let mut builder = r2r_common::setup_bindgen_builder();
 
-    let msg_list = if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
-        let packages = cmake_includes
-            .split(':')
-            .flat_map(|i| Path::new(i).parent())
-            .collect::<Vec<_>>();
-        for p in cmake_includes.split(':') {
-            builder = builder.clang_arg(format!("-I{}", p));
-        }
-        let deps = env::var("CMAKE_IDL_PACKAGES").unwrap_or_default();
-        let deps = deps.split(':').collect::<Vec<_>>();
-        let msgs = r2r_common::get_ros_msgs(&packages);
-        r2r_common::parse_msgs(&msgs)
-            .into_iter()
-            .filter(|msg| deps.contains(&msg.module.as_str()))
-            .collect::<Vec<_>>()
-    } else {
-        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
-        for p in ament_prefix_var.split(':') {
-            let path = Path::new(p).join("include");
-            if let Some(s) = path.to_str() {
-                builder = builder.clang_arg(format!("-I{}", s));
-            }
-        }
-        let paths = ament_prefix_var
-            .split(':')
-            .map(Path::new)
-            .collect::<Vec<_>>();
-
-        let msgs = r2r_common::get_ros_msgs(&paths);
-        r2r_common::parse_msgs(&msgs)
-    };
-
+    let msg_list = r2r_common::get_wanted_messages();
     let msg_map = r2r_common::as_map(&msg_list);
 
     for module in msg_map.keys() {
