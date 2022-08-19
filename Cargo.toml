@@ -24,7 +24,6 @@ r2r_rcl = { path = "r2r_rcl", version = "0.3.1" }
 r2r_msg_gen = { path = "r2r_msg_gen", version = "0.3.2" }
 r2r_actions = { path = "r2r_actions", version = "0.3.1" }
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
-retain_mut = "0.1.5"
 futures = "0.3.19"
 
 [dev-dependencies]

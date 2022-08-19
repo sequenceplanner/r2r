@@ -2,7 +2,6 @@ use futures::channel::{mpsc, oneshot};
 use futures::future::FutureExt;
 use futures::future::{join_all, JoinAll};
 use futures::stream::Stream;
-use retain_mut::RetainMut;
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::mem::MaybeUninit;
