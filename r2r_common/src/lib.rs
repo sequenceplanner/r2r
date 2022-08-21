@@ -9,7 +9,8 @@ pub fn print_cargo_watches() {
     println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
     println!("cargo:rerun-if-env-changed=CMAKE_INCLUDE_DIRS");
     println!("cargo:rerun-if-env-changed=CMAKE_LIBRARIES");
-    println!("cargo:rerun-if-env-changed=CMAKE_RECURSIVE_DEPENDENCIES");
+    println!("cargo:rerun-if-env-changed=CMAKE_IDL_PACKAGES");
+    println!("cargo:rerun-if-env-changed=IDL_PACKAGE_FILTER");
 }
 
 pub fn setup_bindgen_builder() -> bindgen::Builder {
@@ -118,7 +119,34 @@ pub fn get_wanted_messages() -> Vec<RosMsg> {
         get_ros_msgs(&paths)
     };
 
-    parse_msgs(&msgs)
+    let msgs = parse_msgs(&msgs);
+
+    // When working on large workspaces without colcon, build times
+    // can be a pain. This code adds a the possibility to define an
+    // additional filter to make building a little bit quicker.
+    //
+    // The environment variable IDL_PACKAGE_FILTER should be a semicolon
+    // separated list of package names (e.g. std_msgs;my_msgs), so it
+    // is required to be correct for packages to be used. This means
+    // dependencies need to be manually specified.
+    //
+    // Suitable to customize with .cargo/config.toml [env] from consumers
+    // of the r2r package.
+    let needed_msg_pkgs = &["rcl_interfaces", "builtin_interfaces",
+                            "unique_identifier_msgs", "action_msgs"];
+    if let Ok(idl_filter) = env::var("IDL_PACKAGE_FILTER") {
+        let mut idl_packages = idl_filter.split(';').collect::<Vec<&str>>();
+        for needed in needed_msg_pkgs {
+            if !idl_packages.contains(&needed) {
+                idl_packages.push(needed);
+            }
+        }
+        msgs.into_iter().filter(|msg| {
+            idl_packages.contains(&msg.module.as_str())
+        }).collect()
+    } else {
+        msgs
+    }
 }
 
 #[derive(Debug)]
