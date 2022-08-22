@@ -30,7 +30,7 @@ ros2 topic pub /topic std_msgs/msg/String "data: 'Hello, world'"
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble
 - Building Rust types
 - Publish/subscribe
 - Services
@@ -39,10 +39,8 @@ What works?
 
 TODO
 --------------------
-- Complete the services associated with updating parameters at run-time.
-- Documentation. (For now, look at the examples.)
-- General cleanup and error handling.
-- Expose more of the RCL like QoS settings.
+- Documentation is lacking. (For now, look at the examples.)
+
 
 LICENSING
 --------------------
