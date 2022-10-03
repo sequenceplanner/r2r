@@ -11,9 +11,102 @@ include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 extern crate lazy_static;
 
 use r2r_rcl::*;
+use std::borrow::Cow;
 use std::collections::HashMap;
-
 use std::ffi::CStr;
+
+// Copied from bindgen.
+// https://github.com/rust-lang/rust-bindgen/blob/e68b8c0e2b2ceeb42c35e74bd9344a1a99ec2e0c/src/ir/context.rs#L817
+fn rust_mangle<'a>(name: &'a str) -> Cow<'a, str> {
+    if name.contains('@')
+        || name.contains('?')
+        || name.contains('$')
+        || matches!(
+            name,
+            "abstract"
+                | "alignof"
+                | "as"
+                | "async"
+                | "await"
+                | "become"
+                | "box"
+                | "break"
+                | "const"
+                | "continue"
+                | "crate"
+                | "do"
+                | "dyn"
+                | "else"
+                | "enum"
+                | "extern"
+                | "false"
+                | "final"
+                | "fn"
+                | "for"
+                | "if"
+                | "impl"
+                | "in"
+                | "let"
+                | "loop"
+                | "macro"
+                | "match"
+                | "mod"
+                | "move"
+                | "mut"
+                | "offsetof"
+                | "override"
+                | "priv"
+                | "proc"
+                | "pub"
+                | "pure"
+                | "ref"
+                | "return"
+                | "Self"
+                | "self"
+                | "sizeof"
+                | "static"
+                | "struct"
+                | "super"
+                | "trait"
+                | "true"
+                | "try"
+                | "type"
+                | "typeof"
+                | "unsafe"
+                | "unsized"
+                | "use"
+                | "virtual"
+                | "where"
+                | "while"
+                | "yield"
+                | "str"
+                | "bool"
+                | "f32"
+                | "f64"
+                | "usize"
+                | "isize"
+                | "u128"
+                | "i128"
+                | "u64"
+                | "i64"
+                | "u32"
+                | "i32"
+                | "u16"
+                | "i16"
+                | "u8"
+                | "i8"
+                | "_"
+        )
+    {
+        let mut s = name.to_owned();
+        s = s.replace('@', "_");
+        s = s.replace('?', "_");
+        s = s.replace('$', "_");
+        s.push('_');
+        return Cow::Owned(s);
+    }
+    Cow::Borrowed(name)
+}
 
 // because the c enum has been named between galactic and the next release,
 // we cannot know its name. therefor we use the constants as is and hope we notice
@@ -112,15 +205,6 @@ unsafe fn introspection<'a>(
         c_struct,
         memberslice,
     )
-}
-
-fn field_name(field_name: &str) -> String {
-    // check for reserved words
-    if field_name == "type" {
-        "type_".into()
-    } else {
-        field_name.to_owned()
-    }
 }
 
 pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> String {
@@ -256,11 +340,11 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         let mut fields = String::new();
 
         let is_empty_msg = members.len() == 1
-            && field_name(CStr::from_ptr(members[0].name_).to_str().unwrap())
+            && rust_mangle(CStr::from_ptr(members[0].name_).to_str().unwrap())
                 == "structure_needs_at_least_one_member";
 
         for member in members {
-            let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            let field_name = rust_mangle(CStr::from_ptr(member.name_).to_str().unwrap());
             if field_name == "structure_needs_at_least_one_member" {
                 // Yay we can have empty structs in rust
                 continue;
@@ -327,7 +411,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         from_native.push_str(&format!("  {} {{\n", name));
 
         for member in members {
-            let field_name = field_name(CStr::from_ptr(member.name_).to_str().unwrap());
+            let field_name = rust_mangle(CStr::from_ptr(member.name_).to_str().unwrap());
             if field_name == "structure_needs_at_least_one_member" {
                 // Yay we can have empty structs in rust
                 continue;
@@ -416,7 +500,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         }
 
         for member in members {
-            let field_name = field_name(CStr::from_ptr((*member).name_).to_str().unwrap());
+            let field_name = rust_mangle(CStr::from_ptr((*member).name_).to_str().unwrap());
             if field_name == "structure_needs_at_least_one_member" {
                 // Yay we can have empty structs in rust
                 continue;
