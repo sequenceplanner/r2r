@@ -1,39 +1,8 @@
-
-[package]
-name = "r2r"
-version = "0.6.3"
-authors = ["Martin Dahl <martin.dahl@gmail.com>"]
-description = "Easy to use, runtime-agnostic, async rust bindings for ROS2."
-license = "MIT AND Apache-2.0"
-edition = "2021"
-readme = "README.md"
-homepage = "https://github.com/sequenceplanner/r2r"
-repository = "https://github.com/sequenceplanner/r2r"
-documentation = "https://sequenceplanner.github.io/r2r/"
-
-[lib]
-doctest = false
-
-[dependencies]
-serde = { version = "1.0.133", features = ["derive"] }
-serde_json = "1.0.74"
-thiserror = "1.0.30"
-lazy_static = "1.4.0"
-r2r_common = { path = "r2r_common", version = "0.3.2" }
-r2r_rcl = { path = "r2r_rcl", version = "0.3.2" }
-r2r_msg_gen = { path = "r2r_msg_gen", version = "0.3.3" }
-r2r_actions = { path = "r2r_actions", version = "0.3.2" }
-uuid = { version = "0.8.2", features = ["serde", "v4"] }
-futures = "0.3.19"
-
-[dev-dependencies]
-serde_json = "1.0.74"
-futures = "0.3.19"
-tokio = { version = "1.15.0", features = ["full"] }
-rand = "0.8.4"
-
-[build-dependencies]
-r2r_common = { path = "r2r_common", version = "0.3.2" }
-r2r_msg_gen = { path = "r2r_msg_gen", version = "0.3.3" }
-
 [workspace]
+members = [
+    "r2r",
+    "r2r_actions",
+    "r2r_common",
+    "r2r_msg_gen",
+    "r2r_rcl",
+]
