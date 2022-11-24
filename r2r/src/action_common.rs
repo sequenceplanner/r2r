@@ -1,5 +1,5 @@
 /// The status of a goal.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum GoalStatus {
     Unknown,
     Accepted,

@@ -1,9 +1,9 @@
+use itertools::Itertools;
 use std::collections::HashMap;
+use std::env;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
-use std::env;
-use itertools::Itertools;
 
 pub fn print_cargo_watches() {
     println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
@@ -50,14 +50,16 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
 
             let entries = std::fs::read_dir(path.clone());
             if let Ok(e) = entries {
-                let dirs = e.filter_map(|a| {
-                    let path = a.unwrap().path();
-                    if path.is_dir() {
-                        Some(path)
-                    } else {
-                        None
-                    }
-                }).collect::<Vec<_>>();
+                let dirs = e
+                    .filter_map(|a| {
+                        let path = a.unwrap().path();
+                        if path.is_dir() {
+                            Some(path)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<Vec<_>>();
 
                 builder = dirs.iter().fold(builder, |builder, d| {
                     // Hack to build rolling after https://github.com/ros2/rcl/pull/959 was merged.
@@ -84,18 +86,20 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
                             let temp = d.parent().unwrap().to_str().unwrap();
                             builder.clang_arg(format!("-I{}", temp))
                         }
-                    } else { builder }
+                    } else {
+                        builder
+                    }
                 });
             }
 
             let lib_path = Path::new(p).join("lib");
-            lib_path.to_str().map(|s| {
-                println!("cargo:rustc-link-search=native={}", s);
-            });
+            if let Some(s) = lib_path.to_str() {
+                println!("cargo:rustc-link-search=native={}", s)
+            }
         }
     }
 
-    return builder;
+    builder
 }
 
 pub fn get_wanted_messages() -> Vec<RosMsg> {
@@ -103,7 +107,8 @@ pub fn get_wanted_messages() -> Vec<RosMsg> {
         // CMAKE_PACKAGE_DIRS should be a (cmake) list of "cmake" dirs
         // e.g. For each dir install/r2r_minimal_node_msgs/share/r2r_minimal_node_msgs/cmake
         // we can traverse back and then look for .msg files in msg/ srv/ action/
-        let dirs = cmake_package_dirs.split(':')
+        let dirs = cmake_package_dirs
+            .split(':')
             .flat_map(|i| Path::new(i).parent())
             .collect::<Vec<_>>();
 
@@ -132,18 +137,22 @@ pub fn get_wanted_messages() -> Vec<RosMsg> {
     //
     // Suitable to customize with .cargo/config.toml [env] from consumers
     // of the r2r package.
-    let needed_msg_pkgs = &["rcl_interfaces", "builtin_interfaces",
-                            "unique_identifier_msgs", "action_msgs"];
+    let needed_msg_pkgs = &[
+        "rcl_interfaces",
+        "builtin_interfaces",
+        "unique_identifier_msgs",
+        "action_msgs",
+    ];
     if let Ok(idl_filter) = env::var("IDL_PACKAGE_FILTER") {
         let mut idl_packages = idl_filter.split(';').collect::<Vec<&str>>();
         for needed in needed_msg_pkgs {
-            if !idl_packages.contains(&needed) {
+            if !idl_packages.contains(needed) {
                 idl_packages.push(needed);
             }
         }
-        msgs.into_iter().filter(|msg| {
-            idl_packages.contains(&msg.module.as_str())
-        }).collect()
+        msgs.into_iter()
+            .filter(|msg| idl_packages.contains(&msg.module.as_str()))
+            .collect()
     } else {
         msgs
     }
@@ -225,7 +234,6 @@ pub fn get_ros_msgs(paths: &[&Path]) -> Vec<String> {
     msgs
 }
 
-
 fn get_msgs_in_dir(base: &Path, subdir: &str, package: &str) -> Vec<String> {
     let path = base.to_owned();
     let path = path.join(subdir);
@@ -244,7 +252,7 @@ fn get_msgs_in_dir(base: &Path, subdir: &str, package: &str) -> Vec<String> {
 
             let substr = &filename[0..filename.len() - 4];
 
-            msgs.push(format!("{}/{}/{}",package, subdir, substr));
+            msgs.push(format!("{}/{}/{}", package, subdir, substr));
         }
     }
     msgs

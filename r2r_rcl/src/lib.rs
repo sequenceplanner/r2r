@@ -111,8 +111,10 @@ macro_rules! primitive_sequence {
 
                 pub fn to_vec(&self) -> Vec<$element_type> {
                     let mut target = Vec::with_capacity(self.size);
-                    unsafe { target.set_len(self.size); }
-                    unsafe { std::ptr::copy(self.data, target.as_mut_ptr(), self.size); }
+                    unsafe {
+                        std::ptr::copy(self.data, target.as_mut_ptr(), self.size);
+                        target.set_len(self.size);
+                    }
                     target
                 }
             }

@@ -27,31 +27,21 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     task::spawn(async move {
-        loop {
-            match s_the_no.next().await {
-                Some(msg) => {
-                    p_new_no
-                        .publish(&r2r::std_msgs::msg::Int32 {
-                            data: msg.data + 10,
-                        })
-                        .unwrap();
-                }
-                None => break,
-            }
+        while let Some(msg) = s_the_no.next().await {
+            p_new_no
+                .publish(&r2r::std_msgs::msg::Int32 {
+                    data: msg.data + 10,
+                })
+                .unwrap();
         }
     });
 
     let s = state.clone();
     task::spawn(async move {
-        loop {
-            match s_new_no.next().await {
-                Some(msg) => {
-                    let i = msg.data;
-                    if i == 19 {
-                        *s.lock().unwrap() = 19;
-                    }
-                }
-                None => break,
+        while let Some(msg) = s_new_no.next().await {
+            let i = msg.data;
+            if i == 19 {
+                *s.lock().unwrap() = 19;
             }
         }
     });

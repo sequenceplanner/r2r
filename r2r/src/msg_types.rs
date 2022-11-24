@@ -196,7 +196,7 @@ impl UntypedActionSupport {
                 serde_json::from_value(goal).expect("TODO: move this error handling");
             let request_msg = T::make_goal_request_msg(goal_id, goal_msg);
             let json = serde_json::to_value(request_msg).expect("TODO: move this error handling");
-            let mut native_untyped = WrappedNativeMsgUntyped::new::<
+            let native_untyped = WrappedNativeMsgUntyped::new::<
                 <<T as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
             >();
             native_untyped
@@ -239,7 +239,7 @@ impl UntypedActionSupport {
             let request_msg = T::make_result_request_msg(uuid_msg);
             let json = serde_json::to_value(request_msg).expect("TODO: move this error handling");
 
-            let mut native_untyped = WrappedNativeMsgUntyped::new::<
+            let native_untyped = WrappedNativeMsgUntyped::new::<
                 <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request,
             >();
 
@@ -322,7 +322,7 @@ impl WrappedNativeMsgUntyped {
         })
     }
 
-    pub fn from_json(&mut self, json: serde_json::Value) -> Result<()> {
+    pub fn from_json(&self, json: serde_json::Value) -> Result<()> {
         (self.msg_from_json)(self.msg, json).map_err(|serde_err| Error::SerdeError {
             err: serde_err.to_string(),
         })
@@ -556,7 +556,7 @@ mod tests {
         msg.positions.push(39.0);
         msg.positions.push(34.0);
         let mut new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
-        unsafe { *((*new_native).positions.data) = 88.9 };
+        unsafe { *new_native.positions.data = 88.9 };
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
         println!("{:#?}", new_msg);
         assert_ne!(msg, new_msg);
@@ -569,7 +569,7 @@ mod tests {
         msg.positions.push(34.0);
         let json = serde_json::to_value(msg.clone()).unwrap();
 
-        let mut native =
+        let native =
             WrappedNativeMsgUntyped::new_from("trajectory_msgs/msg/JointTrajectoryPoint").unwrap();
         native.from_json(json.clone()).unwrap();
         let json2 = native.to_json().unwrap();
@@ -597,14 +597,13 @@ mod tests {
             "float32_value": 3.14
         }"#;
 
-        let mut native =
-            WrappedNativeMsgUntyped::new_from("test_msgs/msg/Defaults").unwrap();
+        let native = WrappedNativeMsgUntyped::new_from("test_msgs/msg/Defaults").unwrap();
         let v: serde_json::Value = serde_json::from_str(json).unwrap();
         native.from_json(v).expect("could make default msg");
         let json2 = native.to_json().unwrap();
         let msg2: test_msgs::msg::Defaults = serde_json::from_value(json2).unwrap();
 
-        assert_eq!(msg2.bool_value, true); // the default
+        assert!(msg2.bool_value); // the default
         assert_eq!(msg2.byte_value, 255); // from our json
         assert_eq!(msg2.char_value, 100); // the default
         assert_eq!(msg2.float32_value, 3.14); // from our json
@@ -612,7 +611,7 @@ mod tests {
 
     #[cfg(r2r__test_msgs__msg__Arrays)]
     #[test]
-    fn test_test_msgs_array() -> () {
+    fn test_test_msgs_array() {
         let mut msg = test_msgs::msg::Arrays::default();
         println!("msg: {:?}", msg.string_values);
         msg.string_values = vec!["hej".to_string(), "hopp".to_string(), "stropp".to_string()];
@@ -626,7 +625,7 @@ mod tests {
     #[cfg(r2r__test_msgs__msg__Arrays)]
     #[test]
     #[should_panic]
-    fn test_test_msgs_array_too_few_elems() -> () {
+    fn test_test_msgs_array_too_few_elems() {
         let mut msg = test_msgs::msg::Arrays::default();
         println!("msg: {:?}", msg.string_values);
         msg.string_values = vec!["hej".to_string(), "hopp".to_string()];
@@ -635,7 +634,7 @@ mod tests {
 
     #[cfg(r2r__test_msgs__msg__WStrings)]
     #[test]
-    fn test_test_msgs_wstring() -> () {
+    fn test_test_msgs_wstring() {
         let mut msg = test_msgs::msg::WStrings::default();
         let rust_str = "ハローワールド";
         msg.wstring_value = rust_str.to_string();
@@ -649,15 +648,19 @@ mod tests {
     #[test]
     fn test_service_msgs() {
         use example_interfaces::srv::AddTwoInts;
-        let mut req = AddTwoInts::Request::default();
-        req.a = 5;
+        let req = AddTwoInts::Request {
+            a: 5,
+            ..Default::default()
+        };
         let rn = WrappedNativeMsg::<_>::from(&req);
         let req2 = AddTwoInts::Request::from_native(&rn);
         println!("req2 {:?}", req2);
         assert_eq!(req, req2);
 
-        let mut resp = AddTwoInts::Response::default();
-        resp.sum = 5;
+        let resp = AddTwoInts::Response {
+            sum: 5,
+            ..Default::default()
+        };
         let rn = WrappedNativeMsg::<_>::from(&resp);
         let resp2 = AddTwoInts::Response::from_native(&rn);
         println!("resp {:?}", resp2);
@@ -678,22 +681,23 @@ mod tests {
     #[test]
     fn test_action_msgs() {
         use example_interfaces::action::Fibonacci;
-        let mut goal = Fibonacci::Goal::default();
-        goal.order = 5;
+        let goal = Fibonacci::Goal { order: 5 };
         let gn = WrappedNativeMsg::<_>::from(&goal);
         let goal2 = Fibonacci::Goal::from_native(&gn);
         println!("goal2 {:?}", goal2);
         assert_eq!(goal, goal2);
 
-        let mut res = Fibonacci::Result::default();
-        res.sequence = vec![1, 2, 3];
+        let res = Fibonacci::Result {
+            sequence: vec![1, 2, 3],
+        };
         let rn = WrappedNativeMsg::<_>::from(&res);
         let res2 = Fibonacci::Result::from_native(&rn);
         println!("res2 {:?}", res2);
         assert_eq!(res, res2);
 
-        let mut fb = Fibonacci::Feedback::default();
-        fb.sequence = vec![4, 3, 6];
+        let fb = Fibonacci::Feedback {
+            sequence: vec![4, 3, 6],
+        };
         let fbn = WrappedNativeMsg::<_>::from(&fb);
         let fb2 = Fibonacci::Feedback::from_native(&fbn);
         println!("feedback2 {:?}", fb2);

@@ -112,7 +112,7 @@ impl PublisherUntyped {
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
-        let mut native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
+        let native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
 
         let result = unsafe {

@@ -102,7 +102,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_context_drop() -> () {
+    fn test_context_drop() {
         {
             let ctx = Context::create().unwrap();
             assert!(ctx.is_valid());

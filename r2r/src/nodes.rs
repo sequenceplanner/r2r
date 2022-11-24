@@ -145,7 +145,7 @@ impl Node {
             for (s, v) in param_names.iter().zip(param_values) {
                 let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
-                let val = ParameterValue::from_rcl(&*v);
+                let val = ParameterValue::from_rcl(v);
                 params.insert(key.to_owned(), val);
             }
         }
@@ -939,7 +939,7 @@ impl Node {
             let topic_types: Vec<String> = unsafe {
                 topic_types
                     .iter()
-                    .map(|t| CStr::from_ptr(*((*t).data)).to_str().unwrap().to_owned())
+                    .map(|t| CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned())
                     .collect()
             };
             res.insert(topic_name, topic_types);

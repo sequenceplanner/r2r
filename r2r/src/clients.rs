@@ -113,7 +113,7 @@ impl UntypedClient_ {
         &mut self,
         msg: serde_json::Value,
     ) -> Result<impl Future<Output = Result<Result<serde_json::Value>>>> {
-        let mut native_msg = (self.service_type.make_request_msg)();
+        let native_msg = (self.service_type.make_request_msg)();
         native_msg.from_json(msg)?;
 
         let mut seq_no = 0i64;
