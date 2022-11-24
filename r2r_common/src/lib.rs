@@ -1,16 +1,39 @@
 use itertools::Itertools;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+const WATCHED_ENV_VARS: &[&str] = &[
+    "AMENT_PREFIX_PATH",
+    "CMAKE_INCLUDE_DIRS",
+    "CMAKE_LIBRARIES",
+    "CMAKE_IDL_PACKAGES",
+    "IDL_PACKAGE_FILTER",
+];
+
+pub fn get_env_hash() -> String {
+    let mut hasher = Sha256::new();
+    for var in WATCHED_ENV_VARS {
+        hasher.update(var.as_bytes());
+        hasher.update("=");
+
+        if let Ok(value) = env::var(var) {
+            hasher.update(value);
+        }
+
+        hasher.update("\n");
+    }
+    let hash = hasher.finalize();
+    format!("{:x}", hash)
+}
+
 pub fn print_cargo_watches() {
-    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
-    println!("cargo:rerun-if-env-changed=CMAKE_INCLUDE_DIRS");
-    println!("cargo:rerun-if-env-changed=CMAKE_LIBRARIES");
-    println!("cargo:rerun-if-env-changed=CMAKE_IDL_PACKAGES");
-    println!("cargo:rerun-if-env-changed=IDL_PACKAGE_FILTER");
+    for var in WATCHED_ENV_VARS {
+        println!("cargo:rerun-if-env-changed={}", var);
+    }
 }
 
 pub fn setup_bindgen_builder() -> bindgen::Builder {
