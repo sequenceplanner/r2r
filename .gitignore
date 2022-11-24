@@ -1,5 +1,9 @@
+# rust
 /target/
-
 Cargo.lock
-
 .envrc
+
+# editor
+*~
+.*~
+\#*#
