@@ -16,6 +16,20 @@ fn main() {
     println!("cargo:rustc-link-lib=dylib=rosidl_runtime_c");
 
     let bindings = builder
+        .allowlist_type("rcl_.*")
+        .allowlist_type("rcutils_.*")
+        .allowlist_type("rmw_.*")
+        .allowlist_type("rosidl_.*")
+        .allowlist_var("RCL_.*")
+        .allowlist_var("RCUTILS_.*")
+        .allowlist_var("RMW_.*")
+        .allowlist_var("rosidl_.*")
+        .allowlist_function("rcl_.*")
+        .allowlist_function("rcutils_.*")
+        .allowlist_function("rmw_.*")
+        .allowlist_function("rosidl_.*")
+        .allowlist_function(".*_typesupport_.*")
+        .allowlist_function(".*_sequence_bound_.*")
         .no_debug("_OSUnaligned.*")
         .derive_partialeq(true)
         .derive_copy(true)
