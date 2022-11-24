@@ -11,5 +11,5 @@ repository = "https://github.com/sequenceplanner/r2r"
 documentation = "https://sequenceplanner.github.io/r2r/"
 
 [dependencies]
-bindgen = "0.59.2"
-itertools = "0.10.3"
+bindgen = "0.63.0"
+itertools = "0.10.5"
