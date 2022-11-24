@@ -17,3 +17,10 @@ r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.3" }
 [build-dependencies]
 bindgen = "0.63.0"
 r2r_common = { path = "../r2r_common", version = "0.3.2" }
+
+[features]
+save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen"]
+doc-only = ["r2r_rcl/doc-only", "r2r_msg_gen/doc-only"]
+
+[package.metadata.docs.rs]
+features = ["doc-only"]
