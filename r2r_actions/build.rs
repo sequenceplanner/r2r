@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 fn main() {
     r2r_common::print_cargo_watches();
+    r2r_common::print_cargo_link_search();
 
     let mut builder = r2r_common::setup_bindgen_builder();
     builder = builder.header("src/action_wrapper.h");

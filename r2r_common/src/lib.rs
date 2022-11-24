@@ -55,15 +55,6 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
             println!("adding clang arg: {}", clang_arg);
             builder = builder.clang_arg(clang_arg);
         }
-
-        env::var("CMAKE_LIBRARIES")
-            .unwrap_or_default()
-            .split(':')
-            .into_iter()
-            .filter(|s| s.contains(".so") || s.contains(".dylib"))
-            .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
-            .unique()
-            .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
@@ -114,15 +105,34 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
                     }
                 });
             }
-
-            let lib_path = Path::new(p).join("lib");
-            if let Some(s) = lib_path.to_str() {
-                println!("cargo:rustc-link-search=native={}", s)
-            }
         }
     }
 
     builder
+}
+
+pub fn print_cargo_link_search() {
+    if env::var("CMAKE_INCLUDE_DIRS").is_ok() {
+        if let Ok(paths) = env::var("CMAKE_LIBRARIES") {
+            paths
+                .split(':')
+                .into_iter()
+                .filter(|s| s.contains(".so") || s.contains(".dylib"))
+                .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
+                .unique()
+                .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
+        }
+    } else {
+        let ament_prefix_var_name = "AMENT_PREFIX_PATH";
+        if let Ok(paths) = env::var(ament_prefix_var_name) {
+            for path in paths.split(':') {
+                let lib_path = Path::new(path).join("lib");
+                if let Some(s) = lib_path.to_str() {
+                    println!("cargo:rustc-link-search=native={}", s)
+                }
+            }
+        }
+    }
 }
 
 pub fn get_wanted_messages() -> Vec<RosMsg> {
