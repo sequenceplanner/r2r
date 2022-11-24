@@ -148,13 +148,16 @@ pub fn get_wanted_messages() -> Vec<RosMsg> {
         get_ros_msgs_files(&dirs)
     } else {
         // Else we look for all msgs we can find using the ament prefix path.
-        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
-        let paths = ament_prefix_var
-            .split(':')
-            .map(Path::new)
-            .collect::<Vec<_>>();
+        if let Ok(ament_prefix_var) = env::var("AMENT_PREFIX_PATH") {
+            let paths = ament_prefix_var
+                .split(':')
+                .map(Path::new)
+                .collect::<Vec<_>>();
 
-        get_ros_msgs(&paths)
+            get_ros_msgs(&paths)
+        } else {
+            vec![]
+        }
     };
 
     let msgs = parse_msgs(&msgs);
