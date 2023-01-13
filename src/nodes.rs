@@ -939,7 +939,7 @@ impl Node {
             let topic_types: Vec<String> = unsafe {
                 topic_types
                     .iter()
-                    .map(|t| CStr::from_ptr(*((*t).data)).to_str().unwrap().to_owned())
+                    .map(|t| CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned())
                     .collect()
             };
             res.insert(topic_name, topic_types);
