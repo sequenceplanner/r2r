@@ -1,6 +1,6 @@
 [package]
 name = "r2r"
-version = "0.6.3"
+version = "0.6.4"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Easy to use, runtime-agnostic, async rust bindings for ROS2."
 license = "MIT AND Apache-2.0"
@@ -20,8 +20,8 @@ thiserror = "1.0.37"
 lazy_static = "1.4.0"
 r2r_common = { path = "../r2r_common", version = "0.3.2" }
 r2r_rcl = { path = "../r2r_rcl", version = "0.3.2" }
-r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.3" }
-r2r_actions = { path = "../r2r_actions", version = "0.3.2" }
+r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.4" }
+r2r_actions = { path = "../r2r_actions", version = "0.3.3" }
 uuid = { version = "1.2.2", features = ["serde", "v4"] }
 futures = "0.3.25"
 
@@ -33,4 +33,4 @@ rand = "0.8.5"
 
 [build-dependencies]
 r2r_common = { path = "../r2r_common", version = "0.3.2" }
-r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.3" }
+r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.4" }
