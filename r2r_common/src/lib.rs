@@ -1,16 +1,39 @@
 use itertools::Itertools;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+const WATCHED_ENV_VARS: &[&str] = &[
+    "AMENT_PREFIX_PATH",
+    "CMAKE_INCLUDE_DIRS",
+    "CMAKE_LIBRARIES",
+    "CMAKE_IDL_PACKAGES",
+    "IDL_PACKAGE_FILTER",
+];
+
+pub fn get_env_hash() -> String {
+    let mut hasher = Sha256::new();
+    for var in WATCHED_ENV_VARS {
+        hasher.update(var.as_bytes());
+        hasher.update("=");
+
+        if let Ok(value) = env::var(var) {
+            hasher.update(value);
+        }
+
+        hasher.update("\n");
+    }
+    let hash = hasher.finalize();
+    format!("{:x}", hash)
+}
+
 pub fn print_cargo_watches() {
-    println!("cargo:rerun-if-env-changed=AMENT_PREFIX_PATH");
-    println!("cargo:rerun-if-env-changed=CMAKE_INCLUDE_DIRS");
-    println!("cargo:rerun-if-env-changed=CMAKE_LIBRARIES");
-    println!("cargo:rerun-if-env-changed=CMAKE_IDL_PACKAGES");
-    println!("cargo:rerun-if-env-changed=IDL_PACKAGE_FILTER");
+    for var in WATCHED_ENV_VARS {
+        println!("cargo:rerun-if-env-changed={}", var);
+    }
 }
 
 pub fn setup_bindgen_builder() -> bindgen::Builder {
@@ -32,15 +55,6 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
             println!("adding clang arg: {}", clang_arg);
             builder = builder.clang_arg(clang_arg);
         }
-
-        env::var("CMAKE_LIBRARIES")
-            .unwrap_or_default()
-            .split(':')
-            .into_iter()
-            .filter(|s| s.contains(".so") || s.contains(".dylib"))
-            .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
-            .unique()
-            .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
@@ -91,15 +105,34 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
                     }
                 });
             }
-
-            let lib_path = Path::new(p).join("lib");
-            if let Some(s) = lib_path.to_str() {
-                println!("cargo:rustc-link-search=native={}", s)
-            }
         }
     }
 
     builder
+}
+
+pub fn print_cargo_link_search() {
+    if env::var("CMAKE_INCLUDE_DIRS").is_ok() {
+        if let Ok(paths) = env::var("CMAKE_LIBRARIES") {
+            paths
+                .split(':')
+                .into_iter()
+                .filter(|s| s.contains(".so") || s.contains(".dylib"))
+                .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
+                .unique()
+                .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
+        }
+    } else {
+        let ament_prefix_var_name = "AMENT_PREFIX_PATH";
+        if let Ok(paths) = env::var(ament_prefix_var_name) {
+            for path in paths.split(':') {
+                let lib_path = Path::new(path).join("lib");
+                if let Some(s) = lib_path.to_str() {
+                    println!("cargo:rustc-link-search=native={}", s)
+                }
+            }
+        }
+    }
 }
 
 pub fn get_wanted_messages() -> Vec<RosMsg> {
@@ -115,13 +148,16 @@ pub fn get_wanted_messages() -> Vec<RosMsg> {
         get_ros_msgs_files(&dirs)
     } else {
         // Else we look for all msgs we can find using the ament prefix path.
-        let ament_prefix_var = env::var("AMENT_PREFIX_PATH").expect("Source your ROS!");
-        let paths = ament_prefix_var
-            .split(':')
-            .map(Path::new)
-            .collect::<Vec<_>>();
+        if let Ok(ament_prefix_var) = env::var("AMENT_PREFIX_PATH") {
+            let paths = ament_prefix_var
+                .split(':')
+                .map(Path::new)
+                .collect::<Vec<_>>();
 
-        get_ros_msgs(&paths)
+            get_ros_msgs(&paths)
+        } else {
+            vec![]
+        }
     };
 
     let msgs = parse_msgs(&msgs);

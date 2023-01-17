@@ -17,3 +17,10 @@ widestring = "1.0.2"
 [build-dependencies]
 bindgen = "0.63.0"
 r2r_common = { path = "../r2r_common", version = "0.3.2" }
+
+[features]
+save-bindgen = []
+doc-only = []
+
+[package.metadata.docs.rs]
+features = ["doc-only"]

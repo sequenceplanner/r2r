@@ -13,3 +13,4 @@ documentation = "https://sequenceplanner.github.io/r2r/"
 [dependencies]
 bindgen = "0.63.0"
 itertools = "0.10.5"
+sha2 = "0.10.6"

@@ -1,36 +1,90 @@
 use heck::ToSnakeCase;
+use r2r_common::RosMsg;
 
-use std::env;
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
+use std::fs::OpenOptions;
+use std::path::{Path, PathBuf};
+use std::{env, fs};
+
+const MSG_INCLUDES_FILENAME: &str = "msg_includes.h";
+const INTROSPECTION_FILENAME: &str = "introspection_functions.rs";
+const BINDINGS_FILENAME: &str = "msg_bindings.rs";
+const GENERATED_FILES: &[&str] = &[
+    MSG_INCLUDES_FILENAME,
+    INTROSPECTION_FILENAME,
+    BINDINGS_FILENAME,
+];
 
 fn main() {
     r2r_common::print_cargo_watches();
 
-    let mut builder = r2r_common::setup_bindgen_builder();
-
     let msg_list = r2r_common::get_wanted_messages();
-    let msg_map = r2r_common::as_map(&msg_list);
+    run_bindgen(&msg_list);
+    run_dynlink(&msg_list);
+}
 
-    for module in msg_map.keys() {
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
-            module
+fn run_bindgen(msg_list: &[RosMsg]) {
+    let env_hash = r2r_common::get_env_hash();
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let bindgen_dir = out_dir.join(env_hash);
+    let mark_file = bindgen_dir.join("done");
+    let save_dir = manifest_dir.join("bindings");
+
+    if cfg!(feature = "doc-only") {
+        // If "doc-only" feature is present, copy from $crate/bindings/* to OUT_DIR
+        eprintln!(
+            "Copy files from '{}' to '{}'",
+            save_dir.display(),
+            out_dir.display()
         );
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
-            module
-        );
-        println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
+
+        for filename in GENERATED_FILES {
+            let src = save_dir.join(filename);
+            let tgt = out_dir.join(filename);
+            fs::copy(&src, &tgt).unwrap();
+        }
+    } else {
+        // If bindgen was done before, use cached files.
+        if !mark_file.exists() {
+            eprintln!("Generate bindings in '{}'", bindgen_dir.display());
+            fs::create_dir_all(&bindgen_dir).unwrap();
+            generate_bindings(&bindgen_dir, msg_list);
+            touch(&mark_file);
+        } else {
+            eprintln!("Used cached files in '{}'", bindgen_dir.display());
+        }
+
+        for filename in GENERATED_FILES {
+            let src = bindgen_dir.join(filename);
+            let tgt = out_dir.join(filename);
+            fs::copy(&src, &tgt).unwrap();
+        }
+
+        #[cfg(feature = "save-bindgen")]
+        {
+            fs::create_dir_all(&save_dir).unwrap();
+
+            for filename in GENERATED_FILES {
+                let src = bindgen_dir.join(filename);
+                let tgt = save_dir.join(filename);
+                fs::copy(&src, &tgt).unwrap();
+            }
+        }
     }
+}
+
+fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
+    let msg_includes_file = bindgen_dir.join(MSG_INCLUDES_FILENAME);
+    let introspection_file = bindgen_dir.join(INTROSPECTION_FILENAME);
+    let bindings_file = bindgen_dir.join(BINDINGS_FILENAME);
 
     let mut includes = String::new();
     let mut introspecion_map = String::from(
         "\
-         lazy_static! { \n
-           static ref INTROSPECTION_FNS: HashMap<&'static str, usize> = {\n
-             let mut m = HashMap::new();\n",
+         lazy_static! {
+           static ref INTROSPECTION_FNS: HashMap<&'static str, usize> = {
+             let mut m = HashMap::new();
+",
     );
 
     for msg in msg_list {
@@ -76,18 +130,11 @@ fn main() {
     }
     introspecion_map.push_str("m \n }; }\n\n");
 
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let msg_includes_fn = out_path.join("msg_includes.h");
-    let introspection_fn = out_path.join("introspection_functions.rs");
+    fs::write(&msg_includes_file, includes).unwrap();
+    fs::write(&introspection_file, introspecion_map).unwrap();
 
-    let mut f = File::create(msg_includes_fn.clone()).unwrap();
-    write!(f, "{}", includes).unwrap();
-
-    let mut f = File::create(introspection_fn).unwrap();
-    write!(f, "{}", introspecion_map).unwrap();
-
-    builder = builder
-        .header(msg_includes_fn.to_str().unwrap())
+    let builder = r2r_common::setup_bindgen_builder()
+        .header(msg_includes_file.to_str().unwrap())
         .derive_copy(false)
         // blacklist types that are handled by rcl bindings
         .blocklist_type("rosidl_message_type_support_t")
@@ -124,6 +171,34 @@ fn main() {
     let bindings = builder.generate().expect("Unable to generate bindings");
 
     bindings
-        .write_to_file(out_path.join("msg_bindings.rs"))
+        .write_to_file(bindings_file)
         .expect("Couldn't write bindings!");
+}
+
+fn run_dynlink(#[allow(unused_variables)] msg_list: &[RosMsg]) {
+    #[cfg(not(feature = "doc-only"))]
+    {
+        r2r_common::print_cargo_link_search();
+
+        let msg_map = r2r_common::as_map(msg_list);
+        for module in msg_map.keys() {
+            println!(
+                "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
+                module
+            );
+            println!(
+                "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
+                module
+            );
+            println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
+        }
+    }
+}
+
+fn touch(path: &Path) {
+    OpenOptions::new()
+        .create(true)
+        .write(true)
+        .open(path)
+        .unwrap_or_else(|_| panic!("Unable to create file '{}'", path.display()));
 }
