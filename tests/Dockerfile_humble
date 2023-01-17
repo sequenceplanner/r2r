@@ -1,4 +1,4 @@
-FROM kristoferb/spdesktop_ros2:foxy
+FROM kristoferb/spdesktop_ros2:humble
 
 COPY . /r2r
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
