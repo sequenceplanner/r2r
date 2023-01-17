@@ -77,10 +77,10 @@ pub use error::{Error, Result};
 
 mod msg_types;
 pub use msg_types::generated_msgs::*;
-pub use msg_types::WrappedNativeMsg as NativeMsg;
-pub use msg_types::WrappedTypesupport;
-pub use msg_types::WrappedServiceTypeSupport;
 pub use msg_types::WrappedActionTypeSupport;
+pub use msg_types::WrappedNativeMsg as NativeMsg;
+pub use msg_types::WrappedServiceTypeSupport;
+pub use msg_types::WrappedTypesupport;
 
 mod utils;
 pub use utils::*;
