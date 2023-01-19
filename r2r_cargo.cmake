@@ -6,15 +6,13 @@
 # for an example of how to use it to build with colcon.
 #
 
-# the "recursive" dependencies already defined don't seem to include all
-# packages. sigh. so here we traverse the dependencies manually
-# instead. we also keep track of which packages that contain idl files.
-function(get_idl_deps OUT_INC OUT_LIB OUT_PKG_DIRS PKG)
+# traverse dependencies for all message packages.
+function(get_idl_deps OUT_PKG_DIRS PKG)
     find_package(${PKG} REQUIRED)
-    list(APPEND VISITED_TARGETS ${PKG})
+    target_link_libraries(dummy ${${PKG}_LIBRARIES})
+    include_directories(dummy ${${PKG}_INCLUDE_DIRS})
 
-    set(INCS "${${PKG}_INCLUDE_DIRS}")
-    set(LIBS "${${PKG}_LIBRARIES}")
+    list(APPEND VISITED_TARGETS ${PKG})
 
     # only keep track of packages that include idl files
     set(PKG_DIRS "")
@@ -25,54 +23,60 @@ function(get_idl_deps OUT_INC OUT_LIB OUT_PKG_DIRS PKG)
     foreach(LIB ${${PKG}_DEPENDENCIES})
         list(FIND VISITED_TARGETS ${LIB} VISITED)
         if (${VISITED} EQUAL -1)
-            get_idl_deps(NEW_INCS NEW_LIBS NEW_PKG_DIRS ${LIB})
-            list(APPEND INCS ${NEW_INCS})
-            list(APPEND LIBS ${NEW_LIBS})
+            get_idl_deps(NEW_PKG_DIRS ${LIB})
             list(APPEND PKG_DIRS ${NEW_PKG_DIRS})
-            list(REMOVE_DUPLICATES INCS)
-            list(REMOVE_DUPLICATES LIBS)
             list(REMOVE_DUPLICATES PKG_DIRS)
         endif()
     endforeach()
     set(VISITED_TARGETS ${VISITED_TARGETS} PARENT_SCOPE)
-    set(${OUT_INC} ${INCS} PARENT_SCOPE)
-    set(${OUT_LIB} ${LIBS} PARENT_SCOPE)
     set(${OUT_PKG_DIRS} ${PKG_DIRS} PARENT_SCOPE)
 endfunction()
 
 function(r2r_cargo)
+  # pretend that we want to compile c code to get all library paths etc...
+  add_executable (dummy EXCLUDE_FROM_ALL dummy.c)
+
+  # traverse list of wanted packages to add dependencies
   foreach(f ${ARGN})
     find_package(${f} REQUIRED)
-    set(REC_INC "")
-    set(REC_LIB "")
     set(REC_PKG_DIRS "")
-    get_idl_deps(REC_INC REC_LIB REC_PKG_DIRS ${f})
-    list(APPEND CMAKE_INCLUDE_DIRS ${REC_INC})
-    list(APPEND CMAKE_LIBRARIES ${REC_LIB})
+    get_idl_deps(REC_PKG_DIRS ${f})
     list(APPEND CMAKE_IDL_PACKAGES "${REC_PKG_DIRS}")
   endforeach()
-  list(REMOVE_DUPLICATES CMAKE_INCLUDE_DIRS)
-  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${CMAKE_INCLUDE_DIRS}")
-  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
-  list(REMOVE_DUPLICATES CMAKE_LIBRARIES)
 
   # On OSX  colcon eats the DYLD_LIBRARY_PATH... so we need to add the rpaths
   # manually...
   set(RUSTFLAGS "")
-  foreach(p ${CMAKE_LIBRARIES})
-    get_filename_component(_parent "${p}" DIRECTORY)
-    if(IS_DIRECTORY ${_parent})
-        list(APPEND RUSTFLAGS "-C link-arg=-Wl,-rpath,${_parent}")
+
+  # get imported libs
+  get_property(importTargets DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+  # get include paths
+  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
+
+  set(CMAKE_LIBRARIES "")
+  foreach(p ${importTargets})
+    get_property(fancy_lib_location TARGET "${p}" PROPERTY LOCATION)
+    if(DEFINED fancy_lib_location)
+      list(APPEND CMAKE_LIBRARIES "${fancy_lib_location}")
+      get_filename_component(_parent "${fancy_lib_location}" DIRECTORY)
+      if(IS_DIRECTORY ${_parent})
+          list(APPEND RUSTFLAGS "-C link-arg=-Wl,-rpath,${_parent}")
+      endif()
     endif()
   endforeach()
   list(REMOVE_DUPLICATES RUSTFLAGS)
+  list(REMOVE_DUPLICATES CMAKE_LIBRARIES)
 
   string (REPLACE ";" " " RUSTFLAGS_STR "${RUSTFLAGS}")
   set(ENV{RUSTFLAGS} ${RUSTFLAGS_STR})
 
-  string (REPLACE ":" "+" CMAKE_LIBRARIES_STR "${CMAKE_LIBRARIES}")
-  string (REPLACE ";" ":" CMAKE_LIBRARIES_STR "${CMAKE_LIBRARIES_STR}")
+  string (REPLACE ";" ":" CMAKE_LIBRARIES_STR "${CMAKE_LIBRARIES}")
   set(ENV{CMAKE_LIBRARIES} "${CMAKE_LIBRARIES_STR}")
+
+  list(REMOVE_DUPLICATES includeDirs)
+  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${includeDirs}")
+  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
+  list(REMOVE_DUPLICATES CMAKE_LIBRARIES)
 
   list(REMOVE_DUPLICATES CMAKE_IDL_PACKAGES)
   string (REPLACE ";" ":" CMAKE_IDL_PACKAGES_STR "${CMAKE_IDL_PACKAGES}")
@@ -82,13 +86,13 @@ function(r2r_cargo)
   option(CARGO_CLEAN "Invoke cargo clean before building" OFF)
   if(CARGO_CLEAN)
         add_custom_target(cargo_target ALL
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "clean"
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--release"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "clean" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   else()
           add_custom_target(cargo_target ALL
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--release"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   endif(CARGO_CLEAN)
