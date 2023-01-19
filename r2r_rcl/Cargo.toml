@@ -1,6 +1,6 @@
 [package]
 name = "r2r_rcl"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
@@ -8,7 +8,7 @@ edition = "2021"
 readme = "README.md"
 homepage = "https://github.com/sequenceplanner/r2r"
 repository = "https://github.com/sequenceplanner/r2r"
-documentation = "https://sequenceplanner.github.io/r2r/"
+documentation = "https://docs.rs/r2r/latest/r2r"
 
 [dependencies]
 paste = "1.0.9"
@@ -16,7 +16,7 @@ widestring = "1.0.2"
 
 [build-dependencies]
 bindgen = "0.63.0"
-r2r_common = { path = "../r2r_common", version = "0.3.3" }
+r2r_common = { path = "../r2r_common", version = "0.3.4" }
 
 [features]
 save-bindgen = []
