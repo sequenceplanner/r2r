@@ -82,6 +82,7 @@ fn gen_bindings(out_file: &Path) {
         .allowlist_type("rcutils_.*")
         .allowlist_type("rmw_.*")
         .allowlist_type("rosidl_.*")
+        .allowlist_type("RCUTILS_.*")
         .allowlist_var("RCL_.*")
         .allowlist_var("RCUTILS_.*")
         .allowlist_var("RMW_.*")
