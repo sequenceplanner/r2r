@@ -14,6 +14,7 @@ use r2r_rcl::*;
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ffi::CStr;
+use std::fmt::Write;
 
 // Copied from bindgen.
 // https://github.com/rust-lang/rust-bindgen/blob/e68b8c0e2b2ceeb42c35e74bd9344a1a99ec2e0c/src/ir/context.rs#L817
@@ -344,7 +345,9 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                 == "structure_needs_at_least_one_member";
 
         for member in members {
-            let field_name = rust_mangle(CStr::from_ptr(member.name_).to_str().unwrap());
+            let actual_field_name = CStr::from_ptr(member.name_).to_str().unwrap();
+            let field_name = rust_mangle(actual_field_name);
+            let got_mangled = field_name != actual_field_name;
             if field_name == "structure_needs_at_least_one_member" {
                 // Yay we can have empty structs in rust
                 continue;
@@ -393,6 +396,9 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             } else {
                 format!("pub {}: {},\n", field_name, rust_field_type)
             };
+            if got_mangled {
+                writeln!(fields, "#[serde(rename = \"{actual_field_name}\")]").unwrap();
+            }
             fields.push_str(&s);
         }
 
