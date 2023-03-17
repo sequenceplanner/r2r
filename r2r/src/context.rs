@@ -1,3 +1,4 @@
+use std::ffi::CStr;
 use std::ffi::CString;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
@@ -11,6 +12,19 @@ use r2r_rcl::*;
 #[derive(Debug, Clone)]
 pub struct Context {
     pub(crate) context_handle: Arc<Mutex<ContextHandle>>,
+}
+
+macro_rules! check_rcl_ret {
+    ($ret:expr) => {
+        if $ret != RCL_RET_OK as i32 {
+            let err_str = rcutils_get_error_string();
+            // c_char's definition is architecture specific
+            // https://github.com/fede1024/rust-rdkafka/issues/121#issuecomment-486578947
+            let str_ptr = &(err_str.str_) as *const std::os::raw::c_char;
+            let error_msg = CStr::from_ptr(str_ptr);
+            panic!("{}", error_msg.to_str().expect("to_str() call failed"));
+        }
+    };
 }
 
 unsafe impl Send for Context {}
@@ -32,14 +46,14 @@ impl Context {
         let is_valid = unsafe {
             let allocator = rcutils_get_default_allocator();
             let mut init_options = rcl_get_zero_initialized_init_options();
-            rcl_init_options_init(&mut init_options, allocator);
-            rcl_init(
+            check_rcl_ret!(rcl_init_options_init(&mut init_options, allocator));
+            check_rcl_ret!(rcl_init(
                 (c_args.len() - 1) as ::std::os::raw::c_int,
                 c_args.as_ptr(),
                 &init_options,
                 ctx.as_mut(),
-            );
-            rcl_init_options_fini(&mut init_options as *mut _);
+            ));
+            check_rcl_ret!(rcl_init_options_fini(&mut init_options as *mut _));
             rcl_context_is_valid(ctx.as_mut())
         };
 
