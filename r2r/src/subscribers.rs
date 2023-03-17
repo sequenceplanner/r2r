@@ -5,6 +5,8 @@ use crate::error::*;
 use crate::msg_types::*;
 use crate::qos::QosProfile;
 use r2r_rcl::*;
+use std::ffi::c_void;
+use std::ffi::CStr;
 
 pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;
@@ -84,23 +86,61 @@ where
 
     fn handle_incoming(&mut self) -> bool {
         let mut msg_info = rmw_message_info_t::default(); // we dont care for now
-        let mut msg = WrappedNativeMsg::<T>::new();
-        let ret = unsafe {
-            rcl_take(
-                &self.rcl_handle,
-                msg.void_ptr_mut(),
-                &mut msg_info,
-                std::ptr::null_mut(),
-            )
-        };
-        if ret == RCL_RET_OK as i32 {
-            if let Err(e) = self.sender.try_send(msg) {
-                if e.is_disconnected() {
-                    // user dropped the handle to the stream, signal removal.
-                    return true;
+        let msg = unsafe {
+            if rcl_subscription_can_loan_messages(&self.rcl_handle) {
+                let mut loaned_msg: *mut c_void = std::ptr::null_mut();
+                let ret = rcl_take_loaned_message(
+                    &self.rcl_handle,
+                    &mut loaned_msg,
+                    &mut msg_info,
+                    std::ptr::null_mut(),
+                );
+                if ret != RCL_RET_OK as i32 {
+                    return false;
                 }
-                println!("error {:?}", e)
+                let handle_box = Box::new(self.rcl_handle);
+                let deallocator = Box::new(|msg: *mut T::CStruct| {
+                    let handle_ptr = Box::into_raw(handle_box);
+                    let ret =
+                        rcl_return_loaned_message_from_subscription(handle_ptr, msg as *mut c_void);
+                    drop(Box::from_raw(handle_ptr));
+                    if ret != RCL_RET_OK as i32 {
+                        let err_str = rcutils_get_error_string();
+                        let err_str_ptr = &(err_str.str_) as *const std::os::raw::c_char;
+                        let error_msg = CStr::from_ptr(err_str_ptr);
+
+                        let topic_str = rcl_subscription_get_topic_name(handle_ptr);
+                        let topic = CStr::from_ptr(topic_str);
+
+                        panic!(
+                            "rcl_return_loaned_message_from_subscription() \
+                            failed for subscription on topic {}: {}",
+                            topic.to_str().expect("to_str() call failed"),
+                            error_msg.to_str().expect("to_str() call failed")
+                        );
+                    }
+                });
+                WrappedNativeMsg::<T>::from_loaned(loaned_msg as *mut T::CStruct, deallocator)
+            } else {
+                let mut new_msg = WrappedNativeMsg::<T>::new();
+                let ret = rcl_take(
+                    &self.rcl_handle,
+                    new_msg.void_ptr_mut(),
+                    &mut msg_info,
+                    std::ptr::null_mut(),
+                );
+                if ret != RCL_RET_OK as i32 {
+                    return false;
+                }
+                new_msg
             }
+        };
+        if let Err(e) = self.sender.try_send(msg) {
+            if e.is_disconnected() {
+                // user dropped the handle to the stream, signal removal.
+                return true;
+            }
+            eprintln!("error {:?}", e)
         }
         false
     }

@@ -26,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         native.data = count;
 
         publisher.publish(&to_send).unwrap();
-        publisher2.publish_native(&native).unwrap();
+        publisher2.publish_native(&mut native).unwrap();
 
         std::thread::sleep(std::time::Duration::from_millis(100));
         count += 1;
