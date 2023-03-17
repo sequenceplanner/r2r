@@ -1,3 +1,4 @@
+use std::ffi::c_void;
 use std::ffi::CString;
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -163,11 +164,7 @@ where
         }
     }
 
-    /// Publish a "native" ROS message.
-    ///
-    /// This function is useful if you want to bypass the generated
-    /// rust types as it lets you work with the raw C struct.
-    pub fn publish_native(&self, msg: &WrappedNativeMsg<T>) -> Result<()>
+    pub fn borrow_loaned_message(&self) -> Result<WrappedNativeMsg<T>>
     where
         T: WrappedTypesupport,
     {
@@ -177,8 +174,76 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
-        let result =
-            unsafe { rcl_publish(publisher.as_ref(), msg.void_ptr(), std::ptr::null_mut()) };
+        if unsafe { rcl_publisher_can_loan_messages(publisher.as_ref()) } {
+            let mut loaned_msg: *mut c_void = std::ptr::null_mut();
+            let ret = unsafe {
+                rcl_borrow_loaned_message(publisher.as_ref(), T::get_ts(), &mut loaned_msg)
+            };
+            if ret != RCL_RET_OK as i32 {
+                // TODO: Switch to logging library
+                eprintln!("Failed getting loaned message");
+                return Err(Error::from_rcl_error(ret))
+            }
+
+            let handle_box = Box::new(*publisher.as_ref());
+            let msg = WrappedNativeMsg::<T>::from_loaned(
+                loaned_msg as *mut T::CStruct,
+                Box::new(|msg: *mut T::CStruct| {
+                    let ret = unsafe {
+                        let handle_ptr = Box::into_raw(handle_box);
+                        let ret = rcl_return_loaned_message_from_publisher(
+                            handle_ptr,
+                            msg as *mut c_void,
+                        );
+                        drop(Box::from_raw(handle_ptr));
+                        ret
+                    };
+
+                    if ret != RCL_RET_OK as i32 {
+                        panic!("rcl_deallocate_loaned_message failed");
+                    }
+                }),
+            );
+            Ok(msg)
+        } else {
+            // TODO: Switch to logging library
+            eprintln!(
+                "Currently used middleware can't loan messages. Local allocator will be used."
+            );
+            Ok(WrappedNativeMsg::<T>::new())
+        }
+    }
+
+    /// Publish a "native" ROS message.
+    ///
+    /// This function is useful if you want to bypass the generated
+    /// rust types as it lets you work with the raw C struct.
+    pub fn publish_native(&self, msg: &mut WrappedNativeMsg<T>) -> Result<()>
+    where
+        T: WrappedTypesupport,
+    {
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        let result = if msg.is_loaned {
+            unsafe {
+                // signal that we are relinquishing responsibility of the memory
+                msg.release();
+
+                // publish and return loaned message to middleware
+                rcl_publish_loaned_message(
+                    publisher.as_ref(),
+                    msg.void_ptr_mut(),
+                    std::ptr::null_mut(),
+                )
+            }
+        } else {
+            unsafe { rcl_publish(publisher.as_ref(), msg.void_ptr(), std::ptr::null_mut()) }
+        };
+
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {

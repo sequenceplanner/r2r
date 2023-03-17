@@ -4,6 +4,7 @@ use r2r_rcl::{
     rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_service_type_support_t,
 };
 use serde::{Deserialize, Serialize};
+use std::boxed::Box;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
@@ -107,12 +108,13 @@ pub trait WrappedActionTypeSupport: Debug + Clone {
 /// This struct wraps a RCL message.
 ///
 /// It contains a pointer to a C struct.
-#[derive(Debug)]
 pub struct WrappedNativeMsg<T>
 where
     T: WrappedTypesupport,
 {
     pub msg: *mut T::CStruct,
+    pub is_loaned: bool,
+    deallocator: Option<Box<dyn FnOnce(*mut T::CStruct)>>,
 }
 
 pub trait VoidPtr {
@@ -347,11 +349,13 @@ impl Drop for WrappedNativeMsgUntyped {
 
 impl<T> WrappedNativeMsg<T>
 where
-    T: WrappedTypesupport,
+    T: WrappedTypesupport + 'static,
 {
     pub fn new() -> Self {
         WrappedNativeMsg {
             msg: T::create_msg(),
+            deallocator: Some(Box::new(T::destroy_msg)),
+            is_loaned: false,
         }
     }
 
@@ -360,11 +364,26 @@ where
         msg.copy_to_native(&mut native_msg);
         native_msg
     }
+
+    pub fn from_loaned(
+        msg: *mut T::CStruct,
+        deallocator: Box<dyn FnOnce(*mut <T as WrappedTypesupport>::CStruct)>,
+    ) -> Self {
+        WrappedNativeMsg {
+            msg,
+            deallocator: Some(deallocator),
+            is_loaned: true,
+        }
+    }
+
+    pub fn release(&mut self) {
+        self.deallocator.take();
+    }
 }
 
 impl<T> Default for WrappedNativeMsg<T>
 where
-    T: WrappedTypesupport,
+    T: WrappedTypesupport + 'static,
 {
     fn default() -> Self {
         Self::new()
@@ -389,7 +408,9 @@ where
     T: WrappedTypesupport,
 {
     fn drop(&mut self) {
-        T::destroy_msg(self.msg);
+        if let Some(deallocator) = self.deallocator.take() {
+            (deallocator)(self.msg);
+        }
     }
 }
 
@@ -578,6 +599,21 @@ mod tests {
         let msg2: trajectory_msgs::msg::JointTrajectoryPoint =
             serde_json::from_value(json2).unwrap();
         assert_eq!(msg, msg2);
+    }
+
+    #[test]
+    fn test_from_loaned() {
+        type MsgType = trajectory_msgs::msg::JointTrajectoryPoint;
+        type CMsgType = <MsgType as WrappedTypesupport>::CStruct;
+
+        let borrowed_msg = MsgType::create_msg();
+
+        let native = WrappedNativeMsg::<MsgType>::from_loaned(
+            borrowed_msg as *mut CMsgType,
+            Box::new(|_: *mut CMsgType| {}),
+        );
+
+        assert!(native.void_ptr() == borrowed_msg as *mut core::ffi::c_void);
     }
 
     #[cfg(r2r__test_msgs__msg__Defaults)]
