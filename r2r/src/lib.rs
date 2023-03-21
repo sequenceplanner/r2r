@@ -11,7 +11,7 @@
 //!
 //! What works?
 //!---
-//!- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic
+//!- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble
 //!- Building Rust types
 //!- Publish/subscribe
 //!- Services
