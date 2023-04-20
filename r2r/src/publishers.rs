@@ -3,6 +3,7 @@ use std::ffi::CString;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::sync::Weak;
+use std::sync::Once;
 
 use crate::error::*;
 use crate::msg_types::*;
@@ -206,10 +207,12 @@ where
             );
             Ok(msg)
         } else {
-            // TODO: Switch to logging library
-            eprintln!(
-                "Currently used middleware can't loan messages. Local allocator will be used."
-            );
+            static LOG_LOANED_ERROR: Once = Once::new();
+            LOG_LOANED_ERROR.call_once(|| { 
+                // TODO: Switch to logging library
+                eprintln!("Currently used middleware can't loan messages. Local allocator will be used.");
+            });
+            
             Ok(WrappedNativeMsg::<T>::new())
         }
     }
