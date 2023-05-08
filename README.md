@@ -39,6 +39,10 @@ What works?
 
 Changelog
 --------------------
+#### [Unreleased]
+- Log loaned message error only once. <https://github.com/sequenceplanner/r2r/pull/44>
+- Update r2r_cargo.cmake to latest version (see [here](https://github.com/m-dahl/r2r_minimal_node/commit/897774868edaa97e0272fffc253402d6474aaeb7))
+
 #### [0.7.0] - 2023-03-21
 - Use non-mangled names for serde serialization. <https://github.com/sequenceplanner/r2r/pull/40>
 - Avoid segfault when rcl_init fails. <https://github.com/sequenceplanner/r2r/pull/41>
