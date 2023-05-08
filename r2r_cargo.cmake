@@ -1,10 +1,16 @@
 #
-# For r2r 0.6.3.
+# For r2r 0.7.0.
 #
 # cmake code for simple colcon integration.
 # See https://github.com/m-dahl/r2r_minimal_node/
 # for an example of how to use it to build with colcon.
 #
+
+# Need at least 3.21 for IMPORTED_TARGETS property that we rely on.
+# NOTE! Ubuntu 20.04 comes 3.16.3 by default, so to use this you need
+# to update cmake. This can be done by adding the kitware apt repo:
+# https://apt.kitware.com
+cmake_minimum_required(VERSION "3.21")
 
 # traverse dependencies for all message packages.
 function(get_idl_deps OUT_PKG_DIRS PKG)
