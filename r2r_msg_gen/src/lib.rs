@@ -6,6 +6,7 @@
 #![allow(clippy::all)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
+include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
 #[macro_use]
 extern crate lazy_static;
@@ -602,6 +603,23 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
             msgname = name
         );
 
+
+        let constants = CONSTANTS_MAP.get(key.as_str()).cloned().unwrap_or_default();
+        let mut constant_strings = vec![];
+        for (c, typ) in constants {
+            constant_strings.push(format!("  pub const {c}: {typ} = {key}__{c};"));
+        }
+        let impl_constants = format!("
+                          #[allow(non_upper_case_globals)]
+                          impl {msgname} {{
+                              {constants}
+                          }}
+             ",
+            msgname = name,
+            constants = constant_strings.join("\n")
+        );
+
+
         let module_str = format!(
             "
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -610,12 +628,14 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
                               {fields}
                           }}\n
                           {typesupport}\n
-                          {default}\n\n
+                          {default}\n
+                          {constants}\n\n
                     ",
             msgname = name,
             fields = fields,
             typesupport = typesupport,
-            default = impl_default
+            default = impl_default,
+            constants = impl_constants,
         );
 
         module_str

@@ -4,13 +4,16 @@ use r2r_common::RosMsg;
 use std::fs::OpenOptions;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
+use std::collections::HashMap;
 
 const MSG_INCLUDES_FILENAME: &str = "msg_includes.h";
 const INTROSPECTION_FILENAME: &str = "introspection_functions.rs";
+const CONSTANTS_FILENAME: &str = "constants.rs";
 const BINDINGS_FILENAME: &str = "msg_bindings.rs";
 const GENERATED_FILES: &[&str] = &[
     MSG_INCLUDES_FILENAME,
     INTROSPECTION_FILENAME,
+    CONSTANTS_FILENAME,
     BINDINGS_FILENAME,
 ];
 
@@ -76,6 +79,7 @@ fn run_bindgen(msg_list: &[RosMsg]) {
 fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     let msg_includes_file = bindgen_dir.join(MSG_INCLUDES_FILENAME);
     let introspection_file = bindgen_dir.join(INTROSPECTION_FILENAME);
+    let constants_file = bindgen_dir.join(CONSTANTS_FILENAME);
     let bindings_file = bindgen_dir.join(BINDINGS_FILENAME);
 
     let mut includes = String::new();
@@ -169,6 +173,55 @@ fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
         });
 
     let bindings = builder.generate().expect("Unable to generate bindings");
+
+    // Let's add a hack to generate constants.
+    let str_bindings = bindings.to_string();
+    // find all lines which look suspiciosly like a constant.
+    let mut constants: HashMap<String, Vec<(String,String)>> = HashMap::new();
+    for msg in msg_list {
+        let prefix = &format!("pub const {}__{}__{}__", &msg.module, &msg.prefix, &msg.name);
+        let mut lines = str_bindings.lines();
+        while let Some(line) = lines.next() {
+            if let Some(constant) = line.strip_prefix(prefix) {
+                if let Some((con, typ)) = constant.split_once(":") {
+                    // These are generated automatically for arrays and strings, we don't need to expose them.
+                    if con.ends_with("__MAX_SIZE") || con.ends_with("__MAX_STRING_SIZE") {
+                        continue;
+                    }
+                    let key = format!("{}__{}__{}", msg.module, msg.prefix, msg.name);
+                    if let Some((t, _)) = typ.split_once("=") {
+                        constants.entry(key).or_default().push((con.to_string(), t.trim().to_string()));
+                    } else if let Some(next_line) = lines.next() {
+                        // type has moved down to the next line. (bindgen has a max line width)
+                        if let Some((t, _)) = next_line.split_once("=") {
+                            constants.entry(key).or_default().push((con.to_string(), t.trim().to_string()));
+                        } else {
+                            panic!("Code generation failure. Type not found in line! {}", next_line);
+                        }
+                    } else {
+                        panic!("Code generation failure. Type not found in line! {}", line);
+                    }
+                }
+            }
+        }
+    }
+    // generate a constant which holds all constants.
+    let mut constants_map = String::from(
+        "\
+        lazy_static! {
+           static ref CONSTANTS_MAP: HashMap<&'static str, Vec<(String,String)>> = {
+             let mut m = HashMap::new();\
+");
+    for (msg,msg_constants) in constants {
+        let msg_constants_str = format!("vec![{}]",
+                                        msg_constants.iter()
+                                        .map(|(c,t)| format!("(\"{c}\".to_string(), \"{t}\".to_string())"))
+                                        .collect::<Vec<String>>().join(","));
+
+        constants_map.push_str(&format!("m.insert(\"{}\", {});\n", msg, msg_constants_str));
+    }
+    constants_map.push_str("m \n }; }\n\n");
+    fs::write(&constants_file, constants_map).unwrap();
 
     bindings
         .write_to_file(bindings_file)

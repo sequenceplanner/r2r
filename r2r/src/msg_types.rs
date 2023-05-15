@@ -770,4 +770,14 @@ mod tests {
         // the message should contain something (default msg)
         assert!(!json_request.to_string().is_empty());
     }
+
+
+    #[cfg(r2r__action_msgs__msg__GoalStatus)]
+    #[test]
+    fn test_msg_constants() {
+        use action_msgs::msg::GoalStatus;
+        let gs = GoalStatus::default();
+
+        assert_eq!(gs.status, GoalStatus::STATUS_UNKNOWN as i8);
+    }
 }
