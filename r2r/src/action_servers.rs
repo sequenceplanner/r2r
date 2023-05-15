@@ -7,7 +7,6 @@ use std::ffi::CString;
 use std::mem::MaybeUninit;
 use std::sync::{Arc, Mutex, Weak};
 
-use crate::action_common::*;
 use crate::error::*;
 use crate::msg_types::generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs};
 use crate::msg_types::*;
@@ -192,14 +191,14 @@ where
 
     fn is_cancelling(&self, uuid: &uuid::Uuid) -> Result<bool> {
         if let Some(handle) = self.goals.get(uuid) {
-            let mut state = 0u8; // TODO: int8 STATUS_UNKNOWN   = 0;
+            let mut state = action_msgs::msg::GoalStatus::STATUS_UNKNOWN as u8;
             let ret = unsafe { rcl_action_goal_handle_get_status(*handle, &mut state) };
 
             if ret != RCL_RET_OK as i32 {
                 println!("action server: Failed to get goal handle state: {}", ret);
                 return Err(Error::from_rcl_error(ret));
             }
-            return Ok(state == 3u8); // TODO: int8 STATUS_CANCELING
+            return Ok(state == action_msgs::msg::GoalStatus::STATUS_CANCELING as u8);
         }
         Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID)
     }
@@ -295,7 +294,7 @@ where
 
                     // check if all cancels were rejected.
                     if requested_cancels >= 1 && response_msg.goals_canceling.is_empty() {
-                        response_msg.return_code = 1; // TODO: auto generate these (int8 ERROR_REJECTED=1)
+                        response_msg.return_code = action_msgs::srv::CancelGoal::Response::ERROR_REJECTED as i8;
                     }
 
                     responses.push((*request_id, response_msg));
@@ -534,9 +533,7 @@ where
 
         let response_msg = if !goal_exists {
             // Goal does not exists
-            println!("goal does not exist :(");
-            let status = GoalStatus::Unknown;
-            let msg = T::make_result_response_msg(status.to_rcl(), T::Result::default());
+            let msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_UNKNOWN as i8, T::Result::default());
             let mut response_msg = WrappedNativeMsg::<
                 <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
             >::from(&msg);
@@ -667,7 +664,7 @@ where
         action_server.publish_status();
 
         // create result message
-        let result_msg = T::make_result_response_msg(5, msg); // todo: int8 STATUS_CANCELED  = 5
+        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_CANCELED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
@@ -687,7 +684,7 @@ where
         action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_ABORT)?;
 
         // create result message
-        let result_msg = T::make_result_response_msg(6, msg); // todo: int8 STATUS_ABORTED   = 6
+        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_ABORTED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
@@ -710,7 +707,7 @@ where
         action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_SUCCEED)?;
 
         // create result message
-        let result_msg = T::make_result_response_msg(4, msg); // todo: int8 STATUS_SUCCEEDED = 4
+        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_SUCCEEDED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);

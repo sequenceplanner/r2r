@@ -779,10 +779,22 @@ mod tests {
         let gs = GoalStatus::default();
 
         assert_eq!(gs.status, GoalStatus::STATUS_UNKNOWN as i8);
+        assert_eq!(0, GoalStatus::STATUS_UNKNOWN as i8);
+        assert_eq!(1, GoalStatus::STATUS_ACCEPTED as i8);
+        assert_eq!(2, GoalStatus::STATUS_EXECUTING as i8);
+        assert_eq!(3, GoalStatus::STATUS_CANCELING as i8);
+        assert_eq!(4, GoalStatus::STATUS_SUCCEEDED as i8);
+        assert_eq!(5, GoalStatus::STATUS_CANCELED as i8);
+        assert_eq!(6, GoalStatus::STATUS_ABORTED as i8);
 
         use action_msgs::srv::CancelGoal;
         let cgr = CancelGoal::Response::default();
 
         assert_eq!(cgr.return_code, CancelGoal::Response::ERROR_NONE as i8);
+        assert_eq!(0, CancelGoal::Response::ERROR_NONE as i8);
+        assert_eq!(1, CancelGoal::Response::ERROR_REJECTED as i8);
+        assert_eq!(2, CancelGoal::Response::ERROR_UNKNOWN_GOAL_ID as i8);
+        assert_eq!(3, CancelGoal::Response::ERROR_GOAL_TERMINATED as i8);
+
     }
 }

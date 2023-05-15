@@ -217,10 +217,10 @@ impl WrappedActionClientUntyped {
                 .map_err(|_| Error::RCL_RET_CLIENT_INVALID)
                 .map(|r| match r {
                     Ok(r) => match r.return_code {
-                        0 => Ok(()),
-                        1 => Err(Error::GoalCancelRejected),
-                        2 => Err(Error::GoalCancelUnknownGoalID),
-                        3 => Err(Error::GoalCancelAlreadyTerminated),
+                        e if e == action_msgs::srv::CancelGoal::Response::ERROR_NONE as i8 => Ok(()),
+                        e if e == action_msgs::srv::CancelGoal::Response::ERROR_REJECTED as i8 => Err(Error::GoalCancelRejected),
+                        e if e == action_msgs::srv::CancelGoal::Response::ERROR_UNKNOWN_GOAL_ID as i8 => Err(Error::GoalCancelUnknownGoalID),
+                        e if e == action_msgs::srv::CancelGoal::Response::ERROR_GOAL_TERMINATED as i8 => Err(Error::GoalCancelAlreadyTerminated),
                         x => panic!("unknown error code return from action server: {}", x),
                     },
                     Err(e) => Err(e),
