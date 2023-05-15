@@ -779,5 +779,10 @@ mod tests {
         let gs = GoalStatus::default();
 
         assert_eq!(gs.status, GoalStatus::STATUS_UNKNOWN as i8);
+
+        use action_msgs::srv::CancelGoal;
+        let cgr = CancelGoal::Response::default();
+
+        assert_eq!(cgr.return_code, CancelGoal::Response::ERROR_NONE as i8);
     }
 }

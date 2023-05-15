@@ -179,30 +179,19 @@ fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     // find all lines which look suspiciosly like a constant.
     let mut constants: HashMap<String, Vec<(String,String)>> = HashMap::new();
     for msg in msg_list {
-        let prefix = &format!("pub const {}__{}__{}__", &msg.module, &msg.prefix, &msg.name);
-        let mut lines = str_bindings.lines();
-        while let Some(line) = lines.next() {
-            if let Some(constant) = line.strip_prefix(prefix) {
-                if let Some((con, typ)) = constant.split_once(":") {
-                    // These are generated automatically for arrays and strings, we don't need to expose them.
-                    if con.ends_with("__MAX_SIZE") || con.ends_with("__MAX_STRING_SIZE") {
-                        continue;
-                    }
-                    let key = format!("{}__{}__{}", msg.module, msg.prefix, msg.name);
-                    if let Some((t, _)) = typ.split_once("=") {
-                        constants.entry(key).or_default().push((con.to_string(), t.trim().to_string()));
-                    } else if let Some(next_line) = lines.next() {
-                        // type has moved down to the next line. (bindgen has a max line width)
-                        if let Some((t, _)) = next_line.split_once("=") {
-                            constants.entry(key).or_default().push((con.to_string(), t.trim().to_string()));
-                        } else {
-                            panic!("Code generation failure. Type not found in line! {}", next_line);
-                        }
-                    } else {
-                        panic!("Code generation failure. Type not found in line! {}", line);
-                    }
-                }
+        if msg.prefix == "srv" {
+            for s in &["Request", "Response"] {
+                let key = format!("{}__{}__{}_{}", &msg.module, &msg.prefix, &msg.name, s);
+                add_constants(&key, &str_bindings, &mut constants);
             }
+        } else if msg.prefix == "action" {
+            for s in &["Goal", "Result", "Feedback", "FeedbackMessage"] {
+                let key = format!("{}__{}__{}_{}", &msg.module, &msg.prefix, &msg.name, s);
+                add_constants(&key, &str_bindings, &mut constants);
+            }
+        } else {
+            let key = format!("{}__{}__{}", &msg.module, &msg.prefix, &msg.name);
+            add_constants(&key, &str_bindings, &mut constants);
         }
     }
     // generate a constant which holds all constants.
@@ -226,6 +215,33 @@ fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     bindings
         .write_to_file(bindings_file)
         .expect("Couldn't write bindings!");
+}
+
+fn add_constants(key: &str, bindings: &str, constants: &mut HashMap<String, Vec<(String, String)>>) {
+    let mut lines = bindings.lines();
+    while let Some(line) = lines.next() {
+        let prefix = format!("pub const {}__", key);
+        if let Some(constant) = line.strip_prefix(&prefix) {
+            if let Some((con, typ)) = constant.split_once(":") {
+                // These are generated automatically for arrays and strings, we don't need to expose them.
+                if con.ends_with("__MAX_SIZE") || con.ends_with("__MAX_STRING_SIZE") {
+                    continue;
+                }
+                if let Some((t, _)) = typ.split_once("=") {
+                    constants.entry(key.into()).or_default().push((con.to_string(), t.trim().to_string()));
+                } else if let Some(next_line) = lines.next() {
+                    // type has moved down to the next line. (bindgen has a max line width)
+                    if let Some((t, _)) = next_line.split_once("=") {
+                        constants.entry(key.into()).or_default().push((con.to_string(), t.trim().to_string()));
+                    } else {
+                        panic!("Code generation failure. Type not found in line! {}", next_line);
+                    }
+                } else {
+                    panic!("Code generation failure. Type not found in line! {}", line);
+                }
+            }
+        }
+    }
 }
 
 fn run_dynlink(#[allow(unused_variables)] msg_list: &[RosMsg]) {

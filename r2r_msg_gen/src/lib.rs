@@ -609,15 +609,18 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
         for (c, typ) in constants {
             constant_strings.push(format!("  pub const {c}: {typ} = {key}__{c};"));
         }
-        let impl_constants = format!("
+        let impl_constants = if constant_strings.is_empty() {
+            String::new()
+        } else {
+            format!("
                           #[allow(non_upper_case_globals)]
                           impl {msgname} {{
                               {constants}
                           }}
              ",
             msgname = name,
-            constants = constant_strings.join("\n")
-        );
+            constants = constant_strings.join("\n"))
+        };
 
 
         let module_str = format!(
