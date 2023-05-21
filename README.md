@@ -40,6 +40,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Add associated constants to generated message types. <https://github.com/sequenceplanner/r2r/pull/46>
 - Log loaned message error only once. <https://github.com/sequenceplanner/r2r/pull/44>
 - Update r2r_cargo.cmake to latest version (see [here](https://github.com/m-dahl/r2r_minimal_node/commit/897774868edaa97e0272fffc253402d6474aaeb7))
 
