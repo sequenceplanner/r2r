@@ -1,6 +1,6 @@
 [package]
 name = "r2r_msg_gen"
-version = "0.3.8"
+version = "0.3.9"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
