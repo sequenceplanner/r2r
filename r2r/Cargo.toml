@@ -32,6 +32,9 @@ tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
 rand = "0.8.5"
 
 [build-dependencies]
+prettyplease = "0.2.6"
+proc-macro2 = "1.0.58"
+syn = "2.0.18"
 r2r_common = { path = "../r2r_common", version = "0.3.6" }
 r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.11" }
 

@@ -3,7 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)]
 #![allow(dead_code)]
-#![allow(clippy::all)]
+// #![warn(clippy::pedantic)]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 include!(concat!(env!("OUT_DIR"), "/constants.rs"));
@@ -11,15 +11,32 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 #[macro_use]
 extern crate lazy_static;
 
-use r2r_rcl::*;
+use proc_macro2::{Ident, Span, TokenStream};
+use quote::{format_ident, quote};
+use r2r_rcl::{
+    rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_runtime_c__String,
+    rosidl_runtime_c__String__Sequence, rosidl_runtime_c__U16String,
+    rosidl_runtime_c__boolean__Sequence, rosidl_runtime_c__double__Sequence,
+    rosidl_runtime_c__float__Sequence, rosidl_runtime_c__int16__Sequence,
+    rosidl_runtime_c__int32__Sequence, rosidl_runtime_c__int64__Sequence,
+    rosidl_runtime_c__int8__Sequence, rosidl_runtime_c__octet__Sequence,
+    rosidl_runtime_c__uint16__Sequence, rosidl_runtime_c__uint32__Sequence,
+    rosidl_runtime_c__uint64__Sequence, rosidl_runtime_c__uint8__Sequence,
+    rosidl_service_type_support_t, rosidl_typesupport_introspection_c__MessageMember,
+    rosidl_typesupport_introspection_c__MessageMembers,
+    rosidl_typesupport_introspection_c_field_types,
+};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::ffi::CStr;
-use std::fmt::Write;
 
-// Copied from bindgen.
-// https://github.com/rust-lang/rust-bindgen/blob/e68b8c0e2b2ceeb42c35e74bd9344a1a99ec2e0c/src/ir/context.rs#L817
-fn rust_mangle<'a>(name: &'a str) -> Cow<'a, str> {
+/// Convert the identifier name to a valid rust identifier.
+///
+/// Special characters ('@', '?', '$') are replaced with `_` and a trailing `_` is added if the name is a rust keyword.
+///
+/// Copied from bindgen.
+/// <https://github.com/rust-lang/rust-bindgen/blob/e68b8c0e2b2ceeb42c35e74bd9344a1a99ec2e0c/src/ir/context.rs#L817>
+fn rust_mangle(name: &str) -> Cow<str> {
     if name.contains('@')
         || name.contains('?')
         || name.contains('$')
@@ -110,131 +127,603 @@ fn rust_mangle<'a>(name: &'a str) -> Cow<'a, str> {
     Cow::Borrowed(name)
 }
 
-// because the c enum has been named between galactic and the next release,
-// we cannot know its name. therefor we use the constants as is and hope we notice
-// when they change.
-// rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT = 1,
-// rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE = 2,
-// rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE = 3,
-// rosidl_typesupport_introspection_c__ROS_TYPE_CHAR = 4,
-// rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR = 5,
-// rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN = 6,
-// rosidl_typesupport_introspection_c__ROS_TYPE_OCTET = 7,
-// rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 = 8,
-// rosidl_typesupport_introspection_c__ROS_TYPE_INT8 = 9,
-// rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 = 10,
-// rosidl_typesupport_introspection_c__ROS_TYPE_INT16 = 11,
-// rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 = 12,
-// rosidl_typesupport_introspection_c__ROS_TYPE_INT32 = 13,
-// rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 = 14,
-// rosidl_typesupport_introspection_c__ROS_TYPE_INT64 = 15,
-// rosidl_typesupport_introspection_c__ROS_TYPE_STRING = 16,
-// rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING = 17,
-// rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE = 18,
-fn field_type(t: u8) -> String {
-    // lovely...
-    // move to common
-    if t == 16 {
-        "std::string::String".to_owned()
-    } else if t == 17 {
-        "std::string::String".to_owned()
-    } else if t == 6 {
-        "bool".to_owned()
-    } else if t == 4 {
-        "i8".to_owned()
-    } else if t == 5 {
-        "i16".to_owned()
-    } else if t == 7 {
-        "u8".to_owned()
-    } else if t == 8 {
-        "u8".to_owned()
-    } else if t == 9 {
-        "i8".to_owned()
-    } else if t == 10 {
-        "u16".to_owned()
-    } else if t == 11 {
-        "i16".to_owned()
-    } else if t == 12 {
-        "u32".to_owned()
-    } else if t == 13 {
-        "i32".to_owned()
-    } else if t == 14 {
-        "u64".to_owned()
-    } else if t == 15 {
-        "i64".to_owned()
-    } else if t == 1 {
-        "f32".to_owned()
-    } else if t == 2 {
-        "f64".to_owned()
-    } else if t == 3 {
-        // f128 does not exist in rust
-        "u128".to_owned()
-    } else if t == 18 {
-        "message".to_owned()
-    } else {
-        panic!("ros native type not implemented: {}", t);
+/// Confirm the ROS_TYPE enum's value is still the same as what we hard coded in [`FieldType::new`].
+pub fn assert_field_type_match_c_enum() {
+    use rosidl_typesupport_introspection_c_field_types::*;
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u32, 1);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u32,
+        2
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE as u32,
+        3
+    );
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_CHAR as u32, 4);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR as u32, 5);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u32,
+        6
+    );
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_OCTET as u32, 7);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 as u32, 8);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_INT8 as u32, 9);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 as u32,
+        10
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT16 as u32,
+        11
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 as u32,
+        12
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT32 as u32,
+        13
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 as u32,
+        14
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT64 as u32,
+        15
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u32,
+        16
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING as u32,
+        17
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u32,
+        18
+    );
+}
+
+enum FieldType {
+    Bool,
+    I8,
+    U8,
+    I16,
+    U16,
+    I32,
+    U32,
+    I64,
+    U64,
+    F32,
+    F64,
+    U128,
+    String,
+    Message(TypeDescription),
+}
+
+impl FieldType {
+    /// Construct a field type from an integer representation of a `rosidl_typesupport_introspection_c__ROS_TYPE_` enum and a closure.
+    ///
+    /// The first argument is an integer representation of the enum that should be within [1, 18] range.
+    ///
+    /// The second argument is a closure that produces a TypeDescription. It is called when the first argument is `18` (which means custom message).
+    ///
+    /// The [`assert_field_type`] needs to be called at least once to ensure the C side enum's value still matches the integer value we hardcoded.
+    fn new(t: u8, f: impl FnOnce() -> TypeDescription) -> Self {
+        match t {
+            1 => FieldType::F32,
+            2 => FieldType::F64,
+            3 => FieldType::U128,
+            4 | 9 => FieldType::I8,
+            5 | 11 => FieldType::I16,
+            6 => FieldType::Bool,
+            7 | 8 => FieldType::U8,
+            10 => FieldType::U16,
+            12 => FieldType::U32,
+            13 => FieldType::I32,
+            14 => FieldType::U64,
+            15 => FieldType::I64,
+            16 | 17 => FieldType::String,
+            18 => FieldType::Message(f()),
+            _ => unreachable!(
+                "rosidl_typesupport_introspection_c__ROS_TYPE_xxx should be between 1 and 18"
+            ),
+        }
+    }
+
+    fn get_path(&self) -> TokenStream {
+        match self {
+            FieldType::Bool => quote!(bool),
+            FieldType::I8 => quote!(i8),
+            FieldType::U8 => quote!(u8),
+            FieldType::I16 => quote!(i16),
+            FieldType::U16 => quote!(u16),
+            FieldType::I32 => quote!(i32),
+            FieldType::U32 => quote!(u32),
+            FieldType::I64 => quote!(i64),
+            FieldType::U64 => quote!(u64),
+            FieldType::F32 => quote!(f32),
+            FieldType::F64 => quote!(f64),
+            FieldType::U128 => quote!(u128),
+            FieldType::String => quote!(std::string::String),
+            FieldType::Message(ty) => ty.get_path(),
+        }
     }
 }
 
-unsafe fn introspection<'a>(
-    ptr: *const rosidl_message_type_support_t,
-) -> (
-    String,
-    String,
-    String,
-    String,
-    &'a [rosidl_typesupport_introspection_c__MessageMember],
-) {
-    let members = (*ptr).data as *const rosidl_typesupport_introspection_c__MessageMembers;
-    let namespace = CStr::from_ptr((*members).message_namespace_)
-        .to_str()
-        .unwrap();
-    let name = CStr::from_ptr((*members).message_name_).to_str().unwrap();
-    let nn: Vec<&str> = namespace.split("__").into_iter().take(2).collect();
-    let (module, prefix) = (nn[0], nn[1]);
-    let c_struct = format!(
-        "{module}__{prefix}__{msgname}",
-        module = module,
-        prefix = prefix,
-        msgname = name
-    );
-    let memberslice =
-        std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
-    (
-        module.to_owned(),
-        prefix.to_owned(),
-        name.to_owned(),
-        c_struct,
-        memberslice,
-    )
+struct TypeDescription {
+    rust_path: Vec<Ident>,
+    c_name: Ident,
 }
 
-pub fn generate_rust_service(module_: &str, prefix_: &str, name_: &str) -> String {
-    format!(
-        "
+impl TypeDescription {
+    fn new(namespace: &str, name: &str) -> Self {
+        let mut namespace_iter = namespace.split("__");
+        let pkg_name = namespace_iter.next().unwrap();
+        let interface_type = namespace_iter.next().unwrap();
+        let c_name = format_ident!("{pkg_name}__{interface_type}__{name}");
+
+        let rust_path = match interface_type {
+            "msg" => {
+                vec![
+                    Ident::new(pkg_name, Span::call_site()),
+                    Ident::new(interface_type, Span::call_site()),
+                    Ident::new(name, Span::call_site()),
+                ]
+            }
+            "srv" => {
+                let mut name_iter = name.splitn(2, '_');
+                let srv_name = name_iter.next().unwrap();
+                let Some(msg_name @ ("Request" | "Response")) = name_iter.next() else { panic!("Message name for a service should be \"Request\" or \"Response\"") };
+                vec![
+                    Ident::new(pkg_name, Span::call_site()),
+                    Ident::new(interface_type, Span::call_site()),
+                    Ident::new(srv_name, Span::call_site()),
+                    Ident::new(msg_name, Span::call_site()),
+                ]
+            }
+            "action" => {
+                let mut name_iter = name.splitn(3, '_');
+                let action_name = name_iter.next().unwrap();
+                let srv_or_msg_name = name_iter.next().unwrap();
+                let msg_name = name_iter.next();
+                match (srv_or_msg_name, msg_name) {
+                    (msg_name @ ("Goal" | "Result" | "Feedback" | "FeedbackMessage"), None) => {
+                        vec![
+                            Ident::new(pkg_name, Span::call_site()),
+                            Ident::new(interface_type, Span::call_site()),
+                            Ident::new(action_name, Span::call_site()),
+                            Ident::new(msg_name, Span::call_site()),
+                        ]
+                    }
+                    (
+                        srv_name @ ("SendGoal" | "GetResult"),
+                        Some(msg_name @ ("Request" | "Response")),
+                    ) => {
+                        vec![
+                            Ident::new(pkg_name, Span::call_site()),
+                            Ident::new(interface_type, Span::call_site()),
+                            Ident::new(action_name, Span::call_site()),
+                            Ident::new(srv_name, Span::call_site()),
+                            Ident::new(msg_name, Span::call_site()),
+                        ]
+                    }
+                    _ => {
+                        panic!("Invalid message name {name} under {namespace}")
+                    }
+                }
+            }
+            interface_name => {
+                panic!("Invalid interface name: {interface_name}")
+            }
+        };
+
+        Self { rust_path, c_name }
+    }
+
+    /// Get the fully qualified path of the type in Rust. This should be a list of identifiers separated by `::`.
+    fn get_path(&self) -> TokenStream {
+        let components = &self.rust_path;
+        quote!(#(#components)::*)
+    }
+
+    /// Get the name of the type in C. This should be a single identifier.
+    fn get_c_name(&self) -> TokenStream {
+        let c_name = &self.c_name;
+        quote!(#c_name)
+    }
+
+    /// Get the name of the type in Rust. This should be a single identifier.
+    fn get_rust_name(&self) -> TokenStream {
+        let rust_name = self.rust_path.last().unwrap();
+        quote!(#rust_name)
+    }
+}
+
+enum FieldRepitition {
+    Scalar,
+    StaticArray(usize),
+    BoundedArray(usize),
+    UnboundedArray,
+}
+
+struct FieldDescription {
+    field_name: Ident,
+    c_field_name: Ident,
+    is_mangled: bool,
+    ty: FieldType,
+    repitition: FieldRepitition,
+}
+
+impl FieldDescription {
+    unsafe fn from_raw(member: &rosidl_typesupport_introspection_c__MessageMember) -> Option<Self> {
+        let c_field_name = CStr::from_ptr(member.name_).to_str().unwrap();
+        let field_name = rust_mangle(c_field_name);
+        if field_name == "structure_needs_at_least_one_member" {
+            return None;
+        }
+        let is_mangled = matches!(field_name, Cow::Owned(_));
+        let ty = FieldType::new(member.type_id_, || {
+            let members = *(*member.members_)
+                .data
+                .cast::<rosidl_typesupport_introspection_c__MessageMembers>();
+            let namespace = CStr::from_ptr(members.message_namespace_).to_str().unwrap();
+            let name = CStr::from_ptr(members.message_name_).to_str().unwrap();
+            TypeDescription::new(namespace, name)
+        });
+        let repitition = match (member.is_array_, member.is_upper_bound_, member.array_size_) {
+            (false, _, _) => FieldRepitition::Scalar,
+            (true, true, n) => FieldRepitition::BoundedArray(n),
+            (true, false, 0) => FieldRepitition::UnboundedArray,
+            (true, false, n) => FieldRepitition::StaticArray(n),
+        };
+        Some(Self {
+            field_name: Ident::new(&field_name, Span::call_site()),
+            c_field_name: Ident::new(c_field_name, Span::call_site()),
+            is_mangled,
+            ty,
+            repitition,
+        })
+    }
+
+    fn get_struct_field_token(&self) -> TokenStream {
+        let serde_rename = if self.is_mangled {
+            let c_field_name_str = self.c_field_name.to_string();
+            quote!(
+                #[serde(rename = #c_field_name_str)]
+            )
+        } else {
+            quote!()
+        };
+
+        let name = &self.field_name;
+        let path = self.ty.get_path();
+
+        match self.repitition {
+            FieldRepitition::Scalar => quote!(
+                #serde_rename
+                pub #name: #path
+            ),
+            FieldRepitition::BoundedArray(n) => {
+                let comment = format!("Max length: {n}");
+                quote!(
+                    #[doc = #comment]
+                    #serde_rename
+                    pub #name: Vec<#path>
+                )
+            }
+            FieldRepitition::UnboundedArray => quote!(
+                #serde_rename
+                pub #name: Vec<#path>
+            ),
+            FieldRepitition::StaticArray(n) => {
+                let comment = format!("Length: {n}");
+                quote!(
+                    #[doc = #comment]
+                    #serde_rename
+                    pub #name: Vec<#path>
+                    // pub #name: [#path; #n]
+                )
+            }
+        }
+    }
+
+    fn get_from_native_token(&self) -> TokenStream {
+        use FieldRepitition::{BoundedArray, Scalar, StaticArray, UnboundedArray};
+        use FieldType::{Message, String};
+
+        let field_name = &self.field_name;
+        let path = self.ty.get_path();
+
+        let converter_expr = match &self.ty {
+            Message(_) => quote!(#path::from_native(&native)),
+            String => quote!(native.to_str().to_owned()),
+            _ => quote!(),
+        };
+
+        match (&self.repitition, &self.ty) {
+            (Scalar, Message(_)) => quote!(#field_name: #path::from_native(&msg.#field_name)),
+            (Scalar, String) => quote!(#field_name: msg.#field_name.to_str().to_owned()),
+            (Scalar, _) => quote!(#field_name: msg.#field_name),
+            (StaticArray(_), Message(_) | String) => quote!(
+                #field_name: {
+                    // let mut data: [std::mem::MaybeUninit<#path>; #n] = unsafe {
+                    //     std::mem::MaybeUninit::uninit().assume_init()
+                    // };
+
+                    // for (elem, native) in data[..].iter_mut().zip(msg.#field_name.iter()) {
+                    //     elem.write(#converter_expr);
+                    // }
+
+                    // unsafe { std::mem::transmute::<_, [#path; #n]>(data) }
+                    #field_name: {
+                        let mut data = Vec::with_capacity(msg.#field_name.size);
+                        let slice = unsafe { std::slice::from_raw_parts(msg.#field_name.data, msg.#field_name.size)};
+                        for native in &msg.#field_name {
+                            data.push(#converter_expr);
+                        }
+                        data
+                    }
+                }
+            ),
+            (StaticArray(_), _) => quote!(#field_name: msg.#field_name.to_vec()),
+            (BoundedArray(_) | UnboundedArray, Message(_) | String) => quote!(
+                #field_name: {
+                    let mut data = Vec::with_capacity(msg.#field_name.size);
+                    let slice = unsafe { std::slice::from_raw_parts(msg.#field_name.data, msg.#field_name.size)};
+                    for native in slice {
+                        data.push(#converter_expr);
+                    }
+                    data
+                }
+            ),
+            (BoundedArray(_) | UnboundedArray, _) => quote!(#field_name: msg.#field_name.to_vec()),
+        }
+    }
+
+    fn get_copy_to_native_token(&self) -> TokenStream {
+        use FieldRepitition::{BoundedArray, Scalar, StaticArray, UnboundedArray};
+        use FieldType::{Message, String};
+
+        let field_name = &self.field_name;
+        let path = self.ty.get_path();
+
+        let size_checking = match &self.repitition {
+            BoundedArray(n) => {
+                let err_msg = format!("Expected at most {{}} elements in `{field_name}` field, but found {{}}");
+                quote!(assert!(self.#field_name.len() <= #n, #err_msg, #n, self.#field_name.len());)
+            }
+            StaticArray(n) => {
+                let err_msg = format!(
+                    "Expected {{}} elements in `{field_name}` field, but found {{}}"
+                );
+                quote!(assert!(self.#field_name.len() == #n, #err_msg, #n, self.#field_name.len());)
+            }
+            _ => {
+                quote!()
+            }
+        };
+
+        match (&self.repitition, &self.ty) {
+            (Scalar, Message(_)) => quote!(self.#field_name.copy_to_native(&mut msg.#field_name);),
+            (Scalar, String) => quote!(msg.#field_name.assign(&self.#field_name);),
+            (Scalar, _) => quote!(msg.#field_name = self.#field_name;),
+            (StaticArray(_), Message(_)) => quote!(
+                #size_checking
+                for (t,s) in msg.#field_name.iter_mut().zip(&self.#field_name) {
+                    s.copy_to_native(t);
+                }
+            ),
+            (StaticArray(_), String) => quote!(
+                #size_checking
+                for (t,s) in msg.#field_name.iter_mut().zip(&self.#field_name) {
+                    t.assign(s);
+                }
+            ),
+            (StaticArray(n), _) => quote!(
+                #size_checking
+                msg.#field_name.copy_from_slice(&self.#field_name[..#n]);
+            ),
+            (BoundedArray(_) | UnboundedArray, Message(message_type_description)) => {
+                let c_struct_ident = message_type_description.get_c_name();
+                let c_struct_fini_ident = format_ident!("{c_struct_ident}__Sequence__fini");
+                let c_struct_init_ident = format_ident!("{c_struct_ident}__Sequence__init");
+                quote!(
+                    #size_checking
+                    let slice = unsafe {
+                        #c_struct_fini_ident(&mut msg.#field_name);
+                        #c_struct_init_ident(&mut msg.#field_name, self.#field_name.len());
+                        std::slice::from_raw_parts_mut(msg.#field_name.data, msg.#field_name.size)
+                    };
+                    for (t,s) in slice.iter_mut().zip(&self.#field_name) {
+                        s.copy_to_native(t);
+                    }
+                )
+            }
+            (BoundedArray(_) | UnboundedArray, _) => {
+                quote!(
+                    #size_checking
+                    msg.#field_name.update(&self.#field_name);
+                )
+            }
+        }
+    }
+}
+
+struct StructDescription {
+    ty: TypeDescription,
+    fields: Vec<FieldDescription>,
+    constants: Vec<(Ident, Ident, Ident)>,
+}
+
+impl StructDescription {
+    unsafe fn from_raw(
+        ptr: *const rosidl_message_type_support_t,
+        constants: &[(String, String)],
+    ) -> Self {
+        let members = *(*ptr)
+            .data
+            .cast::<rosidl_typesupport_introspection_c__MessageMembers>();
+        let namespace = CStr::from_ptr(members.message_namespace_).to_str().unwrap();
+        let name = CStr::from_ptr(members.message_name_).to_str().unwrap();
+        let ty = TypeDescription::new(namespace, name);
+        let memberslice =
+            std::slice::from_raw_parts(members.members_, members.member_count_ as usize);
+        let constants = constants
+            .iter()
+            .map(|(const_name, type_name)| {
+                let const_name = const_name.trim();
+                let type_name = type_name.trim();
+                (
+                    Ident::new(const_name, Span::call_site()),
+                    Ident::new(type_name, Span::call_site()),
+                    Ident::new(
+                        &format!("{}__{}", ty.get_c_name(), const_name),
+                        Span::call_site(),
+                    ),
+                )
+            })
+            .collect();
+        Self {
+            ty,
+            fields: memberslice
+                .iter()
+                .filter_map(|x| unsafe { FieldDescription::from_raw(x) })
+                .collect(),
+            constants,
+        }
+    }
+
+    fn into_token_stream(self) -> TokenStream {
+        let msgname = self.ty.get_rust_name();
+        let field_items = self
+            .fields
+            .iter()
+            .map(FieldDescription::get_struct_field_token);
+        let arg_ident = if self.fields.is_empty() {
+            Ident::new("_msg", Span::call_site())
+        } else {
+            Ident::new("msg", Span::call_site())
+        };
+        let fields_from_native = self
+            .fields
+            .iter()
+            .map(FieldDescription::get_from_native_token);
+        let fields_copy_to_native = self
+            .fields
+            .iter()
+            .map(FieldDescription::get_copy_to_native_token);
+
+        let c_struct_ident = self.ty.get_c_name();
+        let c_struct_get_ts_ident = format_ident!(
+            "rosidl_typesupport_c__get_message_type_support_handle__{c_struct_ident}"
+        );
+        let c_struct_create_ident = format_ident!("{c_struct_ident}__create");
+        let c_struct_destroy_ident = format_ident!("{c_struct_ident}__destroy");
+
+        let constants_block = if self.constants.is_empty() {
+            quote!()
+        } else {
+            let consts_name = self.constants.iter().map(|(x, _, _)| x);
+            let consts_type = self.constants.iter().map(|(_, y, _)| y);
+            let consts_c_name = self.constants.iter().map(|(_, _, z)| z);
+
+            quote!(
+                impl #msgname {
+                    #(pub const #consts_name: #consts_type = #consts_c_name;)*
+                }
+            )
+        };
+
+        quote! {
+            #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+            #[serde(default)]
+            pub struct #msgname {
+                #(#field_items,)*
+            }
+
+            impl WrappedTypesupport for #msgname {
+                type CStruct = #c_struct_ident;
+
+                fn get_ts() -> &'static rosidl_message_type_support_t {
+                    unsafe { &*#c_struct_get_ts_ident() }
+                }
+
+                fn create_msg() -> *mut Self::CStruct {
+                    unsafe { #c_struct_create_ident() }
+                }
+
+                fn destroy_msg(msg: *mut Self::CStruct) -> () {
+                    unsafe { #c_struct_destroy_ident(msg) };
+                }
+
+                fn from_native(#arg_ident: &Self::CStruct) -> #msgname {
+                    #msgname{
+                        #(#fields_from_native,)*
+                    }
+                }
+
+                fn copy_to_native(&self, #arg_ident: &mut Self::CStruct) {
+                    #(#fields_copy_to_native)*
+                }
+            }
+
+            impl Default for #msgname {
+                fn default() -> Self {
+                    let msg_native = WrappedNativeMsg::<#msgname>::new();
+                    #msgname::from_native(&msg_native)
+                }
+            }
+
+            #constants_block
+        }
+    }
+}
+
+pub fn generate_rust_msg(module: &str, prefix: &str, name: &str) -> TokenStream {
+    let key = format!("{module}__{prefix}__{name}");
+    let ptr = INTROSPECTION_FNS
+        .get(key.as_str())
+        .unwrap_or_else(|| panic!("code generation error: {}", key));
+    let ptr = *ptr as *const i32 as *const rosidl_message_type_support_t;
+    let constants = CONSTANTS_MAP.get(key.as_str()).cloned().unwrap_or_default();
+
+    let struct_description = unsafe { StructDescription::from_raw(ptr, &constants) };
+    assert_eq!(struct_description.ty.rust_path[0], module);
+    assert_eq!(struct_description.ty.rust_path[1], prefix);
+
+    struct_description.into_token_stream()
+}
+
+pub fn generate_rust_service(module: &str, prefix: &str, name: &str) -> TokenStream {
+    let type_support_ident = format_ident!(
+        "rosidl_typesupport_c__get_service_type_support_handle__{module}__{prefix}__{name}"
+    );
+    quote!(
         #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
         pub struct Service();
-        impl WrappedServiceTypeSupport for Service {{
+        impl WrappedServiceTypeSupport for Service {
             type Request = Request;
             type Response = Response;
-            fn get_ts() -> &'static rosidl_service_type_support_t {{
-                unsafe {{
-                    &*rosidl_typesupport_c__get_service_type_support_handle__{}__{}__{}()
-                }}
-            }}
-        }}
-
-            ",
-        module_, prefix_, name_
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*#type_support_ident()
+                }
+            }
+        }
     )
 }
 
-pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String {
-    format!(
-        "
+pub fn generate_rust_action(module: &str, prefix: &str, name: &str) -> TokenStream {
+    let type_support_ident = format_ident!(
+        "rosidl_typesupport_c__get_action_type_support_handle__{module}__{prefix}__{name}"
+    );
+    quote!(
         #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
         pub struct Action();
-        impl WrappedActionTypeSupport for Action {{
+        impl WrappedActionTypeSupport for Action {
             type Goal = Goal;
             type Result = Result;
             type Feedback = Feedback;
@@ -244,518 +733,140 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> String
             type SendGoal = SendGoal::Service;
             type GetResult = GetResult::Service;
 
-            fn get_ts() -> &'static rosidl_action_type_support_t {{
-                unsafe {{
-                    &*rosidl_typesupport_c__get_action_type_support_handle__{module}__{prefix}__{name}()
-                }}
-            }}
+            fn get_ts() -> &'static rosidl_action_type_support_t {
+                unsafe {
+                    &*#type_support_ident()
+                }
+            }
 
-            fn make_goal_request_msg(goal_id: unique_identifier_msgs::msg::UUID, goal: Goal) -> SendGoal::Request {{
-                SendGoal::Request {{
+            fn make_goal_request_msg(goal_id: unique_identifier_msgs::msg::UUID, goal: Goal) -> SendGoal::Request {
+                SendGoal::Request {
                      goal_id,
                      goal
-                }}
-            }}
+                }
+            }
 
-            fn make_goal_response_msg(accepted: bool, stamp: builtin_interfaces::msg::Time) -> SendGoal::Response {{
-                SendGoal::Response {{
+            fn make_goal_response_msg(accepted: bool, stamp: builtin_interfaces::msg::Time) -> SendGoal::Response {
+                SendGoal::Response {
                      accepted,
                      stamp
-                }}
-            }}
+                }
+            }
 
-            fn make_feedback_msg(goal_id: unique_identifier_msgs::msg::UUID, feedback: Feedback) -> FeedbackMessage {{
-                FeedbackMessage {{
+            fn make_feedback_msg(goal_id: unique_identifier_msgs::msg::UUID, feedback: Feedback) -> FeedbackMessage {
+                FeedbackMessage {
                      goal_id,
                      feedback
-                }}
-            }}
+                }
+            }
 
-            fn make_result_request_msg(goal_id: unique_identifier_msgs::msg::UUID) -> GetResult::Request {{
-                GetResult::Request {{
+            fn make_result_request_msg(goal_id: unique_identifier_msgs::msg::UUID) -> GetResult::Request {
+                GetResult::Request {
                      goal_id,
-                }}
-            }}
+                }
+            }
 
-            fn make_result_response_msg(status: i8, result: Result) -> GetResult::Response {{
-                GetResult::Response {{
+            fn make_result_response_msg(status: i8, result: Result) -> GetResult::Response {
+                GetResult::Response {
                      status,
                      result,
-                }}
-            }}
+                }
+            }
 
-            fn destructure_goal_request_msg(msg: SendGoal::Request) -> (unique_identifier_msgs::msg::UUID, Goal) {{
+            fn destructure_goal_request_msg(msg: SendGoal::Request) -> (unique_identifier_msgs::msg::UUID, Goal) {
                 (msg.goal_id, msg.goal)
-            }}
+            }
 
-            fn destructure_goal_response_msg(msg: SendGoal::Response) -> (bool, builtin_interfaces::msg::Time) {{
+            fn destructure_goal_response_msg(msg: SendGoal::Response) -> (bool, builtin_interfaces::msg::Time) {
                 (msg.accepted, msg.stamp)
-            }}
+            }
 
-            fn destructure_feedback_msg(msg: FeedbackMessage) -> (unique_identifier_msgs::msg::UUID, Feedback) {{
+            fn destructure_feedback_msg(msg: FeedbackMessage) -> (unique_identifier_msgs::msg::UUID, Feedback) {
                 (msg.goal_id, msg.feedback)
-            }}
+            }
 
-            fn destructure_result_response_msg(msg: GetResult::Response) -> (i8, Result) {{
+            fn destructure_result_response_msg(msg: GetResult::Response) -> (i8, Result) {
                 (msg.status, msg.result)
-            }}
+            }
 
-            fn destructure_result_request_msg(msg: GetResult::Request) -> unique_identifier_msgs::msg::UUID {{
+            fn destructure_result_request_msg(msg: GetResult::Request) -> unique_identifier_msgs::msg::UUID {
                 msg.goal_id
-            }}
-        }}
-
-            ",
-        module = module_, prefix = prefix_, name = name_
+            }
+        }
     )
 }
 
-// TODO: this is a terrible hack :)
-pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> String {
-    let key = format!("{}__{}__{}", module_, prefix_, name_);
-    let ptr = INTROSPECTION_FNS
-        .get(key.as_str())
-        .unwrap_or_else(|| panic!("code generation error: {}", key));
-    let ptr = *ptr as *const i32 as *const rosidl_message_type_support_t;
-    unsafe {
-        let (module, prefix, mut name, c_struct, members) = introspection(ptr);
-        assert_eq!(module, module_);
-        assert_eq!(prefix, prefix_);
-        assert_eq!(name, name_);
-
-        if prefix == "srv" || prefix == "action" {
-            // for srv, the message name is both the service name and _Request or _Respone
-            // we only want to keep the last part.
-            // same for actions with _Goal, _Result, _Feedback
-            // TODO: refactor...
-            // handle special case of ActionName_ServiceName_Response
-            let nn = name.splitn(3, '_').collect::<Vec<&str>>();
-            if let [_mod_name, _srv_name, msg_name] = &nn[..] {
-                name = msg_name.to_string();
-            } else if let [_mod_name, msg_name] = &nn[..] {
-                name = msg_name.to_string();
-            } else {
-                panic!("malformed service name {}", name);
-            }
-        }
-
-        let mut fields = String::new();
-
-        let is_empty_msg = members.len() == 1
-            && rust_mangle(CStr::from_ptr(members[0].name_).to_str().unwrap())
-                == "structure_needs_at_least_one_member";
-
-        for member in members {
-            let actual_field_name = CStr::from_ptr(member.name_).to_str().unwrap();
-            let field_name = rust_mangle(actual_field_name);
-            let got_mangled = field_name != actual_field_name;
-            if field_name == "structure_needs_at_least_one_member" {
-                // Yay we can have empty structs in rust
-                continue;
-            }
-            let rust_field_type = field_type(member.type_id_);
-            let rust_field_type = if rust_field_type == "message" {
-                let (module, prefix, name, _, _) = introspection(member.members_);
-                // hack here to rustify nested action type names
-                if prefix == "action" {
-                    if let Some((n1, n2)) = name.rsplit_once("_") {
-                        format!(
-                            "{module}::{prefix}::{srvname}::{msgname}",
-                            module = module,
-                            prefix = prefix,
-                            srvname = n1,
-                            msgname = n2
-                        )
-                    } else {
-                        format!(
-                            "{module}::{prefix}::{msgname}",
-                            module = module,
-                            prefix = prefix,
-                            msgname = name
-                        )
-                    }
-                } else {
-                    format!(
-                        "{module}::{prefix}::{msgname}",
-                        module = module,
-                        prefix = prefix,
-                        msgname = name
-                    )
+pub fn generate_untyped_helper(msgs: &[r2r_common::RosMsg]) -> TokenStream {
+    let msgs = msgs.iter().filter(|msg| msg.prefix == "msg");
+    let msgs_typename = msgs
+        .clone()
+        .map(|msg| format!("{}/{}/{}", msg.module, msg.prefix, msg.name));
+    let msgs_rustname = msgs.map(|msg| {
+        let module = Ident::new(&msg.module, Span::call_site());
+        let prefix = Ident::new(&msg.prefix, Span::call_site());
+        let name = Ident::new(&msg.name, Span::call_site());
+        quote!(#module::#prefix::#name)
+    });
+    quote! {
+        impl WrappedNativeMsgUntyped {
+            pub fn new_from(typename: &str) -> Result<Self> {
+                match typename {
+                    #(
+                        #msgs_typename => Ok(WrappedNativeMsgUntyped::new::<#msgs_rustname>()),
+                    )*
+                    _ => Err(Error::InvalidMessageType{ msgtype: typename.into() })
                 }
-            } else {
-                rust_field_type
-            };
-            let s = if member.is_array_ {
-                // if member.array_size_ > 0 {
-                // fixed size array
-                // format!("pub {}: [{};{}usize],\n",field_name, rust_field_type, array_size)
-                // actually lets use a vector anyway because its more convenient with traits. assert on the fixed size instead!
-                //} else {
-                // vector type
-                format!("pub {}: Vec<{}>,\n", field_name, rust_field_type)
-            //}
-            } else {
-                format!("pub {}: {},\n", field_name, rust_field_type)
-            };
-            if got_mangled {
-                writeln!(fields, "#[serde(rename = \"{actual_field_name}\")]").unwrap();
-            }
-            fields.push_str(&s);
-        }
-
-        let mut from_native = String::new();
-        if is_empty_msg {
-            from_native.push_str(&format!(
-                "fn from_native(_msg: &Self::CStruct) -> {} {{\n",
-                name
-            ));
-        } else {
-            from_native.push_str(&format!(
-                "fn from_native(msg: &Self::CStruct) -> {} {{\n",
-                name
-            ));
-        }
-        from_native.push_str(&format!("  {} {{\n", name));
-
-        for member in members {
-            let field_name = rust_mangle(CStr::from_ptr(member.name_).to_str().unwrap());
-            if field_name == "structure_needs_at_least_one_member" {
-                // Yay we can have empty structs in rust
-                continue;
-            }
-            let rust_field_type = field_type(member.type_id_);
-
-            if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
-                // these are plain arrays
-                let ss = format!("// is_upper_bound_: {}\n", member.is_upper_bound_);
-                from_native.push_str(&ss);
-                let ss = format!("// member.array_size_ : {}\n", member.array_size_);
-                from_native.push_str(&ss);
-                if rust_field_type == "message" {
-                    let (module, prefix, name, _, _) = introspection(member.members_);
-                    from_native.push_str(&format!("{field_name} : {{\n", field_name = field_name));
-                    from_native.push_str(&format!(
-                        "let mut temp = Vec::with_capacity(msg.{field_name}.len());\n",
-                        field_name = field_name
-                    ));
-                    from_native.push_str(&format!("for s in &msg.{field_name} {{ temp.push({module}::{prefix}::{msgname}::from_native(s)); }}\n", field_name = field_name, module = module, prefix=prefix, msgname = name));
-                    from_native.push_str("temp },\n");
-                } else if rust_field_type == "std::string::String" {
-                    from_native.push_str(&format!(
-                        "{field_name}: msg.{field_name}.iter().map(|s|s.to_str().to_owned()).collect(),\n",
-                        field_name = field_name
-                    ));
-                } else {
-                    from_native.push_str(&format!(
-                        "{field_name}: msg.{field_name}.to_vec(),\n",
-                        field_name = field_name
-                    ));
-                }
-            } else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
-                // these are __Sequence:s
-                let ss = format!("// is_upper_bound_: {}\n", member.is_upper_bound_);
-                from_native.push_str(&ss);
-                let ss = format!("// member.array_size_ : {}\n", member.array_size_);
-                from_native.push_str(&ss);
-                if rust_field_type == "message" {
-                    let (module, prefix, name, _, _) = introspection(member.members_);
-                    from_native.push_str(&format!("{field_name} : {{\n", field_name = field_name));
-                    from_native.push_str(&format!(
-                        "let mut temp = Vec::with_capacity(msg.{field_name}.size);\n",
-                        field_name = field_name
-                    ));
-                    from_native.push_str(&format!("let slice = unsafe {{ std::slice::from_raw_parts(msg.{field_name}.data, msg.{field_name}.size)}};\n",field_name = field_name));
-                    from_native.push_str(&format!("for s in slice {{ temp.push({module}::{prefix}::{msgname}::from_native(s)); }}\n", module = module, prefix=prefix, msgname = name));
-                    from_native.push_str("temp },\n");
-                } else {
-                    from_native.push_str(&format!(
-                        "{field_name}: msg.{field_name}.to_vec(),\n",
-                        field_name = field_name
-                    ));
-                }
-            } else if rust_field_type == "std::string::String" {
-                from_native.push_str(&format!(
-                    "{field_name}: msg.{field_name}.to_str().to_owned(),\n",
-                    field_name = field_name
-                ));
-            } else if rust_field_type == "message" {
-                let (module, prefix, name, _, _) = introspection(member.members_);
-                // same hack as above to rustify message type names
-                if prefix == "action" {
-                    if let Some((n1, n2)) = name.rsplit_once("_") {
-                        from_native.push_str(&format!("{field_name}: {module}::{prefix}::{srvname}::{msgname}::from_native(&msg.{field_name}),\n", field_name = field_name, module = module, prefix=prefix, srvname = n1, msgname = n2));
-                    } else {
-                        panic!("ooops at from_native");
-                    }
-                } else {
-                    from_native.push_str(&format!("{field_name}: {module}::{prefix}::{msgname}::from_native(&msg.{field_name}),\n", field_name = field_name, module = module, prefix=prefix, msgname = name));
-                }
-            } else {
-                from_native.push_str(&format!(
-                    "{field_name}: msg.{field_name},\n",
-                    field_name = field_name
-                ));
             }
         }
-        from_native.push_str("      }\n    }\n");
-
-        let mut copy_to_native = String::new();
-        if is_empty_msg {
-            copy_to_native.push_str("fn copy_to_native(&self, _msg: &mut Self::CStruct) {");
-        } else {
-            copy_to_native.push_str("fn copy_to_native(&self, msg: &mut Self::CStruct) {");
-        }
-
-        for member in members {
-            let field_name = rust_mangle(CStr::from_ptr((*member).name_).to_str().unwrap());
-            if field_name == "structure_needs_at_least_one_member" {
-                // Yay we can have empty structs in rust
-                continue;
-            }
-            let rust_field_type = field_type(member.type_id_);
-
-            if member.is_array_ && member.array_size_ > 0 && !member.is_upper_bound_ {
-                // these are plain arrays
-                // fixed size array, just copy but first check the size!
-                copy_to_native.push_str(&format!("assert_eq!(self.{field_name}.len(), {array_size}, \"Field {{}} is fixed size of {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
-                if rust_field_type == "message" {
-                    copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
-                } else if rust_field_type == "std::string::String" {
-                    copy_to_native.push_str(&format!("for (t,s) in msg.{field_name}.iter_mut().zip(&self.{field_name}) {{ t.assign(&s);}}\n", field_name=field_name));
-                } else {
-                    copy_to_native.push_str(&format!(
-                        "msg.{field_name}.copy_from_slice(&self.{field_name}[..{array_size}]);\n",
-                        field_name = field_name,
-                        array_size = member.array_size_
-                    ));
-                }
-            } else if member.is_array_ && (member.array_size_ == 0 || member.is_upper_bound_) {
-                // these are __Sequence:s
-                if rust_field_type == "message" {
-                    let (_, _, _, c_struct, _) = introspection(member.members_);
-                    copy_to_native.push_str(&format!(
-                        "unsafe {{ {c_struct}__Sequence__fini(&mut msg.{field_name}) }};\n",
-                        c_struct = c_struct,
-                        field_name = field_name
-                    ));
-                    copy_to_native.push_str(&format!("unsafe {{ {c_struct}__Sequence__init(&mut msg.{field_name}, self.{field_name}.len()) }};\n", c_struct = c_struct, field_name = field_name));
-                    copy_to_native.push_str(&format!("let slice = unsafe {{ std::slice::from_raw_parts_mut(msg.{field_name}.data, msg.{field_name}.size)}};\n",field_name = field_name));
-                    copy_to_native.push_str(&format!("for (t,s) in slice.iter_mut().zip(&self.{field_name}) {{ s.copy_to_native(t);}}\n", field_name=field_name));
-                } else {
-                    // extra assertion
-                    if member.is_upper_bound_ {
-                        copy_to_native.push_str(&format!("assert!(self.{field_name}.len() <= {array_size}, \"Field {{}} is upper bounded by {{}}!\", \"{field_name}\", {array_size});\n", field_name = field_name, array_size = member.array_size_));
-                    }
-                    copy_to_native.push_str(&format!(
-                        "msg.{field_name}.update(&self.{field_name});\n",
-                        field_name = field_name
-                    ));
-                }
-            } else if rust_field_type == "std::string::String" {
-                copy_to_native.push_str(&format!(
-                    "msg.{field_name}.assign(&self.{field_name});\n",
-                    field_name = field_name
-                ));
-            } else if rust_field_type == "message" {
-                copy_to_native.push_str(&format!(
-                    "self.{field_name}.copy_to_native(&mut msg.{field_name});\n",
-                    field_name = field_name
-                ));
-            } else {
-                copy_to_native.push_str(&format!(
-                    "msg.{field_name} = self.{field_name};\n",
-                    field_name = field_name
-                ));
-            }
-        }
-        copy_to_native.push_str("}\n");
-
-        let typesupport = format!(
-            "impl WrappedTypesupport for {msgname} {{ \n
-            type CStruct = {c_struct}; \n\n
-            fn get_ts() -> &'static rosidl_message_type_support_t {{ \n
-                unsafe {{ &*rosidl_typesupport_c__get_message_type_support_handle__{c_struct}() }}
-            }}\n
-            fn create_msg() -> *mut {c_struct} {{\n
-                unsafe {{ {c_struct}__create() }}\n
-            }}\n
-            fn destroy_msg(msg: *mut {c_struct}) -> () {{\n
-                unsafe {{ {c_struct}__destroy(msg) }};\n
-            }}\n
-            {from_native}\n\n
-            {copy_to_native}\n\n
-        }}\n",
-            msgname = name,
-            c_struct = &c_struct,
-            from_native = from_native,
-            copy_to_native = copy_to_native
-        );
-
-        let impl_default = format!(
-            "
-                          impl Default for {msgname} {{
-                              fn default() -> Self {{
-                                  let msg_native = WrappedNativeMsg::<{msgname}>::new();
-                                  {msgname}::from_native(&msg_native)
-                              }}
-                          }}
-             ",
-            msgname = name
-        );
-
-
-        let constants = CONSTANTS_MAP.get(key.as_str()).cloned().unwrap_or_default();
-        let mut constant_strings = vec![];
-        for (c, typ) in constants {
-            constant_strings.push(format!("  pub const {c}: {typ} = {key}__{c};"));
-        }
-        let impl_constants = if constant_strings.is_empty() {
-            String::new()
-        } else {
-            format!("
-                          #[allow(non_upper_case_globals)]
-                          impl {msgname} {{
-                              {constants}
-                          }}
-             ",
-            msgname = name,
-            constants = constant_strings.join("\n"))
-        };
-
-
-        let module_str = format!(
-            "
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct {msgname} {{\n
-                              {fields}
-                          }}\n
-                          {typesupport}\n
-                          {default}\n
-                          {constants}\n\n
-                    ",
-            msgname = name,
-            fields = fields,
-            typesupport = typesupport,
-            default = impl_default,
-            constants = impl_constants,
-        );
-
-        module_str
     }
 }
 
-pub fn generate_untyped_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
-    let open = String::from(
-        "
-impl WrappedNativeMsgUntyped {
-    pub fn new_from(typename: &str) -> Result<Self> {
-",
-    );
-    let close = String::from(
-        "
-        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
-    }
-}
-",
-    );
-
-    let mut lines = String::new();
-    for msg in msgs {
-        // for now don't generate untyped services or actions
-        if msg.prefix == "srv" || msg.prefix == "action" {
-            continue;
+pub fn generate_untyped_service_helper(msgs: &[r2r_common::RosMsg]) -> TokenStream {
+    let msgs = msgs.iter().filter(|msg| msg.prefix == "srv");
+    let msgs_typename = msgs
+        .clone()
+        .map(|msg| format!("{}/{}/{}", msg.module, msg.prefix, msg.name));
+    let msgs_rustname = msgs.map(|msg| {
+        let module = Ident::new(&msg.module, Span::call_site());
+        let prefix = Ident::new(&msg.prefix, Span::call_site());
+        let name = Ident::new(&msg.name, Span::call_site());
+        quote!(#module::#prefix::#name::Service)
+    });
+    quote! {
+        impl UntypedServiceSupport {
+            pub fn new_from(typename: &str) -> Result<Self> {
+                match typename {
+                    #(
+                        #msgs_typename => Ok(UntypedServiceSupport::new::<#msgs_rustname>()),
+                    )*
+                    _ => Err(Error::InvalidMessageType{ msgtype: typename.into() })
+                }
+            }
         }
-
-        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
-        let rustname = format!("{}::{}::{}", msg.module, msg.prefix, msg.name);
-
-        lines.push_str(&format!(
-            "
-        if typename == \"{typename}\" {{
-            return Ok(WrappedNativeMsgUntyped::new::<{rustname}>());
-        }}
-",
-            typename = typename,
-            rustname = rustname
-        ));
-    }
-
-    format!("{}{}{}", open, lines, close)
-}
-
-pub fn generate_untyped_service_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
-    let open = String::from(
-        "
-impl UntypedServiceSupport {
-    pub fn new_from(typename: &str) -> Result<Self> {
-",
-    );
-    let close = String::from(
-        "
-        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
     }
 }
-",
-    );
 
-    let mut lines = String::new();
-    for msg in msgs {
-        if msg.prefix != "srv" {
-            continue;
+pub fn generate_untyped_action_helper(msgs: &[r2r_common::RosMsg]) -> TokenStream {
+    let msgs = msgs.iter().filter(|msg| msg.prefix == "action");
+    let msgs_typename = msgs
+        .clone()
+        .map(|msg| format!("{}/{}/{}", msg.module, msg.prefix, msg.name));
+    let msgs_rustname = msgs.map(|msg| {
+        let module = Ident::new(&msg.module, Span::call_site());
+        let prefix = Ident::new(&msg.prefix, Span::call_site());
+        let name = Ident::new(&msg.name, Span::call_site());
+        quote!(#module::#prefix::#name::Action)
+    });
+    quote! {
+        impl UntypedActionSupport {
+            pub fn new_from(typename: &str) -> Result<Self> {
+                match typename {
+                    #(
+                        #msgs_typename => Ok(UntypedActionSupport::new::<#msgs_rustname>()),
+                    )*
+                    _ => Err(Error::InvalidMessageType{ msgtype: typename.into() })
+                }
+            }
         }
-
-        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
-        let rustname = format!("{}::{}::{}::Service", msg.module, msg.prefix, msg.name);
-
-        lines.push_str(&format!(
-            "
-        if typename == \"{typename}\" {{
-            return Ok(UntypedServiceSupport::new::<{rustname}>());
-        }}
-",
-            typename = typename,
-            rustname = rustname
-        ));
     }
-
-    format!("{}{}{}", open, lines, close)
-}
-
-pub fn generate_untyped_action_helper(msgs: &Vec<r2r_common::RosMsg>) -> String {
-    let open = String::from(
-        "
-impl UntypedActionSupport {
-    pub fn new_from(typename: &str) -> Result<Self> {
-",
-    );
-    let close = String::from(
-        "
-        return Err(Error::InvalidMessageType{ msgtype: typename.into() })
-    }
-}
-",
-    );
-
-    let mut lines = String::new();
-    for msg in msgs {
-        if msg.prefix != "action" {
-            continue;
-        }
-
-        let typename = format!("{}/{}/{}", msg.module, msg.prefix, msg.name);
-        let rustname = format!("{}::{}::{}::Action", msg.module, msg.prefix, msg.name);
-
-        lines.push_str(&format!(
-            "
-        if typename == \"{typename}\" {{
-            return Ok(UntypedActionSupport::new::<{rustname}>());
-        }}
-",
-            typename = typename,
-            rustname = rustname
-        ));
-    }
-
-    format!("{}{}{}", open, lines, close)
 }

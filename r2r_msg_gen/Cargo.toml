@@ -14,6 +14,8 @@ documentation = "https://docs.rs/r2r/latest/r2r"
 lazy_static = "1.4.0"
 r2r_rcl = { path = "../r2r_rcl", version = "0.3.7" }
 r2r_common = { path = "../r2r_common", version = "0.3.6" }
+proc-macro2 = "1.0.58"
+quote = "1.0.27"
 
 [build-dependencies]
 bindgen = "0.63.0"

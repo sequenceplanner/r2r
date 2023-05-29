@@ -15,6 +15,10 @@ const GENERATED_FILES: &[&str] = &[
     UNTYPED_ACTION_FILENAME,
 ];
 
+fn pretty_tokenstream(stream: proc_macro2::TokenStream) -> String {
+    prettyplease::unparse(&syn::parse2::<syn::File>(stream).unwrap())
+}
+
 fn main() {
     r2r_common::print_cargo_watches();
     r2r_common::print_cargo_ros_distro();
@@ -50,6 +54,7 @@ fn main() {
 }
 
 fn generate_bindings(bindgen_dir: &Path) {
+    r2r_msg_gen::assert_field_type_match_c_enum();
     fs::create_dir_all(&bindgen_dir).unwrap();
 
     let msg_list = r2r_common::get_wanted_messages();
@@ -77,13 +82,15 @@ fn generate_bindings(bindgen_dir: &Path) {
                         codegen.push_str(&format!("    pub mod {} {{\n", msg));
                         codegen.push_str("    use super::super::super::*;\n");
 
-                        codegen.push_str(&r2r_msg_gen::generate_rust_action(module, prefix, msg));
+                        codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_action(
+                            module, prefix, msg,
+                        )));
 
                         for s in &["Goal", "Result", "Feedback"] {
                             let msgname = format!("{}_{}", msg, s);
-                            codegen.push_str(&r2r_msg_gen::generate_rust_msg(
+                            codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_msg(
                                 module, prefix, &msgname,
-                            ));
+                            )));
                             println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                         }
 
@@ -94,14 +101,14 @@ fn generate_bindings(bindgen_dir: &Path) {
                             codegen.push_str("    use super::super::super::super::*;\n");
 
                             let srvname = format!("{}_{}", msg, srv);
-                            codegen.push_str(&r2r_msg_gen::generate_rust_service(
-                                module, prefix, &srvname,
+                            codegen.push_str(&pretty_tokenstream(
+                                r2r_msg_gen::generate_rust_service(module, prefix, &srvname),
                             ));
 
                             for s in &["Request", "Response"] {
                                 let msgname = format!("{}_{}_{}", msg, srv, s);
-                                codegen.push_str(&r2r_msg_gen::generate_rust_msg(
-                                    module, prefix, &msgname,
+                                codegen.push_str(&pretty_tokenstream(
+                                    r2r_msg_gen::generate_rust_msg(module, prefix, &msgname),
                                 ));
                             }
                             codegen.push_str("    }\n");
@@ -109,11 +116,11 @@ fn generate_bindings(bindgen_dir: &Path) {
 
                         // also "internal" feedback message type that wraps the feedback type with a uuid
                         let feedback_msgname = format!("{}_FeedbackMessage", msg);
-                        codegen.push_str(&r2r_msg_gen::generate_rust_msg(
+                        codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_msg(
                             module,
                             prefix,
                             &feedback_msgname,
-                        ));
+                        )));
 
                         codegen.push_str("    }\n");
                     }
@@ -123,13 +130,15 @@ fn generate_bindings(bindgen_dir: &Path) {
                         codegen.push_str(&format!("    pub mod {} {{\n", msg));
                         codegen.push_str("    use super::super::super::*;\n");
 
-                        codegen.push_str(&r2r_msg_gen::generate_rust_service(module, prefix, msg));
+                        codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_service(
+                            module, prefix, msg,
+                        )));
 
                         for s in &["Request", "Response"] {
                             let msgname = format!("{}_{}", msg, s);
-                            codegen.push_str(&r2r_msg_gen::generate_rust_msg(
+                            codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_msg(
                                 module, prefix, &msgname,
-                            ));
+                            )));
                             println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                         }
                         codegen.push_str("    }\n");
@@ -137,7 +146,9 @@ fn generate_bindings(bindgen_dir: &Path) {
                 } else if prefix == &"msg" {
                     codegen.push_str("    use super::super::*;\n");
                     for msg in msgs {
-                        codegen.push_str(&r2r_msg_gen::generate_rust_msg(module, prefix, msg));
+                        codegen.push_str(&pretty_tokenstream(r2r_msg_gen::generate_rust_msg(
+                            module, prefix, msg,
+                        )));
                         println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                     }
                 } else {
@@ -157,9 +168,11 @@ fn generate_bindings(bindgen_dir: &Path) {
 
     // Write helper files
     {
-        let untyped_helper = r2r_msg_gen::generate_untyped_helper(&msg_list);
-        let untyped_service_helper = r2r_msg_gen::generate_untyped_service_helper(&msg_list);
-        let untyped_action_helper = r2r_msg_gen::generate_untyped_action_helper(&msg_list);
+        let untyped_helper = pretty_tokenstream(r2r_msg_gen::generate_untyped_helper(&msg_list));
+        let untyped_service_helper =
+            pretty_tokenstream(r2r_msg_gen::generate_untyped_service_helper(&msg_list));
+        let untyped_action_helper =
+            pretty_tokenstream(r2r_msg_gen::generate_untyped_action_helper(&msg_list));
 
         let msgs_file = bindgen_dir.join(MSGS_FILENAME);
         let untyped_file = bindgen_dir.join(UNTYPED_FILENAME);
