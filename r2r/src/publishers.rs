@@ -128,7 +128,7 @@ impl PublisherUntyped {
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("coult not publish {}", result);
+            log::error!("could not publish {}", result);
             Err(Error::from_rcl_error(result))
         }
     }
@@ -160,7 +160,7 @@ where
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("coult not publish {}", result);
+            log::error!("could not publish {}", result);
             Err(Error::from_rcl_error(result))
         }
     }
@@ -182,7 +182,7 @@ where
             };
             if ret != RCL_RET_OK as i32 {
                 // TODO: Switch to logging library
-                eprintln!("Failed getting loaned message");
+                log::error!("Failed getting loaned message");
                 return Err(Error::from_rcl_error(ret))
             }
 
@@ -208,11 +208,11 @@ where
             Ok(msg)
         } else {
             static LOG_LOANED_ERROR: Once = Once::new();
-            LOG_LOANED_ERROR.call_once(|| { 
+            LOG_LOANED_ERROR.call_once(|| {
                 // TODO: Switch to logging library
-                eprintln!("Currently used middleware can't loan messages. Local allocator will be used.");
+                log::error!("Currently used middleware can't loan messages. Local allocator will be used.");
             });
-            
+
             Ok(WrappedNativeMsg::<T>::new())
         }
     }
@@ -250,7 +250,7 @@ where
         if result == RCL_RET_OK as i32 {
             Ok(())
         } else {
-            eprintln!("could not publish native {}", result);
+            log::error!("could not publish native {}", result);
             Err(Error::from_rcl_error(result))
         }
     }

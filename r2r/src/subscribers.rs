@@ -63,7 +63,7 @@ where
                     // user dropped the handle to the stream, signal removal.
                     return true;
                 }
-                println!("error {:?}", e)
+                log::debug!("error {:?}", e)
             }
         }
         false
@@ -140,7 +140,7 @@ where
                 // user dropped the handle to the stream, signal removal.
                 return true;
             }
-            eprintln!("error {:?}", e)
+            log::error!("error {:?}", e)
         }
         false
     }
@@ -176,7 +176,7 @@ impl Subscriber_ for UntypedSubscriber {
                     // user dropped the handle to the stream, signal removal.
                     return true;
                 }
-                println!("error {:?}", e)
+                log::debug!("error {:?}", e)
             }
         }
         false

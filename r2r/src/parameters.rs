@@ -90,7 +90,7 @@ impl ParameterValue {
             8 => ParameterValue::DoubleArray(msg.double_array_value),
             9 => ParameterValue::StringArray(msg.string_array_value),
             _ => {
-                println!("warning: malformed parametervalue message");
+                log::debug!("warning: malformed parametervalue message");
                 ParameterValue::NotSet
             }
         }

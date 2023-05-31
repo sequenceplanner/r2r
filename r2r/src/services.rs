@@ -104,7 +104,7 @@ where
                 if e.is_disconnected() {
                     return true;
                 }
-                eprintln!("warning: could not send service request ({})", e)
+                log::error!("warning: could not send service request ({})", e)
             }
         } // TODO handle failure.
         false

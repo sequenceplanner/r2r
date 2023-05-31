@@ -94,7 +94,7 @@ impl Node {
         let ret =
             unsafe { rcl_arguments_get_param_overrides(&ctx.global_arguments, params.as_mut()) };
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not read parameters: {}", ret);
+            log::error!("could not read parameters: {}", ret);
             return Err(Error::from_rcl_error(ret));
         }
 
@@ -192,7 +192,7 @@ impl Node {
             node.load_params()?;
             Ok(node)
         } else {
-            eprintln!("could not create node{}", res);
+            log::error!("could not create node{}", res);
             Err(Error::from_rcl_error(res))
         }
     }
@@ -242,7 +242,7 @@ impl Node {
                     // if the value changed, send out new value on parameter event stream
                     if changed {
                         if let Err(e) = event_tx.try_send((p.name.clone(), val)) {
-                            println!("Warning: could not send parameter event ({}).", e);
+                            log::debug!("Warning: could not send parameter event ({}).", e);
                         }
                     }
                 }
@@ -528,7 +528,7 @@ impl Node {
             )
         };
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not create steady clock: {}", ret);
+            log::error!("could not create steady clock: {}", ret);
             return Err(Error::from_rcl_error(ret));
         }
         let mut clock_handle = Box::new(unsafe { clock_handle.assume_init() });
@@ -925,7 +925,7 @@ impl Node {
             )
         };
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not get topic names and types {}", ret);
+            log::error!("could not get topic names and types {}", ret);
             return Err(Error::from_rcl_error(ret));
         }
 
@@ -971,7 +971,7 @@ impl Node {
         };
 
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not create timer: {}", ret);
+            log::error!("could not create timer: {}", ret);
             return Err(Error::from_rcl_error(ret));
         }
 
@@ -1023,7 +1023,7 @@ impl Timer_ {
                             return true;
                         }
                         if e.is_full() {
-                            println!(
+                            log::debug!(
                                 "Warning: timer tick not handled in time - no wakeup will occur"
                             );
                         }
