@@ -20,7 +20,7 @@ pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSev
     if !is_init {
         let ret = unsafe { rcutils_logging_initialize() };
         if ret != RCL_RET_OK as i32 {
-            eprintln!("could not create logging system (Err: {})", ret);
+            log::error!("could not create logging system (Err: {})", ret);
             return;
         }
     }

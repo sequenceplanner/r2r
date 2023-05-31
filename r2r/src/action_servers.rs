@@ -44,13 +44,13 @@ impl ActionServerCancelRequest {
     /// Accepts the cancel request. The action server should now cancel the corresponding goal.
     pub fn accept(self) {
         if self.response_sender.send((self.uuid, true)).is_err() {
-            eprintln!("warning: could not send goal canellation accept msg")
+            log::error!("warning: could not send goal canellation accept msg")
         }
     }
     /// Rejects the cancel request.
     pub fn reject(self) {
         if self.response_sender.send((self.uuid, false)).is_err() {
-            eprintln!("warning: could not send goal cancellation rejection")
+            log::error!("warning: could not send goal cancellation rejection")
         }
     }
 }
@@ -195,7 +195,7 @@ where
             let ret = unsafe { rcl_action_goal_handle_get_status(*handle, &mut state) };
 
             if ret != RCL_RET_OK as i32 {
-                println!("action server: Failed to get goal handle state: {}", ret);
+                log::debug!("action server: Failed to get goal handle state: {}", ret);
                 return Err(Error::from_rcl_error(ret));
             }
             return Ok(state == action_msgs::msg::GoalStatus::STATUS_CANCELING as u8);
@@ -213,7 +213,7 @@ where
             };
 
             if ret != RCL_RET_OK as i32 {
-                println!(
+                log::debug!(
                     "action server: could not cancel goal: {}",
                     Error::from_rcl_error(ret)
                 );
@@ -239,7 +239,7 @@ where
             unsafe { rcl_action_server_goal_exists(self.handle(), &*goal_info_native) };
 
         if !goal_exists {
-            println!("tried to publish result without a goal");
+            log::debug!("tried to publish result without a goal");
             return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
         }
 
@@ -286,7 +286,7 @@ where
                                 });
                             }
                             Err(oneshot::Canceled) => {
-                                eprintln!("Warning, cancel request not handled!");
+                                log::error!("Warning, cancel request not handled!");
                                 return false; // skip this request.
                             }
                         }
@@ -325,7 +325,7 @@ where
             };
 
             if ret != RCL_RET_OK as i32 {
-                println!("action server: could send cancel response. {}", ret);
+                log::debug!("action server: could send cancel response. {}", ret);
             }
         }
     }
@@ -364,7 +364,7 @@ where
 
         // send out request.
         if let Err(e) = self.goal_request_sender.try_send(gr) {
-            eprintln!("warning: could not send service request ({})", e)
+            log::error!("warning: could not send service request ({})", e)
         }
     }
 
@@ -392,7 +392,7 @@ where
         };
 
         if ret != RCL_RET_OK as i32 {
-            println!("action server: could not process cancel request. {}", ret);
+            log::debug!("action server: could not process cancel request. {}", ret);
             return;
         }
 
@@ -414,7 +414,7 @@ where
                         };
                         match cancel_sender.try_send(cr) {
                             Err(_) => {
-                                eprintln!("warning: could not send goal cancellation request");
+                                log::error!("warning: could not send goal cancellation request");
                                 None
                             }
                             _ => Some(r),
@@ -438,12 +438,12 @@ where
                 rcl_action_expire_goals(&self.rcl_handle, &mut *goal_info, 1, &mut num_expired)
             };
             if ret != RCL_RET_OK as i32 {
-                println!("action server: could not expire goal.");
+                log::debug!("action server: could not expire goal.");
                 return;
             }
             let gi = action_msgs::msg::GoalInfo::from_native(&goal_info);
             let uuid = uuid_msg_to_uuid(&gi.goal_id);
-            println!("goal expired: {} - {}", uuid, num_expired);
+            log::debug!("goal expired: {} - {}", uuid, num_expired);
             // todo
             // self.goals.remove(&uuid);
             self.result_msgs.remove(&uuid);
@@ -456,7 +456,7 @@ where
             let mut status = rcl_action_get_zero_initialized_goal_status_array();
             let ret = rcl_action_get_goal_status_array(&self.rcl_handle, &mut status);
             if ret != RCL_RET_OK as i32 {
-                println!(
+                log::debug!(
                     "action server: failed to get goal status array: {}",
                     Error::from_rcl_error(ret)
                 );
@@ -467,7 +467,7 @@ where
                 &status as *const _ as *const std::os::raw::c_void,
             );
             if ret != RCL_RET_OK as i32 {
-                println!(
+                log::debug!(
                     "action server: failed to publish status: {}",
                     Error::from_rcl_error(ret)
                 );
@@ -490,7 +490,7 @@ where
                     rcl_action_send_result_response(&self.rcl_handle, &mut req, msg.void_ptr_mut())
                 };
                 if ret != RCL_RET_OK as i32 {
-                    println!(
+                    log::debug!(
                         "action server: could send result request response. {}",
                         Error::from_rcl_error(ret)
                     );
@@ -551,7 +551,7 @@ where
             };
 
             if ret != RCL_RET_OK as i32 {
-                println!(
+                log::debug!(
                     "action server: could send result request response. {}",
                     Error::from_rcl_error(ret)
                 );
@@ -624,7 +624,7 @@ where
         };
 
         if ret != RCL_RET_OK as i32 {
-            eprintln!("coult not publish {}", Error::from_rcl_error(ret));
+            log::error!("could not publish {}", Error::from_rcl_error(ret));
         }
         Ok(()) // todo: error codes
     }
@@ -651,7 +651,7 @@ where
             unsafe { rcl_action_server_goal_exists(action_server.handle(), &*goal_info_native) };
 
         if !goal_exists {
-            println!("tried to publish result without a goal");
+            log::debug!("tried to publish result without a goal");
             return Err(Error::RCL_RET_ACTION_GOAL_HANDLE_INVALID);
         }
 

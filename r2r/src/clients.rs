@@ -100,7 +100,7 @@ where
             // instead of "canceled" we return invalid client.
             Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
         } else {
-            eprintln!("coult not send request {}", result);
+            log::error!("could not send request {}", result);
             Err(Error::from_rcl_error(result))
         }
     }
@@ -127,7 +127,7 @@ impl UntypedClient_ {
             // instead of "canceled" we return invalid client.
             Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
         } else {
-            eprintln!("coult not send request {}", result);
+            log::error!("could not send request {}", result);
             Err(Error::from_rcl_error(result))
         }
     }
@@ -181,7 +181,7 @@ where
                 match sender.send(response) {
                     Ok(()) => {}
                     Err(e) => {
-                        println!("error sending to client: {:?}", e);
+                        log::debug!("error sending to client: {:?}", e);
                     }
                 }
             } else {
@@ -191,7 +191,7 @@ where
                     .map(|(id, _)| id.to_string())
                     .collect::<Vec<_>>()
                     .join(",");
-                eprintln!(
+                log::error!(
                     "no such req id: {}, we have [{}], ignoring",
                     request_id.sequence_number, we_have
                 );
@@ -267,7 +267,7 @@ impl Client_ for UntypedClient_ {
                 match sender.send(response) {
                     Ok(()) => {}
                     Err(e) => {
-                        println!("error sending to client: {:?}", e);
+                        log::debug!("error sending to client: {:?}", e);
                     }
                 }
             } else {
@@ -277,7 +277,7 @@ impl Client_ for UntypedClient_ {
                     .map(|(id, _)| id.to_string())
                     .collect::<Vec<_>>()
                     .join(",");
-                eprintln!(
+                log::error!(
                     "no such req id: {}, we have [{}], ignoring",
                     request_id.sequence_number, we_have
                 );
