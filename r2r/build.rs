@@ -17,6 +17,7 @@ const GENERATED_FILES: &[&str] = &[
 
 fn main() {
     r2r_common::print_cargo_watches();
+    r2r_common::print_cargo_ros_distro();
 
     let env_hash = r2r_common::get_env_hash();
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());

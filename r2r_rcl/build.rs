@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 fn main() {
     r2r_common::print_cargo_watches();
+    r2r_common::print_cargo_ros_distro();
     run_bindgen();
     run_dynlink();
 }

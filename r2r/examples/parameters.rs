@@ -10,6 +10,8 @@ use futures::task::LocalSpawnExt;
 // ros2 param get /demo/my_node key2 # (should return false)
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    println!("Ros version: {}", r2r::ROS_DISTRO);
+
     // set up executor
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();

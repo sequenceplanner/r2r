@@ -6,6 +6,7 @@ const BINDINGS_FILENAME: &str = "action_bindings.rs";
 
 fn main() {
     r2r_common::print_cargo_watches();
+    r2r_common::print_cargo_ros_distro();
 
     run_bindgen();
     run_dynlink();

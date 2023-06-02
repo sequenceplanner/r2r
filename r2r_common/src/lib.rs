@@ -6,12 +6,20 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+const SUPPORTED_ROS_DISTROS: &[&str] = &[
+    "foxy",
+    "galactic",
+    "humble",
+    "rolling",
+];
+
 const WATCHED_ENV_VARS: &[&str] = &[
     "AMENT_PREFIX_PATH",
     "CMAKE_INCLUDE_DIRS",
     "CMAKE_LIBRARIES",
     "CMAKE_IDL_PACKAGES",
     "IDL_PACKAGE_FILTER",
+    "ROS_DISTRO",
 ];
 
 pub fn get_env_hash() -> String {
@@ -109,6 +117,17 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
     }
 
     builder
+}
+
+pub fn print_cargo_ros_distro() {
+    let ros_distro = env::var("ROS_DISTRO")
+        .unwrap_or_else(|_| panic!("ROS_DISTRO not set: Source your ROS!"));
+
+    if SUPPORTED_ROS_DISTROS.iter().any(|d| d == &ros_distro) {
+        println!("cargo:rustc-cfg=r2r__ros__distro__{ros_distro}");
+    } else {
+        panic!("ROS_DISTRO not supported: {ros_distro}");
+    }
 }
 
 pub fn print_cargo_link_search() {

@@ -19,6 +19,7 @@ const GENERATED_FILES: &[&str] = &[
 
 fn main() {
     r2r_common::print_cargo_watches();
+    r2r_common::print_cargo_ros_distro();
 
     let msg_list = r2r_common::get_wanted_messages();
     run_bindgen(&msg_list);
