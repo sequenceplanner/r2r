@@ -24,7 +24,6 @@ use r2r_rcl::{
     rosidl_runtime_c__uint64__Sequence, rosidl_runtime_c__uint8__Sequence,
     rosidl_service_type_support_t, rosidl_typesupport_introspection_c__MessageMember,
     rosidl_typesupport_introspection_c__MessageMembers,
-    rosidl_typesupport_introspection_c_field_types,
 };
 use std::borrow::Cow;
 use std::collections::HashMap;
@@ -128,8 +127,88 @@ fn rust_mangle(name: &str) -> Cow<str> {
 }
 
 /// Confirm the ROS_TYPE enum's value is still the same as what we hard coded in [`FieldType::new`].
+#[cfg(any(r2r__ros__distro__galactic, r2r__ros__distro__foxy))]
 pub fn assert_field_type_match_c_enum() {
-    use rosidl_typesupport_introspection_c_field_types::*;
+    use r2r_rcl::{
+        rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN,
+        rosidl_typesupport_introspection_c__ROS_TYPE_CHAR,
+        rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE,
+        rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT,
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT16,
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT32,
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT64,
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT8,
+        rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE,
+        rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE,
+        rosidl_typesupport_introspection_c__ROS_TYPE_OCTET,
+        rosidl_typesupport_introspection_c__ROS_TYPE_STRING,
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT16,
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT32,
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT64,
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT8,
+        rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR,
+        rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING,
+    };
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u32, 1);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u32,
+        2
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_LONG_DOUBLE as u32,
+        3
+    );
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_CHAR as u32, 4);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_WCHAR as u32, 5);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_BOOLEAN as u32,
+        6
+    );
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_OCTET as u32, 7);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_UINT8 as u32, 8);
+    assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_INT8 as u32, 9);
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT16 as u32,
+        10
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT16 as u32,
+        11
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT32 as u32,
+        12
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT32 as u32,
+        13
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_UINT64 as u32,
+        14
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_INT64 as u32,
+        15
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_STRING as u32,
+        16
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_WSTRING as u32,
+        17
+    );
+    assert_eq!(
+        rosidl_typesupport_introspection_c__ROS_TYPE_MESSAGE as u32,
+        18
+    );
+}
+
+/// Confirm the ROS_TYPE enum's value is still the same as what we hard coded in [`FieldType::new`].
+#[cfg(any(r2r__ros__distro__humble, r2r__ros__distro__rolling))]
+pub fn assert_field_type_match_c_enum() {
+    use r2r_rcl::rosidl_typesupport_introspection_c_field_types::*;
     assert_eq!(rosidl_typesupport_introspection_c__ROS_TYPE_FLOAT as u32, 1);
     assert_eq!(
         rosidl_typesupport_introspection_c__ROS_TYPE_DOUBLE as u32,
@@ -488,17 +567,17 @@ impl FieldDescription {
         use FieldType::{Message, String};
 
         let field_name = &self.field_name;
-        let path = self.ty.get_path();
 
         let size_checking = match &self.repitition {
             BoundedArray(n) => {
-                let err_msg = format!("Expected at most {{}} elements in `{field_name}` field, but found {{}}");
+                let err_msg = format!(
+                    "Expected at most {{}} elements in `{field_name}` field, but found {{}}"
+                );
                 quote!(assert!(self.#field_name.len() <= #n, #err_msg, #n, self.#field_name.len());)
             }
             StaticArray(n) => {
-                let err_msg = format!(
-                    "Expected {{}} elements in `{field_name}` field, but found {{}}"
-                );
+                let err_msg =
+                    format!("Expected {{}} elements in `{field_name}` field, but found {{}}");
                 quote!(assert!(self.#field_name.len() == #n, #err_msg, #n, self.#field_name.len());)
             }
             _ => {
