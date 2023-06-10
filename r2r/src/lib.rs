@@ -44,7 +44,7 @@
 //!    // Run the subscriber in one task, printing the messages
 //!    spawner.spawn_local(async move {
 //!        subscriber.for_each(|msg| {
-//!            log::debug!("got new msg: {}", msg.data);
+//!            println!("got new msg: {}", msg.data);
 //!            future::ready(())
 //!        }).await
 //!    })?;

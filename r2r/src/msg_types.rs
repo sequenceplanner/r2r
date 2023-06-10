@@ -463,7 +463,7 @@ mod tests {
 
             let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__std_msgs__msg__String();
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
-            log::debug!("{:#?}", *members);
+            println!("{:#?}", *members);
 
             assert_eq!((*members).member_count_, 1);
 
@@ -476,7 +476,7 @@ mod tests {
             assert_eq!(s, "String");
 
             let member = (*members).members_;
-            log::debug!("member: {:#?}", *member);
+            println!("member: {:#?}", *member);
             let field_name = CStr::from_ptr((*member).name_).to_str().unwrap();
             let type_id = (*member).type_id_;
             let is_array = (*member).is_array_;
@@ -492,17 +492,17 @@ mod tests {
         unsafe {
             let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__geometry_msgs__msg__AccelWithCovariance();
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
-            log::debug!("{:#?}", *members);
+            println!("{:#?}", *members);
 
             let memberslice =
                 std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
             for member in memberslice {
-                log::debug!("member: {:#?}", *member);
+                println!("member: {:#?}", *member);
             }
 
             let msg_native = WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::new();
             let mut msg = geometry_msgs::msg::AccelWithCovariance::from_native(&msg_native);
-            log::debug!("{:#?}", msg);
+            println!("{:#?}", msg);
             msg.covariance[0] = 10.0;
             msg.covariance[10] = 10.0;
             msg.covariance[35] = 99.0;
@@ -510,7 +510,7 @@ mod tests {
             let msg_native2 =
                 WrappedNativeMsg::<geometry_msgs::msg::AccelWithCovariance>::from(&msg);
             let msg2 = geometry_msgs::msg::AccelWithCovariance::from_native(&msg_native2);
-            log::debug!("{:#?}", msg2);
+            println!("{:#?}", msg2);
         }
     }
 
@@ -521,17 +521,17 @@ mod tests {
         unsafe {
             let x = rosidl_typesupport_introspection_c__get_message_type_support_handle__shape_msgs__msg__SolidPrimitive();
             let members = (*x).data as *const rosidl_typesupport_introspection_c__MessageMembers;
-            log::debug!("{:#?}", *members);
+            println!("{:#?}", *members);
 
             let memberslice =
                 std::slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
             for member in memberslice {
-                log::debug!("member: {:#?}", *member);
+                println!("member: {:#?}", *member);
             }
 
             let msg_native = WrappedNativeMsg::<shape_msgs::msg::SolidPrimitive>::new();
             let mut msg = shape_msgs::msg::SolidPrimitive::from_native(&msg_native);
-            log::debug!("{:#?}", msg);
+            println!("{:#?}", msg);
             msg.dimensions.push(1.0);
             msg.dimensions.push(1.0);
             msg.dimensions.push(1.0);
@@ -566,7 +566,7 @@ mod tests {
         msg.positions.push(34.0);
         let new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
-        log::debug!("{:#?}", new_msg);
+        println!("{:#?}", new_msg);
         assert_eq!(msg, new_msg);
     }
 
@@ -579,7 +579,7 @@ mod tests {
         let mut new_native = WrappedNativeMsg::<JointTrajectoryPoint>::from(&msg);
         unsafe { *new_native.positions.data = 88.9 };
         let new_msg = JointTrajectoryPoint::from_native(&new_native);
-        log::debug!("{:#?}", new_msg);
+        println!("{:#?}", new_msg);
         assert_ne!(msg, new_msg);
     }
 
@@ -649,7 +649,7 @@ mod tests {
     #[test]
     fn test_test_msgs_array() {
         let mut msg = test_msgs::msg::Arrays::default();
-        log::debug!("msg: {:?}", msg.string_values);
+        println!("msg: {:?}", msg.string_values);
         msg.string_values = vec!["hej".to_string(), "hopp".to_string(), "stropp".to_string()];
 
         let msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
@@ -663,7 +663,7 @@ mod tests {
     #[should_panic]
     fn test_test_msgs_array_too_few_elems() {
         let mut msg = test_msgs::msg::Arrays::default();
-        log::debug!("msg: {:?}", msg.string_values);
+        println!("msg: {:?}", msg.string_values);
         msg.string_values = vec!["hej".to_string(), "hopp".to_string()];
         let _msg_native = WrappedNativeMsg::<test_msgs::msg::Arrays>::from(&msg);
     }
@@ -675,7 +675,7 @@ mod tests {
         let rust_str = "ハローワールド";
         msg.wstring_value = rust_str.to_string();
         let native = WrappedNativeMsg::<test_msgs::msg::WStrings>::from(&msg);
-        log::debug!("msg: {:?}", msg);
+        println!("msg: {:?}", msg);
         let msg2 = test_msgs::msg::WStrings::from_native(&native);
         assert_eq!(msg.wstring_value, msg2.wstring_value);
     }
@@ -690,7 +690,7 @@ mod tests {
         };
         let rn = WrappedNativeMsg::<_>::from(&req);
         let req2 = AddTwoInts::Request::from_native(&rn);
-        log::debug!("req2 {:?}", req2);
+        println!("req2 {:?}", req2);
         assert_eq!(req, req2);
 
         let resp = AddTwoInts::Response {
@@ -699,7 +699,7 @@ mod tests {
         };
         let rn = WrappedNativeMsg::<_>::from(&resp);
         let resp2 = AddTwoInts::Response::from_native(&rn);
-        log::debug!("resp {:?}", resp2);
+        println!("resp {:?}", resp2);
         assert_eq!(resp, resp2);
     }
 
@@ -709,8 +709,8 @@ mod tests {
         use std_srvs::srv::Empty;
         let req = Empty::Request::default();
         let resp = Empty::Response::default();
-        log::debug!("req {:?}", req);
-        log::debug!("resp {:?}", resp);
+        println!("req {:?}", req);
+        println!("resp {:?}", resp);
     }
 
     #[cfg(r2r__example_interfaces__action__Fibonacci)]
@@ -720,7 +720,7 @@ mod tests {
         let goal = Fibonacci::Goal { order: 5 };
         let gn = WrappedNativeMsg::<_>::from(&goal);
         let goal2 = Fibonacci::Goal::from_native(&gn);
-        log::debug!("goal2 {:?}", goal2);
+        println!("goal2 {:?}", goal2);
         assert_eq!(goal, goal2);
 
         let res = Fibonacci::Result {
@@ -728,7 +728,7 @@ mod tests {
         };
         let rn = WrappedNativeMsg::<_>::from(&res);
         let res2 = Fibonacci::Result::from_native(&rn);
-        log::debug!("res2 {:?}", res2);
+        println!("res2 {:?}", res2);
         assert_eq!(res, res2);
 
         let fb = Fibonacci::Feedback {
@@ -736,7 +736,7 @@ mod tests {
         };
         let fbn = WrappedNativeMsg::<_>::from(&fb);
         let fb2 = Fibonacci::Feedback::from_native(&fbn);
-        log::debug!("feedback2 {:?}", fb2);
+        println!("feedback2 {:?}", fb2);
         assert_eq!(fb, fb2);
 
         let fb = WrappedNativeMsg::<Fibonacci::Feedback>::new();
