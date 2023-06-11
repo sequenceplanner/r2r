@@ -1,6 +1,22 @@
-FROM kristoferb/spdesktop_ros2:galactic
+# syntax=docker/dockerfile:1
+FROM ros:galactic
+
+# Update default packages
+RUN apt-get update
+
+# Get Ubuntu packages
+RUN apt-get install -y \
+    build-essential \
+    curl \
+    libclang-dev
+
+# Get ros test messages
+RUN apt-get install -y ros-galactic-test-msgs ros-galactic-example-interfaces
+
+# Get Rust
+RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | bash -s -- -y
+RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 COPY . /r2r
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-RUN chmod +x /r2r/tests/test.sh
-ENTRYPOINT [ "/r2r/tests/test.sh" ]
+RUN chmod +x /r2r/tests/test.bash
+ENTRYPOINT [ "/r2r/tests/test.bash" ]

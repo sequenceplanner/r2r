@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ros:humble
+FROM ros:foxy
 
 # Update default packages
 RUN apt-get update
@@ -11,7 +11,7 @@ RUN apt-get install -y \
     libclang-dev
 
 # Get ros test messages
-RUN apt-get install -y ros-humble-test-msgs ros-humble-example-interfaces
+RUN apt-get install -y ros-foxy-test-msgs ros-foxy-example-interfaces
 
 # Get Rust
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | bash -s -- -y
