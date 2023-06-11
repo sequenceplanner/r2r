@@ -1,7 +1,6 @@
 #!/bin/bash
 
-source /opt/ros/humble/setup.bash
-source /opt/ros/galactic/setup.bash
+# rustup to test with latest rust version
 rustup update
 
 cd /r2r/
