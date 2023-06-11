@@ -11,13 +11,12 @@ RUN apt-get install -y \
     libclang-dev
 
 # Get ros test messages
-RUN apt-get install -y ros-foxy-test-msgs
+RUN apt-get install -y ros-foxy-test-msgs ros-foxy-example-interfaces
 
 # Get Rust
 RUN curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | bash -s -- -y
 RUN echo 'source $HOME/.cargo/env' >> $HOME/.bashrc
 
 COPY . /r2r
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-RUN chmod +x /r2r/tests/test.sh
-ENTRYPOINT [ "/r2r/tests/test.sh" ]
+RUN chmod +x /r2r/tests/test.bash
+ENTRYPOINT [ "/r2r/tests/test.bash" ]
