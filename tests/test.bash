@@ -1,7 +1,9 @@
 #!/bin/bash
 
+. "$HOME/.cargo/env"
+
 # run rustup to test with latest rust version
-/root/.cargo/bin/rustup update
+rustup update
 
 if [ -e "/opt/ros/humble/setup.bash" ]; then
     source "/opt/ros/humble/setup.bash"
@@ -14,4 +16,5 @@ if [ -e "/opt/ros/foxy/setup.bash" ]; then
 fi
 
 cd /r2r/
-/root/.cargo/bin/cargo test
+
+"$@"
