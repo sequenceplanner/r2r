@@ -14,8 +14,9 @@ extern crate lazy_static;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote};
 use r2r_rcl::{
-    rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_runtime_c__String,
-    rosidl_runtime_c__String__Sequence, rosidl_runtime_c__U16String,
+    rosidl_action_type_support_t, rosidl_message_type_support_t,
+    rosidl_runtime_c__String, rosidl_runtime_c__String__Sequence,
+    rosidl_runtime_c__U16String, rosidl_runtime_c__U16String__Sequence,
     rosidl_runtime_c__boolean__Sequence, rosidl_runtime_c__double__Sequence,
     rosidl_runtime_c__float__Sequence, rosidl_runtime_c__int16__Sequence,
     rosidl_runtime_c__int32__Sequence, rosidl_runtime_c__int64__Sequence,
@@ -537,14 +538,11 @@ impl FieldDescription {
                     // }
 
                     // unsafe { std::mem::transmute::<_, [#path; #n]>(data) }
-                    #field_name: {
-                        let mut data = Vec::with_capacity(msg.#field_name.size);
-                        let slice = unsafe { std::slice::from_raw_parts(msg.#field_name.data, msg.#field_name.size)};
-                        for native in &msg.#field_name {
-                            data.push(#converter_expr);
-                        }
-                        data
+                    let mut data = Vec::with_capacity(msg.#field_name.len());
+                    for native in &msg.#field_name {
+                        data.push(#converter_expr);
                     }
+                    data
                 }
             ),
             (StaticArray(_), _) => quote!(#field_name: msg.#field_name.to_vec()),
