@@ -650,6 +650,12 @@ impl StructDescription {
             std::slice::from_raw_parts(members.members_, members.member_count_ as usize);
         let constants = constants
             .iter()
+            .filter(|(_, type_name)| {
+                // TODO: temporary hack to remove types like "&[u8; 13usize]", which cannot be
+                // parsed as Idents (breaks the below code.). Remove this once we rework the constant
+                // parsning.
+                !type_name.contains(";") // temporary hack
+            })
             .map(|(const_name, type_name)| {
                 let const_name = const_name.trim();
                 let type_name = type_name.trim();
