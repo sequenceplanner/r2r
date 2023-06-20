@@ -84,8 +84,15 @@ fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     let bindings_file = bindgen_dir.join(BINDINGS_FILENAME);
 
     let mut includes = String::new();
-    let mut introspecion_map = String::from(
-        "\
+    let mut introspecion_map = String::from("
+         #[cfg(feature = \"doc-only\")]
+         lazy_static! {
+           static ref INTROSPECTION_FNS: HashMap<&'static str, usize> = {
+             HashMap::new()
+           };
+         }
+
+         #[cfg(not(feature = \"doc-only\"))]
          lazy_static! {
            static ref INTROSPECTION_FNS: HashMap<&'static str, usize> = {
              let mut m = HashMap::new();
