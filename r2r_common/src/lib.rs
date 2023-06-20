@@ -6,6 +6,7 @@ use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
 
+#[cfg(not(feature = "doc-only"))]
 const SUPPORTED_ROS_DISTROS: &[&str] = &[
     "foxy",
     "galactic",
@@ -119,6 +120,11 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
     builder
 }
 
+#[cfg(feature = "doc-only")]
+pub fn print_cargo_ros_distro() {
+}
+
+#[cfg(not(feature = "doc-only"))]
 pub fn print_cargo_ros_distro() {
     let ros_distro = env::var("ROS_DISTRO")
         .unwrap_or_else(|_| panic!("ROS_DISTRO not set: Source your ROS!"));

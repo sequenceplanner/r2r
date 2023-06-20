@@ -20,7 +20,7 @@ r2r_common = { path = "../r2r_common", version = "0.3.5" }
 
 [features]
 save-bindgen = []
-doc-only = []
+doc-only = ["r2r_common/doc-only"]
 
 [package.metadata.docs.rs]
 features = ["doc-only"]

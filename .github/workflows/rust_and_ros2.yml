@@ -10,12 +10,12 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  docs_humble:
+  docs_no_ros:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_humble
-    - run: docker run r2r_humble cargo build --features doc-only
+    - run: docker build . --file ./tests/Dockerfile_no_ros --tag r2r_no_ros
+    - run: docker run r2r_no_ros cargo build --features doc-only
 
   tests_humble:
     runs-on: ubuntu-latest
