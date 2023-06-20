@@ -1,6 +1,10 @@
-name: testing_ros
+name: ROS CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 env:
   CARGO_TERM_COLOR: always
@@ -10,26 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_test_humble
-    - run: docker run r2r_test_humble cargo build --features doc-only
+    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_humble
+    - run: docker run r2r_humble cargo build --features doc-only
 
   tests_humble:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_test_humble
-    - run: docker run r2r_test_humble cargo test
+    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_humble
+    - run: docker run r2r_humble cargo test
 
   tests_galactic:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./tests/Dockerfile_galactic --tag r2r_test_galactic
-    - run: docker run r2r_test_galactic cargo test
+    - run: docker build . --file ./tests/Dockerfile_galactic --tag r2r_galactic
+    - run: docker run r2r_galactic cargo test
 
   tests_foxy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - run: docker build . --file ./tests/Dockerfile_foxy --tag r2r_test_foxy
-    - run: docker run r2r_test_foxy cargo test
+    - run: docker build . --file ./tests/Dockerfile_foxy --tag r2r_foxy
+    - run: docker run r2r_foxy cargo test
