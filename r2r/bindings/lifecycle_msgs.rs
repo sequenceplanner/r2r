@@ -59,6 +59,23 @@ msg.label.assign(&self.label);
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl State {
+                                pub const PRIMARY_STATE_UNKNOWN: _bindgen_ty_26 = lifecycle_msgs__msg__State__PRIMARY_STATE_UNKNOWN;
+  pub const PRIMARY_STATE_UNCONFIGURED: _bindgen_ty_27 = lifecycle_msgs__msg__State__PRIMARY_STATE_UNCONFIGURED;
+  pub const PRIMARY_STATE_INACTIVE: _bindgen_ty_28 = lifecycle_msgs__msg__State__PRIMARY_STATE_INACTIVE;
+  pub const PRIMARY_STATE_ACTIVE: _bindgen_ty_29 = lifecycle_msgs__msg__State__PRIMARY_STATE_ACTIVE;
+  pub const PRIMARY_STATE_FINALIZED: _bindgen_ty_30 = lifecycle_msgs__msg__State__PRIMARY_STATE_FINALIZED;
+  pub const TRANSITION_STATE_CONFIGURING: _bindgen_ty_31 = lifecycle_msgs__msg__State__TRANSITION_STATE_CONFIGURING;
+  pub const TRANSITION_STATE_CLEANINGUP: _bindgen_ty_32 = lifecycle_msgs__msg__State__TRANSITION_STATE_CLEANINGUP;
+  pub const TRANSITION_STATE_SHUTTINGDOWN: _bindgen_ty_33 = lifecycle_msgs__msg__State__TRANSITION_STATE_SHUTTINGDOWN;
+  pub const TRANSITION_STATE_ACTIVATING: _bindgen_ty_34 = lifecycle_msgs__msg__State__TRANSITION_STATE_ACTIVATING;
+  pub const TRANSITION_STATE_DEACTIVATING: _bindgen_ty_35 = lifecycle_msgs__msg__State__TRANSITION_STATE_DEACTIVATING;
+  pub const TRANSITION_STATE_ERRORPROCESSING: _bindgen_ty_36 = lifecycle_msgs__msg__State__TRANSITION_STATE_ERRORPROCESSING;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -116,6 +133,42 @@ msg.label.assign(&self.label);
                                   let msg_native = WrappedNativeMsg::<Transition>::new();
                                   Transition::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Transition {
+                                pub const TRANSITION_CREATE: _bindgen_ty_37 = lifecycle_msgs__msg__Transition__TRANSITION_CREATE;
+  pub const TRANSITION_CONFIGURE: _bindgen_ty_38 = lifecycle_msgs__msg__Transition__TRANSITION_CONFIGURE;
+  pub const TRANSITION_CLEANUP: _bindgen_ty_39 = lifecycle_msgs__msg__Transition__TRANSITION_CLEANUP;
+  pub const TRANSITION_ACTIVATE: _bindgen_ty_40 = lifecycle_msgs__msg__Transition__TRANSITION_ACTIVATE;
+  pub const TRANSITION_DEACTIVATE: _bindgen_ty_41 = lifecycle_msgs__msg__Transition__TRANSITION_DEACTIVATE;
+  pub const TRANSITION_UNCONFIGURED_SHUTDOWN: _bindgen_ty_42 = lifecycle_msgs__msg__Transition__TRANSITION_UNCONFIGURED_SHUTDOWN;
+  pub const TRANSITION_INACTIVE_SHUTDOWN: _bindgen_ty_43 = lifecycle_msgs__msg__Transition__TRANSITION_INACTIVE_SHUTDOWN;
+  pub const TRANSITION_ACTIVE_SHUTDOWN: _bindgen_ty_44 = lifecycle_msgs__msg__Transition__TRANSITION_ACTIVE_SHUTDOWN;
+  pub const TRANSITION_DESTROY: _bindgen_ty_45 = lifecycle_msgs__msg__Transition__TRANSITION_DESTROY;
+  pub const TRANSITION_ON_CONFIGURE_SUCCESS: _bindgen_ty_46 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CONFIGURE_SUCCESS;
+  pub const TRANSITION_ON_CONFIGURE_FAILURE: _bindgen_ty_47 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CONFIGURE_FAILURE;
+  pub const TRANSITION_ON_CONFIGURE_ERROR: _bindgen_ty_48 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CONFIGURE_ERROR;
+  pub const TRANSITION_ON_CLEANUP_SUCCESS: _bindgen_ty_49 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CLEANUP_SUCCESS;
+  pub const TRANSITION_ON_CLEANUP_FAILURE: _bindgen_ty_50 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CLEANUP_FAILURE;
+  pub const TRANSITION_ON_CLEANUP_ERROR: _bindgen_ty_51 = lifecycle_msgs__msg__Transition__TRANSITION_ON_CLEANUP_ERROR;
+  pub const TRANSITION_ON_ACTIVATE_SUCCESS: _bindgen_ty_52 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ACTIVATE_SUCCESS;
+  pub const TRANSITION_ON_ACTIVATE_FAILURE: _bindgen_ty_53 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ACTIVATE_FAILURE;
+  pub const TRANSITION_ON_ACTIVATE_ERROR: _bindgen_ty_54 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ACTIVATE_ERROR;
+  pub const TRANSITION_ON_DEACTIVATE_SUCCESS: _bindgen_ty_55 = lifecycle_msgs__msg__Transition__TRANSITION_ON_DEACTIVATE_SUCCESS;
+  pub const TRANSITION_ON_DEACTIVATE_FAILURE: _bindgen_ty_56 = lifecycle_msgs__msg__Transition__TRANSITION_ON_DEACTIVATE_FAILURE;
+  pub const TRANSITION_ON_DEACTIVATE_ERROR: _bindgen_ty_57 = lifecycle_msgs__msg__Transition__TRANSITION_ON_DEACTIVATE_ERROR;
+  pub const TRANSITION_ON_SHUTDOWN_SUCCESS: _bindgen_ty_58 = lifecycle_msgs__msg__Transition__TRANSITION_ON_SHUTDOWN_SUCCESS;
+  pub const TRANSITION_ON_SHUTDOWN_FAILURE: _bindgen_ty_59 = lifecycle_msgs__msg__Transition__TRANSITION_ON_SHUTDOWN_FAILURE;
+  pub const TRANSITION_ON_SHUTDOWN_ERROR: _bindgen_ty_60 = lifecycle_msgs__msg__Transition__TRANSITION_ON_SHUTDOWN_ERROR;
+  pub const TRANSITION_ON_ERROR_SUCCESS: _bindgen_ty_61 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ERROR_SUCCESS;
+  pub const TRANSITION_ON_ERROR_FAILURE: _bindgen_ty_62 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ERROR_FAILURE;
+  pub const TRANSITION_ON_ERROR_ERROR: _bindgen_ty_63 = lifecycle_msgs__msg__Transition__TRANSITION_ON_ERROR_ERROR;
+  pub const TRANSITION_CALLBACK_SUCCESS: _bindgen_ty_64 = lifecycle_msgs__msg__Transition__TRANSITION_CALLBACK_SUCCESS;
+  pub const TRANSITION_CALLBACK_FAILURE: _bindgen_ty_65 = lifecycle_msgs__msg__Transition__TRANSITION_CALLBACK_FAILURE;
+  pub const TRANSITION_CALLBACK_ERROR: _bindgen_ty_66 = lifecycle_msgs__msg__Transition__TRANSITION_CALLBACK_ERROR;
                           }
              
 
@@ -182,6 +235,8 @@ self.goal_state.copy_to_native(&mut msg.goal_state);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -247,6 +302,8 @@ self.goal_state.copy_to_native(&mut msg.goal_state);
                               }
                           }
              
+
+                          
 
 
                       }
@@ -323,6 +380,8 @@ transition: lifecycle_msgs::msg::Transition::from_native(&msg.transition),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -379,6 +438,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -451,6 +512,8 @@ success: msg.success,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -516,6 +579,8 @@ for (t,s) in slice.iter_mut().zip(&self.available_states) { s.copy_to_native(t);
                               }
                           }
              
+
+                          
 
 
                         }
@@ -588,6 +653,8 @@ for (t,s) in slice.iter_mut().zip(&self.available_states) { s.copy_to_native(t);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -653,6 +720,8 @@ for (t,s) in slice.iter_mut().zip(&self.available_transitions) { s.copy_to_nativ
                               }
                           }
              
+
+                          
 
 
                         }
@@ -725,6 +794,8 @@ for (t,s) in slice.iter_mut().zip(&self.available_transitions) { s.copy_to_nativ
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -781,6 +852,8 @@ current_state: lifecycle_msgs::msg::State::from_native(&msg.current_state),
                               }
                           }
              
+
+                          
 
 
                         }

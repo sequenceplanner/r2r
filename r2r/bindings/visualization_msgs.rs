@@ -1,145 +1,3 @@
-  pub mod srv {
-#[allow(non_snake_case)]
-    pub mod GetInteractiveMarkers {
-    use super::super::super::*;
-
-        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-        pub struct Service();
-        impl WrappedServiceTypeSupport for Service {
-            type Request = Request;
-            type Response = Response;
-            fn get_ts() -> &'static rosidl_service_type_support_t {
-                unsafe {
-                    &*rosidl_typesupport_c__get_service_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers()
-                }
-            }
-        }
-
-            
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Request {
-
-                              
-                          }
-
-                          impl WrappedTypesupport for Request { 
-
-            type CStruct = visualization_msgs__srv__GetInteractiveMarkers_Request; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers_Request() }
-            }
-
-            fn create_msg() -> *mut visualization_msgs__srv__GetInteractiveMarkers_Request {
-
-                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Request__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut visualization_msgs__srv__GetInteractiveMarkers_Request) -> () {
-
-                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Request__destroy(msg) };
-
-            }
-
-            fn from_native(_msg: &Self::CStruct) -> Request {
-  Request {
-      }
-    }
-
-
-
-            fn copy_to_native(&self, _msg: &mut Self::CStruct) {}
-
-
-
-        }
-
-
-                          
-                          impl Default for Request {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Request>::new();
-                                  Request::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                    
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Response {
-
-                              pub sequence_number: u64,
-pub markers: Vec<visualization_msgs::msg::InteractiveMarker>,
-
-                          }
-
-                          impl WrappedTypesupport for Response { 
-
-            type CStruct = visualization_msgs__srv__GetInteractiveMarkers_Response; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers_Response() }
-            }
-
-            fn create_msg() -> *mut visualization_msgs__srv__GetInteractiveMarkers_Response {
-
-                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Response__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut visualization_msgs__srv__GetInteractiveMarkers_Response) -> () {
-
-                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Response__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Response {
-  Response {
-sequence_number: msg.sequence_number,
-// is_upper_bound_: false
-// member.array_size_ : 0
-markers : {
-let mut temp = Vec::with_capacity(msg.markers.size);
-let slice = unsafe { std::slice::from_raw_parts(msg.markers.data, msg.markers.size)};
-for s in slice { temp.push(visualization_msgs::msg::InteractiveMarker::from_native(s)); }
-temp },
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.sequence_number = self.sequence_number;
-unsafe { visualization_msgs__msg__InteractiveMarker__Sequence__fini(&mut msg.markers) };
-unsafe { visualization_msgs__msg__InteractiveMarker__Sequence__init(&mut msg.markers, self.markers.len()) };
-let slice = unsafe { std::slice::from_raw_parts_mut(msg.markers.data, msg.markers.size)};
-for (t,s) in slice.iter_mut().zip(&self.markers) { s.copy_to_native(t);}
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Response {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Response>::new();
-                                  Response::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                        }
-  }
   pub mod msg {
     use super::super::*;
 
@@ -150,6 +8,7 @@ for (t,s) in slice.iter_mut().zip(&self.markers) { s.copy_to_native(t);}
                               pub header: std_msgs::msg::Header,
 pub ns: std::string::String,
 pub id: i32,
+#[serde(rename = "type")]
 pub type_: i32,
 pub action: i32,
 pub position: geometry_msgs::msg::Point,
@@ -252,6 +111,19 @@ for (t,s) in slice.iter_mut().zip(&self.outline_colors) { s.copy_to_native(t);}
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl ImageMarker {
+                                pub const CIRCLE: _bindgen_ty_246 = visualization_msgs__msg__ImageMarker__CIRCLE;
+  pub const LINE_STRIP: _bindgen_ty_247 = visualization_msgs__msg__ImageMarker__LINE_STRIP;
+  pub const LINE_LIST: _bindgen_ty_248 = visualization_msgs__msg__ImageMarker__LINE_LIST;
+  pub const POLYGON: _bindgen_ty_249 = visualization_msgs__msg__ImageMarker__POLYGON;
+  pub const POINTS: _bindgen_ty_250 = visualization_msgs__msg__ImageMarker__POINTS;
+  pub const ADD: _bindgen_ty_251 = visualization_msgs__msg__ImageMarker__ADD;
+  pub const REMOVE: _bindgen_ty_252 = visualization_msgs__msg__ImageMarker__REMOVE;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -345,6 +217,8 @@ for (t,s) in slice.iter_mut().zip(&self.controls) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -432,6 +306,25 @@ msg.description.assign(&self.description);
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl InteractiveMarkerControl {
+                                pub const INHERIT: _bindgen_ty_256 = visualization_msgs__msg__InteractiveMarkerControl__INHERIT;
+  pub const FIXED: _bindgen_ty_257 = visualization_msgs__msg__InteractiveMarkerControl__FIXED;
+  pub const VIEW_FACING: _bindgen_ty_258 = visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING;
+  pub const NONE: _bindgen_ty_259 = visualization_msgs__msg__InteractiveMarkerControl__NONE;
+  pub const MENU: _bindgen_ty_260 = visualization_msgs__msg__InteractiveMarkerControl__MENU;
+  pub const BUTTON: _bindgen_ty_261 = visualization_msgs__msg__InteractiveMarkerControl__BUTTON;
+  pub const MOVE_AXIS: _bindgen_ty_262 = visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS;
+  pub const MOVE_PLANE: _bindgen_ty_263 = visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE;
+  pub const ROTATE_AXIS: _bindgen_ty_264 = visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS;
+  pub const MOVE_ROTATE: _bindgen_ty_265 = visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE;
+  pub const MOVE_3D: _bindgen_ty_266 = visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D;
+  pub const ROTATE_3D: _bindgen_ty_267 = visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D;
+  pub const MOVE_ROTATE_3D: _bindgen_ty_268 = visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -513,6 +406,18 @@ msg.mouse_point_valid = self.mouse_point_valid;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl InteractiveMarkerFeedback {
+                                pub const KEEP_ALIVE: _bindgen_ty_285 = visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE;
+  pub const POSE_UPDATE: _bindgen_ty_286 = visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE;
+  pub const MENU_SELECT: _bindgen_ty_287 = visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT;
+  pub const BUTTON_CLICK: _bindgen_ty_288 = visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK;
+  pub const MOUSE_DOWN: _bindgen_ty_289 = visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN;
+  pub const MOUSE_UP: _bindgen_ty_290 = visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -585,6 +490,8 @@ for (t,s) in slice.iter_mut().zip(&self.markers) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -648,6 +555,8 @@ msg.name.assign(&self.name);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -656,6 +565,7 @@ msg.name.assign(&self.name);
 
                               pub server_id: std::string::String,
 pub seq_num: u64,
+#[serde(rename = "type")]
 pub type_: u8,
 pub markers: Vec<visualization_msgs::msg::InteractiveMarker>,
 pub poses: Vec<visualization_msgs::msg::InteractiveMarkerPose>,
@@ -740,6 +650,14 @@ msg.erases.update(&self.erases);
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl InteractiveMarkerUpdate {
+                                pub const KEEP_ALIVE: _bindgen_ty_291 = visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE;
+  pub const UPDATE: _bindgen_ty_292 = visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -749,6 +667,7 @@ msg.erases.update(&self.erases);
                               pub header: std_msgs::msg::Header,
 pub ns: std::string::String,
 pub id: i32,
+#[serde(rename = "type")]
 pub type_: i32,
 pub action: i32,
 pub pose: geometry_msgs::msg::Pose,
@@ -758,8 +677,12 @@ pub lifetime: builtin_interfaces::msg::Duration,
 pub frame_locked: bool,
 pub points: Vec<geometry_msgs::msg::Point>,
 pub colors: Vec<std_msgs::msg::ColorRGBA>,
+pub texture_resource: std::string::String,
+pub texture: sensor_msgs::msg::CompressedImage,
+pub uv_coordinates: Vec<visualization_msgs::msg::UVCoordinate>,
 pub text: std::string::String,
 pub mesh_resource: std::string::String,
+pub mesh_file: visualization_msgs::msg::MeshFile,
 pub mesh_use_embedded_materials: bool,
 
                           }
@@ -812,8 +735,18 @@ let mut temp = Vec::with_capacity(msg.colors.size);
 let slice = unsafe { std::slice::from_raw_parts(msg.colors.data, msg.colors.size)};
 for s in slice { temp.push(std_msgs::msg::ColorRGBA::from_native(s)); }
 temp },
+texture_resource: msg.texture_resource.to_str().to_owned(),
+texture: sensor_msgs::msg::CompressedImage::from_native(&msg.texture),
+// is_upper_bound_: false
+// member.array_size_ : 0
+uv_coordinates : {
+let mut temp = Vec::with_capacity(msg.uv_coordinates.size);
+let slice = unsafe { std::slice::from_raw_parts(msg.uv_coordinates.data, msg.uv_coordinates.size)};
+for s in slice { temp.push(visualization_msgs::msg::UVCoordinate::from_native(s)); }
+temp },
 text: msg.text.to_str().to_owned(),
 mesh_resource: msg.mesh_resource.to_str().to_owned(),
+mesh_file: visualization_msgs::msg::MeshFile::from_native(&msg.mesh_file),
 mesh_use_embedded_materials: msg.mesh_use_embedded_materials,
       }
     }
@@ -838,8 +771,15 @@ unsafe { std_msgs__msg__ColorRGBA__Sequence__fini(&mut msg.colors) };
 unsafe { std_msgs__msg__ColorRGBA__Sequence__init(&mut msg.colors, self.colors.len()) };
 let slice = unsafe { std::slice::from_raw_parts_mut(msg.colors.data, msg.colors.size)};
 for (t,s) in slice.iter_mut().zip(&self.colors) { s.copy_to_native(t);}
+msg.texture_resource.assign(&self.texture_resource);
+self.texture.copy_to_native(&mut msg.texture);
+unsafe { visualization_msgs__msg__UVCoordinate__Sequence__fini(&mut msg.uv_coordinates) };
+unsafe { visualization_msgs__msg__UVCoordinate__Sequence__init(&mut msg.uv_coordinates, self.uv_coordinates.len()) };
+let slice = unsafe { std::slice::from_raw_parts_mut(msg.uv_coordinates.data, msg.uv_coordinates.size)};
+for (t,s) in slice.iter_mut().zip(&self.uv_coordinates) { s.copy_to_native(t);}
 msg.text.assign(&self.text);
 msg.mesh_resource.assign(&self.mesh_resource);
+self.mesh_file.copy_to_native(&mut msg.mesh_file);
 msg.mesh_use_embedded_materials = self.mesh_use_embedded_materials;
 }
 
@@ -854,6 +794,28 @@ msg.mesh_use_embedded_materials = self.mesh_use_embedded_materials;
                                   let msg_native = WrappedNativeMsg::<Marker>::new();
                                   Marker::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Marker {
+                                pub const ARROW: _bindgen_ty_269 = visualization_msgs__msg__Marker__ARROW;
+  pub const CUBE: _bindgen_ty_270 = visualization_msgs__msg__Marker__CUBE;
+  pub const SPHERE: _bindgen_ty_271 = visualization_msgs__msg__Marker__SPHERE;
+  pub const CYLINDER: _bindgen_ty_272 = visualization_msgs__msg__Marker__CYLINDER;
+  pub const LINE_STRIP: _bindgen_ty_273 = visualization_msgs__msg__Marker__LINE_STRIP;
+  pub const LINE_LIST: _bindgen_ty_274 = visualization_msgs__msg__Marker__LINE_LIST;
+  pub const CUBE_LIST: _bindgen_ty_275 = visualization_msgs__msg__Marker__CUBE_LIST;
+  pub const SPHERE_LIST: _bindgen_ty_276 = visualization_msgs__msg__Marker__SPHERE_LIST;
+  pub const POINTS: _bindgen_ty_277 = visualization_msgs__msg__Marker__POINTS;
+  pub const TEXT_VIEW_FACING: _bindgen_ty_278 = visualization_msgs__msg__Marker__TEXT_VIEW_FACING;
+  pub const MESH_RESOURCE: _bindgen_ty_279 = visualization_msgs__msg__Marker__MESH_RESOURCE;
+  pub const TRIANGLE_LIST: _bindgen_ty_280 = visualization_msgs__msg__Marker__TRIANGLE_LIST;
+  pub const ADD: _bindgen_ty_281 = visualization_msgs__msg__Marker__ADD;
+  pub const MODIFY: _bindgen_ty_282 = visualization_msgs__msg__Marker__MODIFY;
+  pub const DELETE: _bindgen_ty_283 = visualization_msgs__msg__Marker__DELETE;
+  pub const DELETEALL: _bindgen_ty_284 = visualization_msgs__msg__Marker__DELETEALL;
                           }
              
 
@@ -922,6 +884,8 @@ for (t,s) in slice.iter_mut().zip(&self.markers) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -992,5 +956,286 @@ msg.command_type = self.command_type;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl MenuEntry {
+                                pub const FEEDBACK: _bindgen_ty_253 = visualization_msgs__msg__MenuEntry__FEEDBACK;
+  pub const ROSRUN: _bindgen_ty_254 = visualization_msgs__msg__MenuEntry__ROSRUN;
+  pub const ROSLAUNCH: _bindgen_ty_255 = visualization_msgs__msg__MenuEntry__ROSLAUNCH;
+                          }
+             
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct MeshFile {
+
+                              pub filename: std::string::String,
+pub data: Vec<u8>,
+
+                          }
+
+                          impl WrappedTypesupport for MeshFile { 
+
+            type CStruct = visualization_msgs__msg__MeshFile; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__msg__MeshFile() }
+            }
+
+            fn create_msg() -> *mut visualization_msgs__msg__MeshFile {
+
+                unsafe { visualization_msgs__msg__MeshFile__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut visualization_msgs__msg__MeshFile) -> () {
+
+                unsafe { visualization_msgs__msg__MeshFile__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> MeshFile {
+  MeshFile {
+filename: msg.filename.to_str().to_owned(),
+// is_upper_bound_: false
+// member.array_size_ : 0
+data: msg.data.to_vec(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.filename.assign(&self.filename);
+msg.data.update(&self.data);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for MeshFile {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<MeshFile>::new();
+                                  MeshFile::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct UVCoordinate {
+
+                              pub u: f32,
+pub v: f32,
+
+                          }
+
+                          impl WrappedTypesupport for UVCoordinate { 
+
+            type CStruct = visualization_msgs__msg__UVCoordinate; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__msg__UVCoordinate() }
+            }
+
+            fn create_msg() -> *mut visualization_msgs__msg__UVCoordinate {
+
+                unsafe { visualization_msgs__msg__UVCoordinate__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut visualization_msgs__msg__UVCoordinate) -> () {
+
+                unsafe { visualization_msgs__msg__UVCoordinate__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> UVCoordinate {
+  UVCoordinate {
+u: msg.u,
+v: msg.v,
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.u = self.u;
+msg.v = self.v;
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for UVCoordinate {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<UVCoordinate>::new();
+                                  UVCoordinate::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
 
                       }
+  pub mod srv {
+#[allow(non_snake_case)]
+    pub mod GetInteractiveMarkers {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = visualization_msgs__srv__GetInteractiveMarkers_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers_Request() }
+            }
+
+            fn create_msg() -> *mut visualization_msgs__srv__GetInteractiveMarkers_Request {
+
+                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut visualization_msgs__srv__GetInteractiveMarkers_Request) -> () {
+
+                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Request__destroy(msg) };
+
+            }
+
+            fn from_native(_msg: &Self::CStruct) -> Request {
+  Request {
+      }
+    }
+
+
+
+            fn copy_to_native(&self, _msg: &mut Self::CStruct) {}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub sequence_number: u64,
+pub markers: Vec<visualization_msgs::msg::InteractiveMarker>,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = visualization_msgs__srv__GetInteractiveMarkers_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers_Response() }
+            }
+
+            fn create_msg() -> *mut visualization_msgs__srv__GetInteractiveMarkers_Response {
+
+                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut visualization_msgs__srv__GetInteractiveMarkers_Response) -> () {
+
+                unsafe { visualization_msgs__srv__GetInteractiveMarkers_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+sequence_number: msg.sequence_number,
+// is_upper_bound_: false
+// member.array_size_ : 0
+markers : {
+let mut temp = Vec::with_capacity(msg.markers.size);
+let slice = unsafe { std::slice::from_raw_parts(msg.markers.data, msg.markers.size)};
+for s in slice { temp.push(visualization_msgs::msg::InteractiveMarker::from_native(s)); }
+temp },
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.sequence_number = self.sequence_number;
+unsafe { visualization_msgs__msg__InteractiveMarker__Sequence__fini(&mut msg.markers) };
+unsafe { visualization_msgs__msg__InteractiveMarker__Sequence__init(&mut msg.markers, self.markers.len()) };
+let slice = unsafe { std::slice::from_raw_parts_mut(msg.markers.data, msg.markers.size)};
+for (t,s) in slice.iter_mut().zip(&self.markers) { s.copy_to_native(t);}
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                        }
+  }

@@ -80,6 +80,8 @@ for (t,s) in slice.iter_mut().zip(&self.statistics) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -140,6 +142,8 @@ msg.data = self.data;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -191,6 +195,18 @@ msg.data = self.data;
                                   let msg_native = WrappedNativeMsg::<StatisticDataType>::new();
                                   StatisticDataType::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl StatisticDataType {
+                                pub const STATISTICS_DATA_TYPE_UNINITIALIZED: _bindgen_ty_153 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_UNINITIALIZED;
+  pub const STATISTICS_DATA_TYPE_AVERAGE: _bindgen_ty_154 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_AVERAGE;
+  pub const STATISTICS_DATA_TYPE_MINIMUM: _bindgen_ty_155 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_MINIMUM;
+  pub const STATISTICS_DATA_TYPE_MAXIMUM: _bindgen_ty_156 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_MAXIMUM;
+  pub const STATISTICS_DATA_TYPE_STDDEV: _bindgen_ty_157 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_STDDEV;
+  pub const STATISTICS_DATA_TYPE_SAMPLE_COUNT: _bindgen_ty_158 = statistics_msgs__msg__StatisticDataType__STATISTICS_DATA_TYPE_SAMPLE_COUNT;
                           }
              
 

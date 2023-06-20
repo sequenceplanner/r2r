@@ -59,6 +59,8 @@ msg.data.copy_from_slice(&self.data[..24]);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -143,6 +145,8 @@ for (t,s) in slice.iter_mut().zip(&self.writer_gid_seq) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -211,6 +215,8 @@ for (t,s) in slice.iter_mut().zip(&self.node_entities_info_seq) { s.copy_to_nati
                               }
                           }
              
+
+                          
 
 
                       }

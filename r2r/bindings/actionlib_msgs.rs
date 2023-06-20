@@ -59,6 +59,8 @@ msg.id.assign(&self.id);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -119,6 +121,22 @@ msg.text.assign(&self.text);
                                   let msg_native = WrappedNativeMsg::<GoalStatus>::new();
                                   GoalStatus::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl GoalStatus {
+                                pub const PENDING: _bindgen_ty_12 = actionlib_msgs__msg__GoalStatus__PENDING;
+  pub const ACTIVE: _bindgen_ty_13 = actionlib_msgs__msg__GoalStatus__ACTIVE;
+  pub const PREEMPTED: _bindgen_ty_14 = actionlib_msgs__msg__GoalStatus__PREEMPTED;
+  pub const SUCCEEDED: _bindgen_ty_15 = actionlib_msgs__msg__GoalStatus__SUCCEEDED;
+  pub const ABORTED: _bindgen_ty_16 = actionlib_msgs__msg__GoalStatus__ABORTED;
+  pub const REJECTED: _bindgen_ty_17 = actionlib_msgs__msg__GoalStatus__REJECTED;
+  pub const PREEMPTING: _bindgen_ty_18 = actionlib_msgs__msg__GoalStatus__PREEMPTING;
+  pub const RECALLING: _bindgen_ty_19 = actionlib_msgs__msg__GoalStatus__RECALLING;
+  pub const RECALLED: _bindgen_ty_20 = actionlib_msgs__msg__GoalStatus__RECALLED;
+  pub const LOST: _bindgen_ty_21 = actionlib_msgs__msg__GoalStatus__LOST;
                           }
              
 
@@ -190,6 +208,8 @@ for (t,s) in slice.iter_mut().zip(&self.status_list) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                       }

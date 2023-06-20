@@ -1,3 +1,290 @@
+  pub mod srv {
+#[allow(non_snake_case)]
+    pub mod AddDiagnostics {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__diagnostic_msgs__srv__AddDiagnostics()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              pub load_namespace: std::string::String,
+
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = diagnostic_msgs__srv__AddDiagnostics_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__AddDiagnostics_Request() }
+            }
+
+            fn create_msg() -> *mut diagnostic_msgs__srv__AddDiagnostics_Request {
+
+                unsafe { diagnostic_msgs__srv__AddDiagnostics_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut diagnostic_msgs__srv__AddDiagnostics_Request) -> () {
+
+                unsafe { diagnostic_msgs__srv__AddDiagnostics_Request__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Request {
+  Request {
+load_namespace: msg.load_namespace.to_str().to_owned(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.load_namespace.assign(&self.load_namespace);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub success: bool,
+pub message: std::string::String,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = diagnostic_msgs__srv__AddDiagnostics_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__AddDiagnostics_Response() }
+            }
+
+            fn create_msg() -> *mut diagnostic_msgs__srv__AddDiagnostics_Response {
+
+                unsafe { diagnostic_msgs__srv__AddDiagnostics_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut diagnostic_msgs__srv__AddDiagnostics_Response) -> () {
+
+                unsafe { diagnostic_msgs__srv__AddDiagnostics_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+success: msg.success,
+message: msg.message.to_str().to_owned(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.success = self.success;
+msg.message.assign(&self.message);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                        }
+#[allow(non_snake_case)]
+    pub mod SelfTest {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__diagnostic_msgs__srv__SelfTest()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = diagnostic_msgs__srv__SelfTest_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__SelfTest_Request() }
+            }
+
+            fn create_msg() -> *mut diagnostic_msgs__srv__SelfTest_Request {
+
+                unsafe { diagnostic_msgs__srv__SelfTest_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut diagnostic_msgs__srv__SelfTest_Request) -> () {
+
+                unsafe { diagnostic_msgs__srv__SelfTest_Request__destroy(msg) };
+
+            }
+
+            fn from_native(_msg: &Self::CStruct) -> Request {
+  Request {
+      }
+    }
+
+
+
+            fn copy_to_native(&self, _msg: &mut Self::CStruct) {}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub id: std::string::String,
+pub passed: u8,
+pub status: Vec<diagnostic_msgs::msg::DiagnosticStatus>,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = diagnostic_msgs__srv__SelfTest_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__SelfTest_Response() }
+            }
+
+            fn create_msg() -> *mut diagnostic_msgs__srv__SelfTest_Response {
+
+                unsafe { diagnostic_msgs__srv__SelfTest_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut diagnostic_msgs__srv__SelfTest_Response) -> () {
+
+                unsafe { diagnostic_msgs__srv__SelfTest_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+id: msg.id.to_str().to_owned(),
+passed: msg.passed,
+// is_upper_bound_: false
+// member.array_size_ : 0
+status : {
+let mut temp = Vec::with_capacity(msg.status.size);
+let slice = unsafe { std::slice::from_raw_parts(msg.status.data, msg.status.size)};
+for s in slice { temp.push(diagnostic_msgs::msg::DiagnosticStatus::from_native(s)); }
+temp },
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.id.assign(&self.id);
+msg.passed = self.passed;
+unsafe { diagnostic_msgs__msg__DiagnosticStatus__Sequence__fini(&mut msg.status) };
+unsafe { diagnostic_msgs__msg__DiagnosticStatus__Sequence__init(&mut msg.status, self.status.len()) };
+let slice = unsafe { std::slice::from_raw_parts_mut(msg.status.data, msg.status.size)};
+for (t,s) in slice.iter_mut().zip(&self.status) { s.copy_to_native(t);}
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                        }
+  }
   pub mod msg {
     use super::super::*;
 
@@ -67,6 +354,8 @@ for (t,s) in slice.iter_mut().zip(&self.status) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -146,6 +435,16 @@ for (t,s) in slice.iter_mut().zip(&self.values) { s.copy_to_native(t);}
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl DiagnosticStatus {
+                                pub const OK: _bindgen_ty_22 = diagnostic_msgs__msg__DiagnosticStatus__OK;
+  pub const WARN: _bindgen_ty_23 = diagnostic_msgs__msg__DiagnosticStatus__WARN;
+  pub const ERROR: _bindgen_ty_24 = diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+  pub const STALE: _bindgen_ty_25 = diagnostic_msgs__msg__DiagnosticStatus__STALE;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -206,284 +505,7 @@ msg.value.assign(&self.value);
                           }
              
 
+                          
+
 
                       }
-  pub mod srv {
-#[allow(non_snake_case)]
-    pub mod AddDiagnostics {
-    use super::super::super::*;
-
-        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-        pub struct Service();
-        impl WrappedServiceTypeSupport for Service {
-            type Request = Request;
-            type Response = Response;
-            fn get_ts() -> &'static rosidl_service_type_support_t {
-                unsafe {
-                    &*rosidl_typesupport_c__get_service_type_support_handle__diagnostic_msgs__srv__AddDiagnostics()
-                }
-            }
-        }
-
-            
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Request {
-
-                              pub load_namespace: std::string::String,
-
-                          }
-
-                          impl WrappedTypesupport for Request { 
-
-            type CStruct = diagnostic_msgs__srv__AddDiagnostics_Request; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__AddDiagnostics_Request() }
-            }
-
-            fn create_msg() -> *mut diagnostic_msgs__srv__AddDiagnostics_Request {
-
-                unsafe { diagnostic_msgs__srv__AddDiagnostics_Request__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut diagnostic_msgs__srv__AddDiagnostics_Request) -> () {
-
-                unsafe { diagnostic_msgs__srv__AddDiagnostics_Request__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Request {
-  Request {
-load_namespace: msg.load_namespace.to_str().to_owned(),
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.load_namespace.assign(&self.load_namespace);
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Request {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Request>::new();
-                                  Request::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                    
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Response {
-
-                              pub success: bool,
-pub message: std::string::String,
-
-                          }
-
-                          impl WrappedTypesupport for Response { 
-
-            type CStruct = diagnostic_msgs__srv__AddDiagnostics_Response; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__AddDiagnostics_Response() }
-            }
-
-            fn create_msg() -> *mut diagnostic_msgs__srv__AddDiagnostics_Response {
-
-                unsafe { diagnostic_msgs__srv__AddDiagnostics_Response__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut diagnostic_msgs__srv__AddDiagnostics_Response) -> () {
-
-                unsafe { diagnostic_msgs__srv__AddDiagnostics_Response__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Response {
-  Response {
-success: msg.success,
-message: msg.message.to_str().to_owned(),
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.success = self.success;
-msg.message.assign(&self.message);
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Response {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Response>::new();
-                                  Response::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                        }
-#[allow(non_snake_case)]
-    pub mod SelfTest {
-    use super::super::super::*;
-
-        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-        pub struct Service();
-        impl WrappedServiceTypeSupport for Service {
-            type Request = Request;
-            type Response = Response;
-            fn get_ts() -> &'static rosidl_service_type_support_t {
-                unsafe {
-                    &*rosidl_typesupport_c__get_service_type_support_handle__diagnostic_msgs__srv__SelfTest()
-                }
-            }
-        }
-
-            
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Request {
-
-                              
-                          }
-
-                          impl WrappedTypesupport for Request { 
-
-            type CStruct = diagnostic_msgs__srv__SelfTest_Request; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__SelfTest_Request() }
-            }
-
-            fn create_msg() -> *mut diagnostic_msgs__srv__SelfTest_Request {
-
-                unsafe { diagnostic_msgs__srv__SelfTest_Request__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut diagnostic_msgs__srv__SelfTest_Request) -> () {
-
-                unsafe { diagnostic_msgs__srv__SelfTest_Request__destroy(msg) };
-
-            }
-
-            fn from_native(_msg: &Self::CStruct) -> Request {
-  Request {
-      }
-    }
-
-
-
-            fn copy_to_native(&self, _msg: &mut Self::CStruct) {}
-
-
-
-        }
-
-
-                          
-                          impl Default for Request {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Request>::new();
-                                  Request::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                    
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Response {
-
-                              pub id: std::string::String,
-pub passed: u8,
-pub status: Vec<diagnostic_msgs::msg::DiagnosticStatus>,
-
-                          }
-
-                          impl WrappedTypesupport for Response { 
-
-            type CStruct = diagnostic_msgs__srv__SelfTest_Response; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__diagnostic_msgs__srv__SelfTest_Response() }
-            }
-
-            fn create_msg() -> *mut diagnostic_msgs__srv__SelfTest_Response {
-
-                unsafe { diagnostic_msgs__srv__SelfTest_Response__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut diagnostic_msgs__srv__SelfTest_Response) -> () {
-
-                unsafe { diagnostic_msgs__srv__SelfTest_Response__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Response {
-  Response {
-id: msg.id.to_str().to_owned(),
-passed: msg.passed,
-// is_upper_bound_: false
-// member.array_size_ : 0
-status : {
-let mut temp = Vec::with_capacity(msg.status.size);
-let slice = unsafe { std::slice::from_raw_parts(msg.status.data, msg.status.size)};
-for s in slice { temp.push(diagnostic_msgs::msg::DiagnosticStatus::from_native(s)); }
-temp },
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.id.assign(&self.id);
-msg.passed = self.passed;
-unsafe { diagnostic_msgs__msg__DiagnosticStatus__Sequence__fini(&mut msg.status) };
-unsafe { diagnostic_msgs__msg__DiagnosticStatus__Sequence__init(&mut msg.status, self.status.len()) };
-let slice = unsafe { std::slice::from_raw_parts_mut(msg.status.data, msg.status.size)};
-for (t,s) in slice.iter_mut().zip(&self.status) { s.copy_to_native(t);}
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Response {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Response>::new();
-                                  Response::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                        }
-  }

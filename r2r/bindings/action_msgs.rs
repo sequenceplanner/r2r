@@ -59,6 +59,8 @@ self.stamp.copy_to_native(&mut msg.stamp);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -116,6 +118,19 @@ msg.status = self.status;
                                   let msg_native = WrappedNativeMsg::<GoalStatus>::new();
                                   GoalStatus::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl GoalStatus {
+                                pub const STATUS_UNKNOWN: _bindgen_ty_1 = action_msgs__msg__GoalStatus__STATUS_UNKNOWN;
+  pub const STATUS_ACCEPTED: _bindgen_ty_2 = action_msgs__msg__GoalStatus__STATUS_ACCEPTED;
+  pub const STATUS_EXECUTING: _bindgen_ty_3 = action_msgs__msg__GoalStatus__STATUS_EXECUTING;
+  pub const STATUS_CANCELING: _bindgen_ty_4 = action_msgs__msg__GoalStatus__STATUS_CANCELING;
+  pub const STATUS_SUCCEEDED: _bindgen_ty_5 = action_msgs__msg__GoalStatus__STATUS_SUCCEEDED;
+  pub const STATUS_CANCELED: _bindgen_ty_6 = action_msgs__msg__GoalStatus__STATUS_CANCELED;
+  pub const STATUS_ABORTED: _bindgen_ty_7 = action_msgs__msg__GoalStatus__STATUS_ABORTED;
                           }
              
 
@@ -184,6 +199,8 @@ for (t,s) in slice.iter_mut().zip(&self.status_list) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                       }
@@ -260,6 +277,8 @@ goal_info: action_msgs::msg::GoalInfo::from_native(&msg.goal_info),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -326,6 +345,16 @@ for (t,s) in slice.iter_mut().zip(&self.goals_canceling) { s.copy_to_native(t);}
                                   let msg_native = WrappedNativeMsg::<Response>::new();
                                   Response::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Response {
+                                pub const ERROR_NONE: _bindgen_ty_8 = action_msgs__srv__CancelGoal_Response__ERROR_NONE;
+  pub const ERROR_REJECTED: _bindgen_ty_9 = action_msgs__srv__CancelGoal_Response__ERROR_REJECTED;
+  pub const ERROR_UNKNOWN_GOAL_ID: _bindgen_ty_10 = action_msgs__srv__CancelGoal_Response__ERROR_UNKNOWN_GOAL_ID;
+  pub const ERROR_GOAL_TERMINATED: _bindgen_ty_11 = action_msgs__srv__CancelGoal_Response__ERROR_GOAL_TERMINATED;
                           }
              
 

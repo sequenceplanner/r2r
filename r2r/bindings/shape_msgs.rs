@@ -77,6 +77,8 @@ for (t,s) in slice.iter_mut().zip(&self.vertices) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -136,6 +138,8 @@ msg.vertex_indices.copy_from_slice(&self.vertex_indices[..3]);
                               }
                           }
              
+
+                          
 
 
                     
@@ -197,14 +201,18 @@ msg.coef.copy_from_slice(&self.coef[..4]);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
                           #[serde(default)]
                           pub struct SolidPrimitive {
 
-                              pub type_: u8,
+                              #[serde(rename = "type")]
+pub type_: u8,
 pub dimensions: Vec<f64>,
+pub polygon: geometry_msgs::msg::Polygon,
 
                           }
 
@@ -236,6 +244,7 @@ type_: msg.type_,
 // is_upper_bound_: true
 // member.array_size_ : 3
 dimensions: msg.dimensions.to_vec(),
+polygon: geometry_msgs::msg::Polygon::from_native(&msg.polygon),
       }
     }
 
@@ -244,6 +253,7 @@ dimensions: msg.dimensions.to_vec(),
             fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.type_ = self.type_;
 assert!(self.dimensions.len() <= 3, "Field {} is upper bounded by {}!", "dimensions", 3);
 msg.dimensions.update(&self.dimensions);
+self.polygon.copy_to_native(&mut msg.polygon);
 }
 
 
@@ -257,6 +267,26 @@ msg.dimensions.update(&self.dimensions);
                                   let msg_native = WrappedNativeMsg::<SolidPrimitive>::new();
                                   SolidPrimitive::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl SolidPrimitive {
+                                pub const BOX: _bindgen_ty_138 = shape_msgs__msg__SolidPrimitive__BOX;
+  pub const SPHERE: _bindgen_ty_139 = shape_msgs__msg__SolidPrimitive__SPHERE;
+  pub const CYLINDER: _bindgen_ty_140 = shape_msgs__msg__SolidPrimitive__CYLINDER;
+  pub const CONE: _bindgen_ty_141 = shape_msgs__msg__SolidPrimitive__CONE;
+  pub const PRISM: _bindgen_ty_142 = shape_msgs__msg__SolidPrimitive__PRISM;
+  pub const BOX_X: _bindgen_ty_143 = shape_msgs__msg__SolidPrimitive__BOX_X;
+  pub const BOX_Y: _bindgen_ty_144 = shape_msgs__msg__SolidPrimitive__BOX_Y;
+  pub const BOX_Z: _bindgen_ty_145 = shape_msgs__msg__SolidPrimitive__BOX_Z;
+  pub const SPHERE_RADIUS: _bindgen_ty_146 = shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS;
+  pub const CYLINDER_HEIGHT: _bindgen_ty_147 = shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT;
+  pub const CYLINDER_RADIUS: _bindgen_ty_148 = shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS;
+  pub const CONE_HEIGHT: _bindgen_ty_149 = shape_msgs__msg__SolidPrimitive__CONE_HEIGHT;
+  pub const CONE_RADIUS: _bindgen_ty_150 = shape_msgs__msg__SolidPrimitive__CONE_RADIUS;
+  pub const PRISM_HEIGHT: _bindgen_ty_151 = shape_msgs__msg__SolidPrimitive__PRISM_HEIGHT;
                           }
              
 

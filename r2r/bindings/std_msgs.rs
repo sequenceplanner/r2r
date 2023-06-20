@@ -56,6 +56,8 @@ data: msg.data,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -112,6 +114,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -175,6 +179,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -231,6 +237,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -298,6 +306,8 @@ msg.a = self.a;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -351,6 +361,8 @@ msg.a = self.a;
                               }
                           }
              
+
+                          
 
 
                     
@@ -408,6 +420,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -471,6 +485,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -527,6 +543,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -590,6 +608,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -650,6 +670,8 @@ msg.frame_id.assign(&self.frame_id);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -706,6 +728,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -769,6 +793,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -825,6 +851,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -888,6 +916,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -944,6 +974,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1007,6 +1039,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1063,6 +1097,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1126,6 +1162,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1188,6 +1226,8 @@ msg.stride = self.stride;
                               }
                           }
              
+
+                          
 
 
                     
@@ -1258,6 +1298,8 @@ msg.data_offset = self.data_offset;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1315,6 +1357,8 @@ data: msg.data.to_str().to_owned(),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1371,6 +1415,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1434,6 +1480,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1490,6 +1538,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1553,6 +1603,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1609,6 +1661,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1672,6 +1726,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1728,6 +1784,8 @@ data: msg.data,
                               }
                           }
              
+
+                          
 
 
                     
@@ -1790,6 +1848,8 @@ msg.data.update(&self.data);
                               }
                           }
              
+
+                          
 
 
                       }

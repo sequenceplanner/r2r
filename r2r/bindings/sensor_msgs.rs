@@ -1,139 +1,3 @@
-  pub mod srv {
-#[allow(non_snake_case)]
-    pub mod SetCameraInfo {
-    use super::super::super::*;
-
-        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-        pub struct Service();
-        impl WrappedServiceTypeSupport for Service {
-            type Request = Request;
-            type Response = Response;
-            fn get_ts() -> &'static rosidl_service_type_support_t {
-                unsafe {
-                    &*rosidl_typesupport_c__get_service_type_support_handle__sensor_msgs__srv__SetCameraInfo()
-                }
-            }
-        }
-
-            
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Request {
-
-                              pub camera_info: sensor_msgs::msg::CameraInfo,
-
-                          }
-
-                          impl WrappedTypesupport for Request { 
-
-            type CStruct = sensor_msgs__srv__SetCameraInfo_Request; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__sensor_msgs__srv__SetCameraInfo_Request() }
-            }
-
-            fn create_msg() -> *mut sensor_msgs__srv__SetCameraInfo_Request {
-
-                unsafe { sensor_msgs__srv__SetCameraInfo_Request__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut sensor_msgs__srv__SetCameraInfo_Request) -> () {
-
-                unsafe { sensor_msgs__srv__SetCameraInfo_Request__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Request {
-  Request {
-camera_info: sensor_msgs::msg::CameraInfo::from_native(&msg.camera_info),
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {self.camera_info.copy_to_native(&mut msg.camera_info);
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Request {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Request>::new();
-                                  Request::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                    
-                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
-                          #[serde(default)]
-                          pub struct Response {
-
-                              pub success: bool,
-pub status_message: std::string::String,
-
-                          }
-
-                          impl WrappedTypesupport for Response { 
-
-            type CStruct = sensor_msgs__srv__SetCameraInfo_Response; 
-
-
-            fn get_ts() -> &'static rosidl_message_type_support_t { 
-
-                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__sensor_msgs__srv__SetCameraInfo_Response() }
-            }
-
-            fn create_msg() -> *mut sensor_msgs__srv__SetCameraInfo_Response {
-
-                unsafe { sensor_msgs__srv__SetCameraInfo_Response__create() }
-
-            }
-
-            fn destroy_msg(msg: *mut sensor_msgs__srv__SetCameraInfo_Response) -> () {
-
-                unsafe { sensor_msgs__srv__SetCameraInfo_Response__destroy(msg) };
-
-            }
-
-            fn from_native(msg: &Self::CStruct) -> Response {
-  Response {
-success: msg.success,
-status_message: msg.status_message.to_str().to_owned(),
-      }
-    }
-
-
-
-            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.success = self.success;
-msg.status_message.assign(&self.status_message);
-}
-
-
-
-        }
-
-
-                          
-                          impl Default for Response {
-                              fn default() -> Self {
-                                  let msg_native = WrappedNativeMsg::<Response>::new();
-                                  Response::from_native(&msg_native)
-                              }
-                          }
-             
-
-
-                        }
-  }
   pub mod msg {
     use super::super::*;
 
@@ -241,6 +105,33 @@ msg.serial_number.assign(&self.serial_number);
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl BatteryState {
+                                pub const POWER_SUPPLY_STATUS_UNKNOWN: _bindgen_ty_92 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN;
+  pub const POWER_SUPPLY_STATUS_CHARGING: _bindgen_ty_93 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING;
+  pub const POWER_SUPPLY_STATUS_DISCHARGING: _bindgen_ty_94 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING;
+  pub const POWER_SUPPLY_STATUS_NOT_CHARGING: _bindgen_ty_95 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING;
+  pub const POWER_SUPPLY_STATUS_FULL: _bindgen_ty_96 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL;
+  pub const POWER_SUPPLY_HEALTH_UNKNOWN: _bindgen_ty_97 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN;
+  pub const POWER_SUPPLY_HEALTH_GOOD: _bindgen_ty_98 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD;
+  pub const POWER_SUPPLY_HEALTH_OVERHEAT: _bindgen_ty_99 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT;
+  pub const POWER_SUPPLY_HEALTH_DEAD: _bindgen_ty_100 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD;
+  pub const POWER_SUPPLY_HEALTH_OVERVOLTAGE: _bindgen_ty_101 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+  pub const POWER_SUPPLY_HEALTH_UNSPEC_FAILURE: _bindgen_ty_102 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+  pub const POWER_SUPPLY_HEALTH_COLD: _bindgen_ty_103 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD;
+  pub const POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE: _bindgen_ty_104 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE;
+  pub const POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE: _bindgen_ty_105 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+  pub const POWER_SUPPLY_TECHNOLOGY_UNKNOWN: _bindgen_ty_106 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+  pub const POWER_SUPPLY_TECHNOLOGY_NIMH: _bindgen_ty_107 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH;
+  pub const POWER_SUPPLY_TECHNOLOGY_LION: _bindgen_ty_108 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION;
+  pub const POWER_SUPPLY_TECHNOLOGY_LIPO: _bindgen_ty_109 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO;
+  pub const POWER_SUPPLY_TECHNOLOGY_LIFE: _bindgen_ty_110 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE;
+  pub const POWER_SUPPLY_TECHNOLOGY_NICD: _bindgen_ty_111 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD;
+  pub const POWER_SUPPLY_TECHNOLOGY_LIMN: _bindgen_ty_112 = sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -339,6 +230,8 @@ self.roi.copy_to_native(&mut msg.roi);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -400,6 +293,8 @@ msg.values.update(&self.values);
                               }
                           }
              
+
+                          
 
 
                     
@@ -466,6 +361,8 @@ msg.data.update(&self.data);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -529,6 +426,8 @@ msg.variance = self.variance;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -591,6 +490,8 @@ msg.variance = self.variance;
                               }
                           }
              
+
+                          
 
 
                     
@@ -668,6 +569,8 @@ msg.data.update(&self.data);
                               }
                           }
              
+
+                          
 
 
                     
@@ -753,6 +656,8 @@ msg.linear_acceleration_covariance.copy_from_slice(&self.linear_acceleration_cov
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -830,6 +735,8 @@ msg.effort.update(&self.effort);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -897,13 +804,16 @@ msg.buttons.update(&self.buttons);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
                           #[serde(default)]
                           pub struct JoyFeedback {
 
-                              pub type_: u8,
+                              #[serde(rename = "type")]
+pub type_: u8,
 pub id: u8,
 pub intensity: f32,
 
@@ -957,6 +867,15 @@ msg.intensity = self.intensity;
                                   let msg_native = WrappedNativeMsg::<JoyFeedback>::new();
                                   JoyFeedback::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl JoyFeedback {
+                                pub const TYPE_LED: _bindgen_ty_113 = sensor_msgs__msg__JoyFeedback__TYPE_LED;
+  pub const TYPE_RUMBLE: _bindgen_ty_114 = sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE;
+  pub const TYPE_BUZZER: _bindgen_ty_115 = sensor_msgs__msg__JoyFeedback__TYPE_BUZZER;
                           }
              
 
@@ -1026,6 +945,8 @@ for (t,s) in slice.iter_mut().zip(&self.array) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1084,6 +1005,8 @@ echoes: msg.echoes.to_vec(),
                               }
                           }
              
+
+                          
 
 
                     
@@ -1173,6 +1096,8 @@ msg.intensities.update(&self.intensities);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1238,6 +1163,8 @@ msg.magnetic_field_covariance.copy_from_slice(&self.magnetic_field_covariance[..
                               }
                           }
              
+
+                          
 
 
                     
@@ -1336,6 +1263,8 @@ for (t,s) in slice.iter_mut().zip(&self.wrench) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -1439,6 +1368,8 @@ for (t,s) in slice.iter_mut().zip(&self.intensities) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1517,6 +1448,16 @@ msg.position_covariance_type = self.position_covariance_type;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl NavSatFix {
+                                pub const COVARIANCE_TYPE_UNKNOWN: _bindgen_ty_116 = sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN;
+  pub const COVARIANCE_TYPE_APPROXIMATED: _bindgen_ty_117 = sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED;
+  pub const COVARIANCE_TYPE_DIAGONAL_KNOWN: _bindgen_ty_118 = sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN;
+  pub const COVARIANCE_TYPE_KNOWN: _bindgen_ty_119 = sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1574,6 +1515,20 @@ msg.service = self.service;
                                   let msg_native = WrappedNativeMsg::<NavSatStatus>::new();
                                   NavSatStatus::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl NavSatStatus {
+                                pub const STATUS_NO_FIX: _bindgen_ty_120 = sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX;
+  pub const STATUS_FIX: _bindgen_ty_121 = sensor_msgs__msg__NavSatStatus__STATUS_FIX;
+  pub const STATUS_SBAS_FIX: _bindgen_ty_122 = sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX;
+  pub const STATUS_GBAS_FIX: _bindgen_ty_123 = sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX;
+  pub const SERVICE_GPS: _bindgen_ty_124 = sensor_msgs__msg__NavSatStatus__SERVICE_GPS;
+  pub const SERVICE_GLONASS: _bindgen_ty_125 = sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS;
+  pub const SERVICE_COMPASS: _bindgen_ty_126 = sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS;
+  pub const SERVICE_GALILEO: _bindgen_ty_127 = sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO;
                           }
              
 
@@ -1657,6 +1612,8 @@ for (t,s) in slice.iter_mut().zip(&self.channels) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -1750,6 +1707,8 @@ msg.is_dense = self.is_dense;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1813,6 +1772,20 @@ msg.count = self.count;
                                   let msg_native = WrappedNativeMsg::<PointField>::new();
                                   PointField::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl PointField {
+                                pub const INT8: _bindgen_ty_128 = sensor_msgs__msg__PointField__INT8;
+  pub const UINT8: _bindgen_ty_129 = sensor_msgs__msg__PointField__UINT8;
+  pub const INT16: _bindgen_ty_130 = sensor_msgs__msg__PointField__INT16;
+  pub const UINT16: _bindgen_ty_131 = sensor_msgs__msg__PointField__UINT16;
+  pub const INT32: _bindgen_ty_132 = sensor_msgs__msg__PointField__INT32;
+  pub const UINT32: _bindgen_ty_133 = sensor_msgs__msg__PointField__UINT32;
+  pub const FLOAT32: _bindgen_ty_134 = sensor_msgs__msg__PointField__FLOAT32;
+  pub const FLOAT64: _bindgen_ty_135 = sensor_msgs__msg__PointField__FLOAT64;
                           }
              
 
@@ -1888,6 +1861,14 @@ msg.range = self.range;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Range {
+                                pub const ULTRASOUND: _bindgen_ty_136 = sensor_msgs__msg__Range__ULTRASOUND;
+  pub const INFRARED: _bindgen_ty_137 = sensor_msgs__msg__Range__INFRARED;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1957,6 +1938,8 @@ msg.do_rectify = self.do_rectify;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -2019,6 +2002,8 @@ msg.variance = self.variance;
                               }
                           }
              
+
+                          
 
 
                     
@@ -2083,6 +2068,8 @@ msg.variance = self.variance;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -2146,5 +2133,147 @@ msg.source.assign(&self.source);
                           }
              
 
+                          
+
 
                       }
+  pub mod srv {
+#[allow(non_snake_case)]
+    pub mod SetCameraInfo {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__sensor_msgs__srv__SetCameraInfo()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              pub camera_info: sensor_msgs::msg::CameraInfo,
+
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = sensor_msgs__srv__SetCameraInfo_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__sensor_msgs__srv__SetCameraInfo_Request() }
+            }
+
+            fn create_msg() -> *mut sensor_msgs__srv__SetCameraInfo_Request {
+
+                unsafe { sensor_msgs__srv__SetCameraInfo_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut sensor_msgs__srv__SetCameraInfo_Request) -> () {
+
+                unsafe { sensor_msgs__srv__SetCameraInfo_Request__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Request {
+  Request {
+camera_info: sensor_msgs::msg::CameraInfo::from_native(&msg.camera_info),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {self.camera_info.copy_to_native(&mut msg.camera_info);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub success: bool,
+pub status_message: std::string::String,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = sensor_msgs__srv__SetCameraInfo_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__sensor_msgs__srv__SetCameraInfo_Response() }
+            }
+
+            fn create_msg() -> *mut sensor_msgs__srv__SetCameraInfo_Response {
+
+                unsafe { sensor_msgs__srv__SetCameraInfo_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut sensor_msgs__srv__SetCameraInfo_Response) -> () {
+
+                unsafe { sensor_msgs__srv__SetCameraInfo_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+success: msg.success,
+status_message: msg.status_message.to_str().to_owned(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.success = self.success;
+msg.status_message.assign(&self.status_message);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                        }
+  }

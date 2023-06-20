@@ -73,6 +73,8 @@ for (t,s) in slice.iter_mut().zip(&self.points) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -150,6 +152,8 @@ self.time_from_start.copy_to_native(&mut msg.time_from_start);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -223,6 +227,8 @@ for (t,s) in slice.iter_mut().zip(&self.points) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -316,6 +322,8 @@ self.time_from_start.copy_to_native(&mut msg.time_from_start);
                               }
                           }
              
+
+                          
 
 
                       }

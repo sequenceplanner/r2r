@@ -1,4 +1,266 @@
+  pub mod msg {
+    use super::super::*;
+
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct ReadSplitEvent {
+
+                              pub closed_file: std::string::String,
+pub opened_file: std::string::String,
+
+                          }
+
+                          impl WrappedTypesupport for ReadSplitEvent { 
+
+            type CStruct = rosbag2_interfaces__msg__ReadSplitEvent; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__msg__ReadSplitEvent() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__msg__ReadSplitEvent {
+
+                unsafe { rosbag2_interfaces__msg__ReadSplitEvent__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__msg__ReadSplitEvent) -> () {
+
+                unsafe { rosbag2_interfaces__msg__ReadSplitEvent__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> ReadSplitEvent {
+  ReadSplitEvent {
+closed_file: msg.closed_file.to_str().to_owned(),
+opened_file: msg.opened_file.to_str().to_owned(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.closed_file.assign(&self.closed_file);
+msg.opened_file.assign(&self.opened_file);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for ReadSplitEvent {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<ReadSplitEvent>::new();
+                                  ReadSplitEvent::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct WriteSplitEvent {
+
+                              pub closed_file: std::string::String,
+pub opened_file: std::string::String,
+
+                          }
+
+                          impl WrappedTypesupport for WriteSplitEvent { 
+
+            type CStruct = rosbag2_interfaces__msg__WriteSplitEvent; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__msg__WriteSplitEvent() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__msg__WriteSplitEvent {
+
+                unsafe { rosbag2_interfaces__msg__WriteSplitEvent__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__msg__WriteSplitEvent) -> () {
+
+                unsafe { rosbag2_interfaces__msg__WriteSplitEvent__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> WriteSplitEvent {
+  WriteSplitEvent {
+closed_file: msg.closed_file.to_str().to_owned(),
+opened_file: msg.opened_file.to_str().to_owned(),
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.closed_file.assign(&self.closed_file);
+msg.opened_file.assign(&self.opened_file);
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for WriteSplitEvent {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<WriteSplitEvent>::new();
+                                  WriteSplitEvent::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                      }
   pub mod srv {
+#[allow(non_snake_case)]
+    pub mod Burst {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__rosbag2_interfaces__srv__Burst()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              pub num_messages: u64,
+
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = rosbag2_interfaces__srv__Burst_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__srv__Burst_Request() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__srv__Burst_Request {
+
+                unsafe { rosbag2_interfaces__srv__Burst_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__srv__Burst_Request) -> () {
+
+                unsafe { rosbag2_interfaces__srv__Burst_Request__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Request {
+  Request {
+num_messages: msg.num_messages,
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.num_messages = self.num_messages;
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub actually_burst: u64,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = rosbag2_interfaces__srv__Burst_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__srv__Burst_Response() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__srv__Burst_Response {
+
+                unsafe { rosbag2_interfaces__srv__Burst_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__srv__Burst_Response) -> () {
+
+                unsafe { rosbag2_interfaces__srv__Burst_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+actually_burst: msg.actually_burst,
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.actually_burst = self.actually_burst;
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                        }
 #[allow(non_snake_case)]
     pub mod GetRate {
     use super::super::super::*;
@@ -68,6 +330,8 @@
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -124,6 +388,8 @@ rate: msg.rate,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -196,6 +462,8 @@ rate: msg.rate,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -252,6 +520,8 @@ paused: msg.paused,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -324,6 +594,8 @@ paused: msg.paused,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -377,6 +649,8 @@ paused: msg.paused,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -449,6 +723,8 @@ paused: msg.paused,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -505,6 +781,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -577,6 +855,8 @@ success: msg.success,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -630,6 +910,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -705,6 +987,8 @@ time: builtin_interfaces::msg::Time::from_native(&msg.time),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -761,6 +1045,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }
@@ -836,6 +1122,8 @@ rate: msg.rate,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -892,6 +1180,140 @@ success: msg.success,
                               }
                           }
              
+
+                          
+
+
+                        }
+#[allow(non_snake_case)]
+    pub mod Snapshot {
+    use super::super::super::*;
+
+        #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+        pub struct Service();
+        impl WrappedServiceTypeSupport for Service {
+            type Request = Request;
+            type Response = Response;
+            fn get_ts() -> &'static rosidl_service_type_support_t {
+                unsafe {
+                    &*rosidl_typesupport_c__get_service_type_support_handle__rosbag2_interfaces__srv__Snapshot()
+                }
+            }
+        }
+
+            
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Request {
+
+                              
+                          }
+
+                          impl WrappedTypesupport for Request { 
+
+            type CStruct = rosbag2_interfaces__srv__Snapshot_Request; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__srv__Snapshot_Request() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__srv__Snapshot_Request {
+
+                unsafe { rosbag2_interfaces__srv__Snapshot_Request__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__srv__Snapshot_Request) -> () {
+
+                unsafe { rosbag2_interfaces__srv__Snapshot_Request__destroy(msg) };
+
+            }
+
+            fn from_native(_msg: &Self::CStruct) -> Request {
+  Request {
+      }
+    }
+
+
+
+            fn copy_to_native(&self, _msg: &mut Self::CStruct) {}
+
+
+
+        }
+
+
+                          
+                          impl Default for Request {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Request>::new();
+                                  Request::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
+
+
+                    
+                          #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
+                          #[serde(default)]
+                          pub struct Response {
+
+                              pub success: bool,
+
+                          }
+
+                          impl WrappedTypesupport for Response { 
+
+            type CStruct = rosbag2_interfaces__srv__Snapshot_Response; 
+
+
+            fn get_ts() -> &'static rosidl_message_type_support_t { 
+
+                unsafe { &*rosidl_typesupport_c__get_message_type_support_handle__rosbag2_interfaces__srv__Snapshot_Response() }
+            }
+
+            fn create_msg() -> *mut rosbag2_interfaces__srv__Snapshot_Response {
+
+                unsafe { rosbag2_interfaces__srv__Snapshot_Response__create() }
+
+            }
+
+            fn destroy_msg(msg: *mut rosbag2_interfaces__srv__Snapshot_Response) -> () {
+
+                unsafe { rosbag2_interfaces__srv__Snapshot_Response__destroy(msg) };
+
+            }
+
+            fn from_native(msg: &Self::CStruct) -> Response {
+  Response {
+success: msg.success,
+      }
+    }
+
+
+
+            fn copy_to_native(&self, msg: &mut Self::CStruct) {msg.success = self.success;
+}
+
+
+
+        }
+
+
+                          
+                          impl Default for Response {
+                              fn default() -> Self {
+                                  let msg_native = WrappedNativeMsg::<Response>::new();
+                                  Response::from_native(&msg_native)
+                              }
+                          }
+             
+
+                          
 
 
                         }
@@ -964,6 +1386,8 @@ success: msg.success,
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1017,6 +1441,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }

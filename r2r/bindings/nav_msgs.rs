@@ -74,6 +74,8 @@ for (t,s) in slice.iter_mut().zip(&self.cells) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -143,6 +145,8 @@ self.origin.copy_to_native(&mut msg.origin);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -207,6 +211,8 @@ msg.data.update(&self.data);
                               }
                           }
              
+
+                          
 
 
                     
@@ -273,6 +279,8 @@ self.twist.copy_to_native(&mut msg.twist);
                               }
                           }
              
+
+                          
 
 
                     
@@ -342,6 +350,8 @@ for (t,s) in slice.iter_mut().zip(&self.poses) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                       }
@@ -415,6 +425,8 @@ for (t,s) in slice.iter_mut().zip(&self.poses) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -471,6 +483,8 @@ map: nav_msgs::msg::OccupancyGrid::from_native(&msg.map),
                               }
                           }
              
+
+                          
 
 
                         }
@@ -552,6 +566,8 @@ msg.tolerance = self.tolerance;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -608,6 +624,8 @@ plan: nav_msgs::msg::Path::from_native(&msg.plan),
                               }
                           }
              
+
+                          
 
 
                         }
@@ -683,6 +701,8 @@ map_url: msg.map_url.to_str().to_owned(),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -740,6 +760,17 @@ msg.result = self.result;
                                   let msg_native = WrappedNativeMsg::<Response>::new();
                                   Response::from_native(&msg_native)
                               }
+                          }
+             
+
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Response {
+                                pub const RESULT_SUCCESS: _bindgen_ty_67 = nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS;
+  pub const RESULT_MAP_DOES_NOT_EXIST: _bindgen_ty_68 = nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST;
+  pub const RESULT_INVALID_MAP_DATA: _bindgen_ty_69 = nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA;
+  pub const RESULT_INVALID_MAP_METADATA: _bindgen_ty_70 = nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA;
+  pub const RESULT_UNDEFINED_FAILURE: _bindgen_ty_71 = nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE;
                           }
              
 
@@ -820,6 +851,8 @@ self.initial_pose.copy_to_native(&mut msg.initial_pose);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -876,6 +909,8 @@ success: msg.success,
                               }
                           }
              
+
+                          
 
 
                         }

@@ -62,6 +62,8 @@ msg.step = self.step;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -124,6 +126,8 @@ msg.step = self.step;
                               }
                           }
              
+
+                          
 
 
                     
@@ -188,6 +192,8 @@ msg.prefixes.update(&self.prefixes);
                               }
                           }
              
+
+                          
 
 
                     
@@ -264,6 +270,17 @@ msg.line = self.line;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Log {
+                                pub const DEBUG: _bindgen_ty_72 = rcl_interfaces__msg__Log__DEBUG;
+  pub const INFO: _bindgen_ty_73 = rcl_interfaces__msg__Log__INFO;
+  pub const WARN: _bindgen_ty_74 = rcl_interfaces__msg__Log__WARN;
+  pub const ERROR: _bindgen_ty_75 = rcl_interfaces__msg__Log__ERROR;
+  pub const FATAL: _bindgen_ty_76 = rcl_interfaces__msg__Log__FATAL;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -324,6 +341,8 @@ self.value.copy_to_native(&mut msg.value);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -331,6 +350,7 @@ self.value.copy_to_native(&mut msg.value);
                           pub struct ParameterDescriptor {
 
                               pub name: std::string::String,
+#[serde(rename = "type")]
 pub type_: u8,
 pub description: std::string::String,
 pub additional_constraints: std::string::String,
@@ -419,6 +439,8 @@ for (t,s) in slice.iter_mut().zip(&self.integer_range) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                     
@@ -516,6 +538,8 @@ for (t,s) in slice.iter_mut().zip(&self.deleted_parameters) { s.copy_to_native(t
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -606,6 +630,8 @@ for (t,s) in slice.iter_mut().zip(&self.deleted_parameters) { s.copy_to_native(t
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -660,13 +686,30 @@ for (t,s) in slice.iter_mut().zip(&self.deleted_parameters) { s.copy_to_native(t
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl ParameterType {
+                                pub const PARAMETER_NOT_SET: _bindgen_ty_79 = rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET;
+  pub const PARAMETER_BOOL: _bindgen_ty_80 = rcl_interfaces__msg__ParameterType__PARAMETER_BOOL;
+  pub const PARAMETER_INTEGER: _bindgen_ty_81 = rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER;
+  pub const PARAMETER_DOUBLE: _bindgen_ty_82 = rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE;
+  pub const PARAMETER_STRING: _bindgen_ty_83 = rcl_interfaces__msg__ParameterType__PARAMETER_STRING;
+  pub const PARAMETER_BYTE_ARRAY: _bindgen_ty_84 = rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY;
+  pub const PARAMETER_BOOL_ARRAY: _bindgen_ty_85 = rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY;
+  pub const PARAMETER_INTEGER_ARRAY: _bindgen_ty_86 = rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY;
+  pub const PARAMETER_DOUBLE_ARRAY: _bindgen_ty_87 = rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY;
+  pub const PARAMETER_STRING_ARRAY: _bindgen_ty_88 = rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
                           #[serde(default)]
                           pub struct ParameterValue {
 
-                              pub type_: u8,
+                              #[serde(rename = "type")]
+pub type_: u8,
 pub bool_value: bool,
 pub integer_value: i64,
 pub double_value: f64,
@@ -754,6 +797,8 @@ msg.string_array_value.update(&self.string_array_value);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -813,6 +858,8 @@ msg.reason.assign(&self.reason);
                               }
                           }
              
+
+                          
 
 
                       }
@@ -891,6 +938,8 @@ names: msg.names.to_vec(),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -956,6 +1005,8 @@ for (t,s) in slice.iter_mut().zip(&self.descriptors) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                         }
@@ -1033,6 +1084,8 @@ names: msg.names.to_vec(),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1091,6 +1144,8 @@ types: msg.types.to_vec(),
                               }
                           }
              
+
+                          
 
 
                         }
@@ -1168,6 +1223,8 @@ names: msg.names.to_vec(),
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1233,6 +1290,8 @@ for (t,s) in slice.iter_mut().zip(&self.values) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                         }
@@ -1313,6 +1372,13 @@ msg.depth = self.depth;
                           }
              
 
+                          
+                          #[allow(non_upper_case_globals)]
+                          impl Request {
+                                pub const DEPTH_RECURSIVE: _bindgen_ty_89 = rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE;
+                          }
+             
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1369,6 +1435,8 @@ result: rcl_interfaces::msg::ListParametersResult::from_native(&msg.result),
                               }
                           }
              
+
+                          
 
 
                         }
@@ -1453,6 +1521,8 @@ for (t,s) in slice.iter_mut().zip(&self.parameters) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1518,6 +1588,8 @@ for (t,s) in slice.iter_mut().zip(&self.results) { s.copy_to_native(t);}
                               }
                           }
              
+
+                          
 
 
                         }
@@ -1602,6 +1674,8 @@ for (t,s) in slice.iter_mut().zip(&self.parameters) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1658,6 +1732,8 @@ result: rcl_interfaces::msg::SetParametersResult::from_native(&msg.result),
                               }
                           }
              
+
+                          
 
 
                         }

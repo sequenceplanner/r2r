@@ -59,6 +59,8 @@ self.angular.copy_to_native(&mut msg.angular);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -118,6 +120,8 @@ self.accel.copy_to_native(&mut msg.accel);
                               }
                           }
              
+
+                          
 
 
                     
@@ -182,6 +186,8 @@ msg.covariance.copy_from_slice(&self.covariance[..36]);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -241,6 +247,8 @@ self.accel.copy_to_native(&mut msg.accel);
                               }
                           }
              
+
+                          
 
 
                     
@@ -320,6 +328,8 @@ msg.izz = self.izz;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -379,6 +389,8 @@ self.inertia.copy_to_native(&mut msg.inertia);
                               }
                           }
              
+
+                          
 
 
                     
@@ -443,6 +455,8 @@ msg.z = self.z;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -506,6 +520,8 @@ msg.z = self.z;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -565,6 +581,8 @@ self.point.copy_to_native(&mut msg.point);
                               }
                           }
              
+
+                          
 
 
                     
@@ -632,6 +650,8 @@ for (t,s) in slice.iter_mut().zip(&self.points) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -692,6 +712,8 @@ self.polygon.copy_to_native(&mut msg.polygon);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -751,6 +773,8 @@ self.orientation.copy_to_native(&mut msg.orientation);
                               }
                           }
              
+
+                          
 
 
                     
@@ -814,6 +838,8 @@ msg.theta = self.theta;
                               }
                           }
              
+
+                          
 
 
                     
@@ -884,6 +910,8 @@ for (t,s) in slice.iter_mut().zip(&self.poses) { s.copy_to_native(t);}
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -943,6 +971,8 @@ self.pose.copy_to_native(&mut msg.pose);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1007,6 +1037,8 @@ msg.covariance.copy_from_slice(&self.covariance[..36]);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1066,6 +1098,8 @@ self.pose.copy_to_native(&mut msg.pose);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1133,6 +1167,8 @@ msg.w = self.w;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1193,6 +1229,8 @@ self.quaternion.copy_to_native(&mut msg.quaternion);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1252,6 +1290,8 @@ self.rotation.copy_to_native(&mut msg.rotation);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1316,6 +1356,8 @@ self.transform.copy_to_native(&mut msg.transform);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1376,6 +1418,8 @@ self.angular.copy_to_native(&mut msg.angular);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1435,6 +1479,8 @@ self.twist.copy_to_native(&mut msg.twist);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1499,6 +1545,8 @@ msg.covariance.copy_from_slice(&self.covariance[..36]);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1558,6 +1606,8 @@ self.twist.copy_to_native(&mut msg.twist);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1622,6 +1672,8 @@ msg.z = self.z;
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1681,6 +1733,8 @@ self.vector.copy_to_native(&mut msg.vector);
                               }
                           }
              
+
+                          
 
 
                     
@@ -1742,6 +1796,8 @@ self.torque.copy_to_native(&mut msg.torque);
                           }
              
 
+                          
+
 
                     
                           #[derive(Clone,Debug,PartialEq,Serialize,Deserialize)]
@@ -1801,6 +1857,8 @@ self.wrench.copy_to_native(&mut msg.wrench);
                               }
                           }
              
+
+                          
 
 
                       }
