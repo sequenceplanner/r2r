@@ -1,6 +1,6 @@
 [package]
 name = "r2r_rcl"
-version = "0.3.5"
+version = "0.3.6"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
@@ -16,7 +16,7 @@ widestring = "1.0.2"
 
 [build-dependencies]
 bindgen = "0.63.0"
-r2r_common = { path = "../r2r_common", version = "0.3.4" }
+r2r_common = { path = "../r2r_common", version = "0.3.5" }
 
 [features]
 save-bindgen = []
