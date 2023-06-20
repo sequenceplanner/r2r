@@ -1,7 +1,7 @@
 R2R - Easy to use, runtime-agnostic, async rust bindings for ROS2.
 ====================
 
-Easy to use bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure -- `cargo build` is all you need. Convenience Rust types are created by calling into the c introspection libraries. This circumvents the ROS2 .msg/.idl pipeline by relying on already generated C code. By default, the behavior is to build bindings to the RCL and all message types that can be found in the currently sourced ros environment.
+Easy to use bindings for ROS2 that do *not* require hooking in to the ROS2 build infrastructure -- `cargo build` is all you need. Convenience Rust types are created by calling into the c introspection libraries. This circumvents the ROS2 .msg/.idl pipeline by relying on already generated C code. By default, the behavior is to build bindings to the RCL and all message types that can be found in the currently sourced ros environment, but it is possible to be more specific to save on build time (see note below).
 
 When integration with the colcon build system is desired, a CMakeLists.txt file can be used to limit the generation of bindings to only include specific (idl) dependencies. This is done through additional environment variables. A minimal example of the colcon integration is available here: <https://github.com/m-dahl/r2r_minimal_node>.
 
@@ -28,6 +28,10 @@ cargo run --example subscriber
 ros2 topic pub /topic std_msgs/msg/String "data: 'Hello, world'"
 ```
 
+A note on build times
+--------------------
+Since the default behavior is to build all sourced message types, build time can quickly become a problem for larger workspaces. To avoid building everything, it is possible to declare only the message packages needed using the environment variable `IDL_PACKAGE_FILTER`. Setting this can be done in `.cargo/config.toml` for convenience, e.g. <https://github.com/m-dahl/r2r_minimal_node/blob/master/r2r_minimal_node/.cargo/config.toml>. Note there is no automatic dependency resolution done for nested message types, so all used message packages need to be explicitly included.
+
 What works?
 --------------------
 - Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble
@@ -40,6 +44,9 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Various CI improvements: <https://github.com/sequenceplanner/r2r/pull/54>, <https://github.com/sequenceplanner/r2r/pull/56>
+- Fix build problem at docs.rs <https://github.com/sequenceplanner/r2r/pull/56>
+- Clarify compilation flags related to build time in README.md as suggested in <https://github.com/sequenceplanner/r2r/issues/53>
 
 #### [0.7.1] - 2023-05-21
 - Add associated constants to generated message types. <https://github.com/sequenceplanner/r2r/pull/46>
