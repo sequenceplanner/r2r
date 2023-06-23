@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use osstrtools::OsStrTools;
+use os_str_bytes::RawOsString;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
@@ -62,10 +62,11 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
         }
     } else if !cfg!(feature = "doc-only") {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-        let ament_prefix_var = env::var_os(ament_prefix_var_name).expect("Source your ROS!");
+        let ament_prefix_var =
+            RawOsString::new(env::var_os(ament_prefix_var_name).expect("Source your ROS!"));
 
         for p in ament_prefix_var.split(":") {
-            let path = Path::new(p).join("include");
+            let path = Path::new(&p.to_os_str()).join("include");
 
             let entries = std::fs::read_dir(path.clone());
             if let Ok(e) = entries {
@@ -138,19 +139,26 @@ pub fn print_cargo_ros_distro() {
 pub fn print_cargo_link_search() {
     if env::var_os("CMAKE_INCLUDE_DIRS").is_some() {
         if let Some(paths) = env::var_os("CMAKE_LIBRARIES") {
+            let paths = RawOsString::new(paths);
+
             paths
                 .split(":")
-                .into_iter()
                 .filter(|s| s.contains(".so") || s.contains(".dylib"))
-                .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
+                .filter_map(|l| {
+                    let l = l.to_os_str();
+                    let parent = Path::new(&l).parent()?;
+                    let parent = parent.to_str()?;
+                    Some(parent.to_string())
+                })
                 .unique()
                 .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
         }
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         if let Some(paths) = env::var_os(ament_prefix_var_name) {
+            let paths = RawOsString::new(paths);
             for path in paths.split(":") {
-                let lib_path = Path::new(path).join("lib");
+                let lib_path = Path::new(&path.to_os_str()).join("lib");
                 if let Some(s) = lib_path.to_str() {
                     println!("cargo:rustc-link-search=native={}", s)
                 }

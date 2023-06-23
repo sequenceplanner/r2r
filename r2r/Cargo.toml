@@ -25,6 +25,7 @@ r2r_actions = { path = "../r2r_actions", version = "0.3.10" }
 uuid = { version = "1.2.2", features = ["serde", "v4"] }
 futures = "0.3.25"
 log = "0.4.18"
+phf = "0.11.1"
 
 [dev-dependencies]
 serde_json = "1.0.89"
@@ -35,6 +36,9 @@ rand = "0.8.5"
 [build-dependencies]
 r2r_common = { path = "../r2r_common", version = "0.3.6" }
 r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.11" }
+rayon = "1.7.0"
+force-send-sync = "1.0.0"
+quote = "1.0.28"
 
 [features]
 save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen", "r2r_actions/save-bindgen"]
