@@ -132,6 +132,10 @@ pub const ROS_DISTRO: &str = "galactic";
 pub const ROS_DISTRO: &str = "humble";
 #[cfg(r2r__ros__distro__rolling)]
 pub const ROS_DISTRO: &str = "rolling";
-#[cfg(not(any(r2r__ros__distro__foxy, r2r__ros__distro__galactic,
-              r2r__ros__distro__humble, r2r__ros__distro__rolling)))]
+#[cfg(not(any(
+    r2r__ros__distro__foxy,
+    r2r__ros__distro__galactic,
+    r2r__ros__distro__humble,
+    r2r__ros__distro__rolling
+)))]
 pub const ROS_DISTRO: &str = "unknown";

@@ -771,7 +771,6 @@ mod tests {
         assert!(!json_request.to_string().is_empty());
     }
 
-
     #[cfg(r2r__action_msgs__msg__GoalStatus)]
     #[test]
     fn test_msg_constants() {
@@ -795,6 +794,5 @@ mod tests {
         assert_eq!(1, CancelGoal::Response::ERROR_REJECTED as i8);
         assert_eq!(2, CancelGoal::Response::ERROR_UNKNOWN_GOAL_ID as i8);
         assert_eq!(3, CancelGoal::Response::ERROR_GOAL_TERMINATED as i8);
-
     }
 }

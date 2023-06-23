@@ -294,7 +294,8 @@ where
 
                     // check if all cancels were rejected.
                     if requested_cancels >= 1 && response_msg.goals_canceling.is_empty() {
-                        response_msg.return_code = action_msgs::srv::CancelGoal::Response::ERROR_REJECTED as i8;
+                        response_msg.return_code =
+                            action_msgs::srv::CancelGoal::Response::ERROR_REJECTED as i8;
                     }
 
                     responses.push((*request_id, response_msg));
@@ -533,7 +534,10 @@ where
 
         let response_msg = if !goal_exists {
             // Goal does not exists
-            let msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_UNKNOWN as i8, T::Result::default());
+            let msg = T::make_result_response_msg(
+                action_msgs::msg::GoalStatus::STATUS_UNKNOWN as i8,
+                T::Result::default(),
+            );
             let mut response_msg = WrappedNativeMsg::<
                 <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
             >::from(&msg);
@@ -664,7 +668,8 @@ where
         action_server.publish_status();
 
         // create result message
-        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_CANCELED as i8, msg);
+        let result_msg =
+            T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_CANCELED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
@@ -684,7 +689,8 @@ where
         action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_ABORT)?;
 
         // create result message
-        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_ABORTED as i8, msg);
+        let result_msg =
+            T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_ABORTED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
@@ -707,7 +713,8 @@ where
         action_server.set_goal_state(&self.uuid, rcl_action_goal_event_t::GOAL_EVENT_SUCCEED)?;
 
         // create result message
-        let result_msg = T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_SUCCEEDED as i8, msg);
+        let result_msg =
+            T::make_result_response_msg(action_msgs::msg::GoalStatus::STATUS_SUCCEEDED as i8, msg);
         let native_msg = WrappedNativeMsg::<
             <<T as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response,
         >::from(&result_msg);
