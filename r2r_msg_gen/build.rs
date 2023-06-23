@@ -253,22 +253,19 @@ fn add_constants(key: &str, bindings: &str, constants: &mut HashMap<String, Vec<
 }
 
 fn run_dynlink(#[allow(unused_variables)] msg_list: &[RosMsg]) {
-    #[cfg(not(feature = "doc-only"))]
-    {
-        r2r_common::print_cargo_link_search();
+    r2r_common::print_cargo_link_search();
 
-        let msg_map = r2r_common::as_map(msg_list);
-        for module in msg_map.keys() {
-            println!(
-                "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
-                module
-            );
-            println!(
-                "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
-                module
-            );
-            println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
-        }
+    let msg_map = r2r_common::as_map(msg_list);
+    for module in msg_map.keys() {
+        println!(
+            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
+            module
+        );
+        println!(
+            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
+            module
+        );
+        println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
     }
 }
 

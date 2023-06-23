@@ -53,11 +53,8 @@ fn run_bindgen() {
 }
 
 fn run_dynlink() {
-    #[cfg(not(feature = "doc-only"))]
-    {
-        r2r_common::print_cargo_link_search();
-        println!("cargo:rustc-link-lib=dylib=rcl_action");
-    }
+    r2r_common::print_cargo_link_search();
+    println!("cargo:rustc-link-lib=dylib=rcl_action");
 }
 
 fn generate_bindings(out_file: &Path) {

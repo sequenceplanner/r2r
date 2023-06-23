@@ -57,18 +57,14 @@ fn run_bindgen() {
 }
 
 fn run_dynlink() {
-    // Run dynamic linking if (1) "docs-only" feature is disabled.
-    #[cfg(not(feature = "doc-only"))]
-    {
-        r2r_common::print_cargo_link_search();
-        println!("cargo:rustc-link-lib=dylib=rcl");
-        println!("cargo:rustc-link-lib=dylib=rcl_logging_spdlog");
-        println!("cargo:rustc-link-lib=dylib=rcl_yaml_param_parser");
-        println!("cargo:rustc-link-lib=dylib=rcutils");
-        println!("cargo:rustc-link-lib=dylib=rmw");
-        println!("cargo:rustc-link-lib=dylib=rosidl_typesupport_c");
-        println!("cargo:rustc-link-lib=dylib=rosidl_runtime_c");
-    }
+    r2r_common::print_cargo_link_search();
+    println!("cargo:rustc-link-lib=dylib=rcl");
+    println!("cargo:rustc-link-lib=dylib=rcl_logging_spdlog");
+    println!("cargo:rustc-link-lib=dylib=rcl_yaml_param_parser");
+    println!("cargo:rustc-link-lib=dylib=rcutils");
+    println!("cargo:rustc-link-lib=dylib=rmw");
+    println!("cargo:rustc-link-lib=dylib=rosidl_typesupport_c");
+    println!("cargo:rustc-link-lib=dylib=rosidl_runtime_c");
 }
 
 fn gen_bindings(out_file: &Path) {
