@@ -29,10 +29,14 @@ fn main() {
     let save_dir = manifest_dir.join("bindings");
     let mark_file = bindgen_dir.join("done");
 
-    if cfg!(feature = "doc-only") {
+    #[cfg(feature = "doc-only")]
+    {
         // If "doc-only" feature is present, copy from $crate/bindings/* to OUT_DIR
         copy_files(&save_dir, &out_dir);
-    } else {
+    }
+
+    #[cfg(not(feature = "doc-only"))]
+    {
         // If bindgen was done before, use cached files.
         if !mark_file.exists() {
             eprintln!("Generate bindings in '{}'", bindgen_dir.display());
@@ -52,6 +56,7 @@ fn main() {
     }
 }
 
+#[cfg(not(feature = "doc-only"))]
 fn generate_bindings(bindgen_dir: &Path) {
     fs::create_dir_all(bindgen_dir).unwrap();
 
