@@ -26,13 +26,27 @@ impl GoalStatus {
 
     pub fn from_rcl(s: i8) -> Self {
         match s {
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_UNKNOWN as i8 => GoalStatus::Unknown,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_ACCEPTED as i8 => GoalStatus::Accepted,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_EXECUTING as i8 => GoalStatus::Executing,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_CANCELING as i8 => GoalStatus::Canceling,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_SUCCEEDED as i8 => GoalStatus::Succeeded,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_CANCELED as i8 => GoalStatus::Canceled,
-            s if s == crate::action_msgs::msg::GoalStatus::STATUS_ABORTED as i8 => GoalStatus::Aborted,
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_UNKNOWN as i8 => {
+                GoalStatus::Unknown
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_ACCEPTED as i8 => {
+                GoalStatus::Accepted
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_EXECUTING as i8 => {
+                GoalStatus::Executing
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_CANCELING as i8 => {
+                GoalStatus::Canceling
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_SUCCEEDED as i8 => {
+                GoalStatus::Succeeded
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_CANCELED as i8 => {
+                GoalStatus::Canceled
+            }
+            s if s == crate::action_msgs::msg::GoalStatus::STATUS_ABORTED as i8 => {
+                GoalStatus::Aborted
+            }
             _ => panic!("unknown action status: {}", s),
         }
     }

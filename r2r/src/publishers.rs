@@ -2,8 +2,8 @@ use std::ffi::c_void;
 use std::ffi::CString;
 use std::fmt::Debug;
 use std::marker::PhantomData;
-use std::sync::Weak;
 use std::sync::Once;
+use std::sync::Weak;
 
 use crate::error::*;
 use crate::msg_types::*;
@@ -181,9 +181,8 @@ where
                 rcl_borrow_loaned_message(publisher.as_ref(), T::get_ts(), &mut loaned_msg)
             };
             if ret != RCL_RET_OK as i32 {
-                // TODO: Switch to logging library
                 log::error!("Failed getting loaned message");
-                return Err(Error::from_rcl_error(ret))
+                return Err(Error::from_rcl_error(ret));
             }
 
             let handle_box = Box::new(*publisher.as_ref());
@@ -209,7 +208,6 @@ where
         } else {
             static LOG_LOANED_ERROR: Once = Once::new();
             LOG_LOANED_ERROR.call_once(|| {
-                // TODO: Switch to logging library
                 log::error!("Currently used middleware can't loan messages. Local allocator will be used.");
             });
 
