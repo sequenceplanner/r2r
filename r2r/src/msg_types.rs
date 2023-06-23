@@ -39,7 +39,7 @@ pub(crate) fn uuid_msg_to_uuid(msg: &unique_identifier_msgs::msg::UUID) -> uuid:
 }
 
 pub trait WrappedTypesupport:
-    Serialize + serde::de::DeserializeOwned + Default + Debug + Clone
+    Serialize + for<'de> Deserialize<'de> + Default + Debug + Clone
 {
     type CStruct;
 
