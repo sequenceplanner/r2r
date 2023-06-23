@@ -10,34 +10,52 @@ pub const RCL_RET_ACTION_SERVER_TAKE_FAILED: u32 = 2201;
 pub const RCL_RET_ACTION_GOAL_HANDLE_INVALID: u32 = 2300;
 pub const RCL_RET_ACTION_GOAL_EVENT_INVALID: u32 = 2301;
 pub type rcl_action_goal_info_t = action_msgs__msg__GoalInfo;
-pub type rcl_action_goal_status_array_t = [u64; 8usize];
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct rcl_action_goal_status_array_t {
+    pub _bindgen_opaque_blob: [u64; 8usize],
+}
+#[test]
+fn bindgen_test_layout_rcl_action_goal_status_array_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_goal_status_array_t>(),
+        64usize,
+        concat!("Size of: ", stringify!(rcl_action_goal_status_array_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_goal_status_array_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_goal_status_array_t))
+    );
+}
 pub type rcl_action_cancel_request_t = action_msgs__srv__CancelGoal_Request;
 #[repr(C)]
-pub struct rcl_action_cancel_response_s {
+pub struct rcl_action_cancel_response_t {
     pub msg: action_msgs__srv__CancelGoal_Response,
     pub allocator: rcl_allocator_t,
 }
 #[test]
-fn bindgen_test_layout_rcl_action_cancel_response_s() {
-    const UNINIT: ::std::mem::MaybeUninit<rcl_action_cancel_response_s> =
+fn bindgen_test_layout_rcl_action_cancel_response_t() {
+    const UNINIT: ::std::mem::MaybeUninit<rcl_action_cancel_response_t> =
         ::std::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        ::std::mem::size_of::<rcl_action_cancel_response_s>(),
+        ::std::mem::size_of::<rcl_action_cancel_response_t>(),
         72usize,
-        concat!("Size of: ", stringify!(rcl_action_cancel_response_s))
+        concat!("Size of: ", stringify!(rcl_action_cancel_response_t))
     );
     assert_eq!(
-        ::std::mem::align_of::<rcl_action_cancel_response_s>(),
+        ::std::mem::align_of::<rcl_action_cancel_response_t>(),
         8usize,
-        concat!("Alignment of ", stringify!(rcl_action_cancel_response_s))
+        concat!("Alignment of ", stringify!(rcl_action_cancel_response_t))
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).msg) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
-            stringify!(rcl_action_cancel_response_s),
+            stringify!(rcl_action_cancel_response_t),
             "::",
             stringify!(msg)
         )
@@ -47,17 +65,16 @@ fn bindgen_test_layout_rcl_action_cancel_response_s() {
         32usize,
         concat!(
             "Offset of field: ",
-            stringify!(rcl_action_cancel_response_s),
+            stringify!(rcl_action_cancel_response_t),
             "::",
             stringify!(allocator)
         )
     );
 }
-pub type rcl_action_cancel_response_t = rcl_action_cancel_response_s;
 pub type rcl_action_goal_state_t = u8;
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum rcl_action_goal_event_e {
+pub enum rcl_action_goal_event_t {
     GOAL_EVENT_EXECUTE = 0,
     GOAL_EVENT_CANCEL_GOAL = 1,
     GOAL_EVENT_SUCCEED = 2,
@@ -65,7 +82,6 @@ pub enum rcl_action_goal_event_e {
     GOAL_EVENT_CANCELED = 4,
     GOAL_EVENT_NUM_EVENTS = 5,
 }
-pub use self::rcl_action_goal_event_e as rcl_action_goal_event_t;
 extern "C" {
     pub fn rcl_action_get_zero_initialized_goal_info() -> rcl_action_goal_info_t;
 }
@@ -102,8 +118,43 @@ extern "C" {
         cancel_response: *mut rcl_action_cancel_response_t,
     ) -> rcl_ret_t;
 }
-pub type rcl_action_client_t = u64;
-pub type rcl_action_client_options_t = [u64; 60usize];
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct rcl_action_client_t {
+    pub _bindgen_opaque_blob: u64,
+}
+#[test]
+fn bindgen_test_layout_rcl_action_client_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_client_t>(),
+        8usize,
+        concat!("Size of: ", stringify!(rcl_action_client_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_client_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_client_t))
+    );
+}
+#[repr(C)]
+#[repr(align(8))]
+pub struct rcl_action_client_options_t {
+    pub _bindgen_opaque_blob: [u64; 60usize],
+}
+#[test]
+fn bindgen_test_layout_rcl_action_client_options_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_client_options_t>(),
+        480usize,
+        concat!("Size of: ", stringify!(rcl_action_client_options_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_client_options_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_client_options_t))
+    );
+}
 extern "C" {
     pub fn rcl_action_get_zero_initialized_client() -> rcl_action_client_t;
 }
@@ -200,47 +251,30 @@ extern "C" {
     pub fn rcl_action_client_is_valid(action_client: *const rcl_action_client_t) -> bool;
 }
 extern "C" {
-    pub fn rcl_action_client_set_goal_client_callback(
-        action_client: *const rcl_action_client_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_client_set_cancel_client_callback(
-        action_client: *const rcl_action_client_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_client_set_result_client_callback(
-        action_client: *const rcl_action_client_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_client_set_feedback_subscription_callback(
-        action_client: *const rcl_action_client_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_client_set_status_subscription_callback(
-        action_client: *const rcl_action_client_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
     pub fn rcl_action_transition_goal_state(
         state: rcl_action_goal_state_t,
         event: rcl_action_goal_event_t,
     ) -> rcl_action_goal_state_t;
 }
-pub type rcl_action_goal_handle_t = u64;
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct rcl_action_goal_handle_t {
+    pub _bindgen_opaque_blob: u64,
+}
+#[test]
+fn bindgen_test_layout_rcl_action_goal_handle_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_goal_handle_t>(),
+        8usize,
+        concat!("Size of: ", stringify!(rcl_action_goal_handle_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_goal_handle_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_goal_handle_t))
+    );
+}
 extern "C" {
     pub fn rcl_action_get_zero_initialized_goal_handle() -> rcl_action_goal_handle_t;
 }
@@ -283,8 +317,43 @@ extern "C" {
 extern "C" {
     pub fn rcl_action_goal_handle_is_valid(goal_handle: *const rcl_action_goal_handle_t) -> bool;
 }
-pub type rcl_action_server_t = u64;
-pub type rcl_action_server_options_t = [u64; 61usize];
+#[repr(C)]
+#[repr(align(8))]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct rcl_action_server_t {
+    pub _bindgen_opaque_blob: u64,
+}
+#[test]
+fn bindgen_test_layout_rcl_action_server_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_server_t>(),
+        8usize,
+        concat!("Size of: ", stringify!(rcl_action_server_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_server_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_server_t))
+    );
+}
+#[repr(C)]
+#[repr(align(8))]
+pub struct rcl_action_server_options_t {
+    pub _bindgen_opaque_blob: [u64; 61usize],
+}
+#[test]
+fn bindgen_test_layout_rcl_action_server_options_t() {
+    assert_eq!(
+        ::std::mem::size_of::<rcl_action_server_options_t>(),
+        488usize,
+        concat!("Size of: ", stringify!(rcl_action_server_options_t))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<rcl_action_server_options_t>(),
+        8usize,
+        concat!("Alignment of ", stringify!(rcl_action_server_options_t))
+    );
+}
 extern "C" {
     pub fn rcl_action_get_zero_initialized_server() -> rcl_action_server_t;
 }
@@ -421,27 +490,6 @@ extern "C" {
     pub fn rcl_action_server_is_valid_except_context(
         action_server: *const rcl_action_server_t,
     ) -> bool;
-}
-extern "C" {
-    pub fn rcl_action_server_set_goal_service_callback(
-        action_server: *const rcl_action_server_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_server_set_cancel_service_callback(
-        action_server: *const rcl_action_server_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
-}
-extern "C" {
-    pub fn rcl_action_server_set_result_service_callback(
-        action_server: *const rcl_action_server_t,
-        callback: rcl_event_callback_t,
-        user_data: *const ::std::os::raw::c_void,
-    ) -> rcl_ret_t;
 }
 extern "C" {
     pub fn rcl_action_get_client_names_and_types_by_node(
