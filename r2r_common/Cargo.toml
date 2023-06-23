@@ -13,8 +13,8 @@ documentation = "https://docs.rs/r2r/latest/r2r"
 [dependencies]
 bindgen = "0.63.0"
 itertools = "0.10.5"
-osstrtools = "0.2.2"
 sha2 = "0.10.6"
+os_str_bytes = "6.5.1"
 
 [features]
 doc-only = []
