@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use osstrtools::OsStrTools;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
@@ -7,12 +8,7 @@ use std::io::Read;
 use std::path::Path;
 
 #[cfg(not(feature = "doc-only"))]
-const SUPPORTED_ROS_DISTROS: &[&str] = &[
-    "foxy",
-    "galactic",
-    "humble",
-    "rolling",
-];
+const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "rolling"];
 
 const WATCHED_ENV_VARS: &[&str] = &[
     "AMENT_PREFIX_PATH",
@@ -64,11 +60,11 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
             println!("adding clang arg: {}", clang_arg);
             builder = builder.clang_arg(clang_arg);
         }
-    } else {
+    } else if !cfg!(feature = "doc-only") {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-        let ament_prefix_var = env::var(ament_prefix_var_name).expect("Source your ROS!");
+        let ament_prefix_var = env::var_os(ament_prefix_var_name).expect("Source your ROS!");
 
-        for p in ament_prefix_var.split(':') {
+        for p in ament_prefix_var.split(":") {
             let path = Path::new(p).join("include");
 
             let entries = std::fs::read_dir(path.clone());
@@ -121,15 +117,18 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
 }
 
 #[cfg(feature = "doc-only")]
-pub fn print_cargo_ros_distro() {
-}
+pub fn print_cargo_ros_distro() {}
 
 #[cfg(not(feature = "doc-only"))]
 pub fn print_cargo_ros_distro() {
-    let ros_distro = env::var("ROS_DISTRO")
-        .unwrap_or_else(|_| panic!("ROS_DISTRO not set: Source your ROS!"));
+    if cfg!(feature = "doc-only") {
+        return;
+    }
 
-    if SUPPORTED_ROS_DISTROS.iter().any(|d| d == &ros_distro) {
+    let ros_distro =
+        env::var("ROS_DISTRO").unwrap_or_else(|_| panic!("ROS_DISTRO not set: Source your ROS!"));
+
+    if SUPPORTED_ROS_DISTROS.contains(&ros_distro.as_str()) {
         println!("cargo:rustc-cfg=r2r__ros__distro__{ros_distro}");
     } else {
         panic!("ROS_DISTRO not supported: {ros_distro}");
@@ -137,10 +136,10 @@ pub fn print_cargo_ros_distro() {
 }
 
 pub fn print_cargo_link_search() {
-    if env::var("CMAKE_INCLUDE_DIRS").is_ok() {
-        if let Ok(paths) = env::var("CMAKE_LIBRARIES") {
+    if env::var_os("CMAKE_INCLUDE_DIRS").is_some() {
+        if let Some(paths) = env::var_os("CMAKE_LIBRARIES") {
             paths
-                .split(':')
+                .split(":")
                 .into_iter()
                 .filter(|s| s.contains(".so") || s.contains(".dylib"))
                 .flat_map(|l| Path::new(l).parent().and_then(|p| p.to_str()))
@@ -149,8 +148,8 @@ pub fn print_cargo_link_search() {
         }
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-        if let Ok(paths) = env::var(ament_prefix_var_name) {
-            for path in paths.split(':') {
+        if let Some(paths) = env::var_os(ament_prefix_var_name) {
+            for path in paths.split(":") {
                 let lib_path = Path::new(path).join("lib");
                 if let Some(s) = lib_path.to_str() {
                     println!("cargo:rustc-link-search=native={}", s)
