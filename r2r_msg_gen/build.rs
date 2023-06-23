@@ -2,6 +2,8 @@ use bindgen::Bindings;
 use heck::ToSnakeCase;
 use itertools::chain;
 use itertools::iproduct;
+use itertools::Either;
+use itertools::Itertools;
 use quote::format_ident;
 use quote::quote;
 use r2r_common::RosMsg;
@@ -18,11 +20,13 @@ const MSG_INCLUDES_FILENAME: &str = "msg_includes.h";
 const INTROSPECTION_FILENAME: &str = "introspection_functions.rs";
 const CONSTANTS_FILENAME: &str = "constants.rs";
 const BINDINGS_FILENAME: &str = "msg_bindings.rs";
+const BINDINGS_DOC_ONLY_FILENAME: &str = "msg_bindings_doc_only.rs";
 const GENERATED_FILES: &[&str] = &[
     MSG_INCLUDES_FILENAME,
     INTROSPECTION_FILENAME,
     CONSTANTS_FILENAME,
     BINDINGS_FILENAME,
+    BINDINGS_DOC_ONLY_FILENAME,
 ];
 const SRV_SUFFICES: &[&str] = &["Request", "Response"];
 const ACTION_SUFFICES: &[&str] = &["Goal", "Result", "Feedback", "FeedbackMessage"];
@@ -219,11 +223,7 @@ fn generate_introspecion_map(bindgen_dir: &Path, msg_list: &[RosMsg]) {
         .map(|(key, func_str)| {
             // Generate a hashmap entry
             let func_ident = format_ident!("{func_str}");
-            let tokens = quote! {
-                #key =>
-                  #func_ident
-                  as unsafe extern "C" fn() -> *const rosidl_message_type_support_t
-            };
+            let tokens = quote! { #key => #func_ident as IntrospectionFn };
 
             // force_send to workaround !Send
             (key, unsafe { force_send(tokens) })
@@ -237,8 +237,13 @@ fn generate_introspecion_map(bindgen_dir: &Path, msg_list: &[RosMsg]) {
 
     // Write the file content
     let introspecion_map = quote! {
+        #[cfg(feature = "doc-only")]
+        type IntrospectionFn = fn() -> *const rosidl_message_type_support_t;
+
+        #[cfg(not(feature = "doc-only"))]
         type IntrospectionFn = unsafe extern "C" fn() -> *const rosidl_message_type_support_t;
 
+        #[cfg(not(feature = "doc-only"))]
         static INTROSPECTION_FNS: phf::Map<&'static str, IntrospectionFn> = phf::phf_map! {
             #(#entries),*
         };
@@ -251,6 +256,7 @@ fn generate_introspecion_map(bindgen_dir: &Path, msg_list: &[RosMsg]) {
 fn generate_bindings_file(bindgen_dir: &Path) -> Bindings {
     let msg_includes_file = bindgen_dir.join(MSG_INCLUDES_FILENAME);
     let bindings_file = bindgen_dir.join(BINDINGS_FILENAME);
+    let bindings_doc_only_file = bindgen_dir.join(BINDINGS_DOC_ONLY_FILENAME);
 
     let builder = r2r_common::setup_bindgen_builder()
         .header(msg_includes_file.to_str().unwrap())
@@ -288,14 +294,80 @@ fn generate_bindings_file(bindgen_dir: &Path) -> Bindings {
         .size_t_is_usize(true)
         .no_debug("_OSUnaligned.*")
         .generate_comments(false)
+        .merge_extern_blocks(true)
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
 
     let bindings = builder.generate().expect("Unable to generate bindings");
     bindings
-        .write_to_file(bindings_file)
+        .write_to_file(&bindings_file)
         .expect("Couldn't write bindings!");
+
+    // #[cfg(feature = "save-bindgen")]
+    {
+        let content = fs::read_to_string(bindings_file).unwrap();
+        let file = syn::parse_file(&content).expect("syn::parse_file() failed");
+
+        let new_items: Vec<syn::Item> = file
+            .items
+            .into_iter()
+            .flat_map(|item| match item {
+                syn::Item::ForeignMod(foreign_mod) => {
+                    let Some(abi_name) = foreign_mod.abi.name.as_ref() else {
+                        return vec![syn::Item::ForeignMod(foreign_mod)];
+                    };
+
+                    if abi_name.value() != "C" {
+                        return vec![syn::Item::ForeignMod(foreign_mod)];
+                    }
+
+                    let (generated_funcs, remaining_items): (Vec<_>, Vec<_>) = foreign_mod
+                        .items
+                        .into_iter()
+                        .partition_map(|item| match item {
+                            syn::ForeignItem::Fn(fn_) => {
+                                let syn::ForeignItemFn {
+                                    attrs,
+                                    vis,
+                                    sig,
+                                    semi_token: _,
+                                } = fn_;
+
+                                let new_fn: syn::ItemFn = syn::parse2(quote! {
+                                    #(#attrs)*
+                                    #[allow(unused)]
+                                    #vis #sig { todo!() }
+                                })
+                                .unwrap();
+
+                                Either::Left(new_fn)
+                            }
+                            item => Either::Right(item),
+                        });
+
+                    let new_foreign_mod = syn::Item::ForeignMod(syn::ItemForeignMod {
+                        items: remaining_items,
+                        ..foreign_mod
+                    });
+                    let new_func_items = generated_funcs.into_iter().map(syn::Item::Fn);
+
+                    chain!([new_foreign_mod], new_func_items).collect()
+                }
+                item => vec![item],
+            })
+            .collect();
+
+        let new_file = syn::File {
+            items: new_items,
+            ..file
+        };
+        let new_file = quote! { #new_file };
+
+        let mut writer = BufWriter::new(File::create(bindings_doc_only_file).unwrap());
+        write!(writer, "{}", new_file).expect("Couldn't write bindings!");
+        writer.flush().unwrap();
+    }
 
     bindings
 }
@@ -458,6 +530,7 @@ fn generate_constants(bindgen_dir: &Path, msg_list: &[RosMsg], bindings: &Bindin
 
     // Write the file content.
     let constants_map = quote! {
+        #[cfg(not(feature = "doc-only"))]
         static CONSTANTS_MAP: phf::Map<&'static str, &[(&str, &str)]> = phf::phf_map! {
             #(#entries),*
         };
@@ -467,7 +540,11 @@ fn generate_constants(bindgen_dir: &Path, msg_list: &[RosMsg], bindings: &Bindin
     writeln!(&mut writer, "{}", constants_map).unwrap();
 }
 
-fn run_dynlink(#[allow(unused_variables)] msg_list: &[RosMsg]) {
+#[cfg(feature = "doc-only")]
+fn run_dynlink(_: &[RosMsg]) {}
+
+#[cfg(not(feature = "doc-only"))]
+fn run_dynlink(msg_list: &[RosMsg]) {
     r2r_common::print_cargo_link_search();
 
     let msg_map = r2r_common::as_map(msg_list);

@@ -5,7 +5,12 @@
 #![allow(dead_code)]
 #![allow(clippy::all)]
 
+#[cfg(feature = "doc-only")]
+include!(concat!(env!("OUT_DIR"), "/msg_bindings_doc_only.rs"));
+
+#[cfg(not(feature = "doc-only"))]
 include!(concat!(env!("OUT_DIR"), "/msg_bindings.rs"));
+
 include!(concat!(env!("OUT_DIR"), "/introspection_functions.rs"));
 include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
@@ -148,6 +153,7 @@ unsafe fn introspection<'a>(
     )
 }
 
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_rust_service(
     module_: &str,
     prefix_: &str,
@@ -178,6 +184,7 @@ pub fn generate_rust_service(
     )
 }
 
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> proc_macro2::TokenStream {
     let ident = format_ident!(
         "rosidl_typesupport_c__\
@@ -263,7 +270,7 @@ pub fn generate_rust_action(module_: &str, prefix_: &str, name_: &str) -> proc_m
     }
 }
 
-// TODO: this is a terrible hack :)
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macro2::TokenStream {
     let key = format!("{}__{}__{}", module_, prefix_, name_);
     let func = *INTROSPECTION_FNS
@@ -721,6 +728,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
     }
 }
 
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_untyped_helper(msgs: &[RosMsg]) -> proc_macro2::TokenStream {
     let (funcs, entries): (Vec<_>, Vec<_>) = msgs
         .into_par_iter()
@@ -770,6 +778,7 @@ pub fn generate_untyped_helper(msgs: &[RosMsg]) -> proc_macro2::TokenStream {
     }
 }
 
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_untyped_service_helper(msgs: &[RosMsg]) -> proc_macro2::TokenStream {
     let (funcs, entries): (Vec<_>, Vec<_>) = msgs
         .into_par_iter()
@@ -818,6 +827,7 @@ pub fn generate_untyped_service_helper(msgs: &[RosMsg]) -> proc_macro2::TokenStr
     }
 }
 
+#[cfg(not(feature = "doc-only"))]
 pub fn generate_untyped_action_helper(msgs: &[RosMsg]) -> proc_macro2::TokenStream {
     let (funcs, entries): (Vec<_>, Vec<_>) = msgs
         .into_par_iter()
