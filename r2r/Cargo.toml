@@ -1,6 +1,6 @@
 [package]
 name = "r2r"
-version = "0.7.3"
+version = "0.7.4"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Easy to use, runtime-agnostic, async rust bindings for ROS2."
 license = "MIT AND Apache-2.0"
