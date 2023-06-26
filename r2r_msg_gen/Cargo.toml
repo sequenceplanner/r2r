@@ -24,7 +24,6 @@ rayon = "1.7.0"
 bindgen = "0.63.0"
 r2r_rcl = { path = "../r2r_rcl", version = "0.3.8" }
 r2r_common = { path = "../r2r_common", version = "0.3.7" }
-heck = "0.4.0"
 quote = "1.0.28"
 syn = { version = "2.0.18", features = ["full"] }
 rayon = "1.7.0"

@@ -1,12 +1,11 @@
 use bindgen::Bindings;
-use heck::ToSnakeCase;
 use itertools::chain;
 use itertools::iproduct;
 use itertools::Either;
 use itertools::Itertools;
 use quote::format_ident;
 use quote::quote;
-use r2r_common::RosMsg;
+use r2r_common::{RosMsg, camel_to_snake};
 use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -118,7 +117,7 @@ fn generate_includes(bindgen_dir: &Path, msg_list: &[RosMsg]) {
             } = msg;
 
             // filename is certainly CamelCase -> snake_case. convert
-            let include_filename = name.to_snake_case();
+            let include_filename = camel_to_snake(&name);
 
             [
                 format!("#include <{module}/{prefix}/{include_filename}.h>"),
