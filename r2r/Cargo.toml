@@ -39,6 +39,9 @@ r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.3.11" }
 rayon = "1.7.0"
 force-send-sync = "1.0.0"
 quote = "1.0.28"
+proc-macro2 = "1.0.58"
+syn = "2.0.18"
+prettyplease = "0.2.6"
 
 [features]
 save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen", "r2r_actions/save-bindgen"]

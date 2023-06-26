@@ -16,16 +16,21 @@ include!(concat!(env!("OUT_DIR"), "/constants.rs"));
 
 mod introspection;
 
-use crate::introspection::MemberType;
-use crate::introspection::MessageMember;
+#[cfg(not(feature = "doc-only"))]
+use {
+    crate::introspection::{MemberType, MessageMember},
+    rayon::prelude::*,
+    std::mem,
+};
+
 use quote::format_ident;
 use quote::quote;
 use r2r_common::RosMsg;
 use r2r_rcl::*;
-use rayon::prelude::*;
+
 use std::borrow::Cow;
 use std::ffi::CStr;
-use std::mem;
+
 use std::slice;
 
 // Copied from bindgen.
@@ -665,15 +670,21 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
                 }
 
                 fn create_msg() -> *mut #c_struct {
+                    #[cfg(not(feature = "doc-only"))]
                     unsafe {
                         #create_func ()
                     }
+                    #[cfg(feature = "doc-only")]
+                    #create_func ()
                 }
 
                 fn destroy_msg(msg: *mut #c_struct) -> () {
+                    #[cfg(not(feature = "doc-only"))]
                     unsafe {
                         #destroy_func (msg)
                     };
+                    #[cfg(feature = "doc-only")]
+                    #destroy_func (msg)
                 }
 
                 #from_native

@@ -1,33 +1,48 @@
-use quote::format_ident;
-use quote::quote;
-use rayon::prelude::*;
-use std::fs::{File, OpenOptions};
-use std::io::{self, prelude::*, BufWriter};
-use std::path::{Path, PathBuf};
-use std::{env, fmt, fs};
 
-const LIST_FILENAME: &str = "files.txt";
-const MSGS_FILENAME: &str = "_r2r_generated_msgs.rs";
-const UNTYPED_FILENAME: &str = "_r2r_generated_untyped_helper.rs";
-const UNTYPED_SERVICE_FILENAME: &str = "_r2r_generated_service_helper.rs";
-const UNTYPED_ACTION_FILENAME: &str = "_r2r_generated_action_helper.rs";
-const GENERATED_FILES: &[&str] = &[
-    MSGS_FILENAME,
-    UNTYPED_FILENAME,
-    UNTYPED_SERVICE_FILENAME,
-    UNTYPED_ACTION_FILENAME,
-];
+#[cfg(not(feature = "doc-only"))]
+use {
+    quote::{format_ident, quote},
+    rayon::prelude::*,
+    std::fs::{File, OpenOptions},
+    std::io::{self, prelude::*, BufWriter},
+    std::fmt,
+};
+
+use std::path::{Path, PathBuf};
+use std::{env, fs};
+
+#[cfg(feature = "doc-only")]
+mod filenames {
+    pub const LIST_FILENAME: &str = "files.txt";
+}
+
+#[cfg(not(feature = "doc-only"))]
+mod filenames {
+    pub const LIST_FILENAME: &str = "files.txt";
+    pub const MSGS_FILENAME: &str = "_r2r_generated_msgs.rs";
+    pub const UNTYPED_FILENAME: &str = "_r2r_generated_untyped_helper.rs";
+    pub const UNTYPED_SERVICE_FILENAME: &str = "_r2r_generated_service_helper.rs";
+    pub const UNTYPED_ACTION_FILENAME: &str = "_r2r_generated_action_helper.rs";
+    pub const GENERATED_FILES: &[&str] = &[
+        MSGS_FILENAME,
+        UNTYPED_FILENAME,
+        UNTYPED_SERVICE_FILENAME,
+        UNTYPED_ACTION_FILENAME,
+    ];
+}
+
+use filenames::*;
 
 fn main() {
     r2r_common::print_cargo_watches();
     r2r_common::print_cargo_ros_distro();
 
-    let env_hash = r2r_common::get_env_hash();
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+
+    #[cfg(any(feature = "doc-only", feature = "save-bindgen"))]
     let manifest_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let bindgen_dir = out_dir.join(env_hash);
+    #[cfg(any(feature = "doc-only", feature = "save-bindgen"))]
     let save_dir = manifest_dir.join("bindings");
-    let mark_file = bindgen_dir.join("done");
 
     #[cfg(feature = "doc-only")]
     {
@@ -37,6 +52,9 @@ fn main() {
 
     #[cfg(not(feature = "doc-only"))]
     {
+        let env_hash = r2r_common::get_env_hash();
+        let bindgen_dir = out_dir.join(env_hash);
+        let mark_file = bindgen_dir.join("done");
         // If bindgen was done before, use cached files.
         if !mark_file.exists() {
             eprintln!("Generate bindings in '{}'", bindgen_dir.display());
@@ -85,7 +103,7 @@ fn generate_bindings(bindgen_dir: &Path) {
         };
 
         let msgs_file = bindgen_dir.join(MSGS_FILENAME);
-        write_to_file(&msgs_file, &modules).unwrap();
+        write_to_file(&msgs_file, &pretty_tokenstream(modules)).unwrap();
     }
 
     let mod_files: Vec<_> = msgs
@@ -224,7 +242,7 @@ fn generate_bindings(bindgen_dir: &Path) {
             let mod_content = quote! { #(#snipplets)* };
             let file_name = format!("{}.rs", module);
             let mod_file = bindgen_dir.join(&file_name);
-            write_to_file(&mod_file, &mod_content).unwrap();
+            write_to_file(&mod_file, &pretty_tokenstream(mod_content)).unwrap();
 
             file_name
         })
@@ -234,19 +252,19 @@ fn generate_bindings(bindgen_dir: &Path) {
     {
         let untyped_helper = r2r_msg_gen::generate_untyped_helper(&msg_list);
         let untyped_file = bindgen_dir.join(UNTYPED_FILENAME);
-        write_to_file(&untyped_file, &untyped_helper).unwrap();
+        write_to_file(&untyped_file, &pretty_tokenstream(untyped_helper)).unwrap();
     }
 
     {
         let untyped_service_helper = r2r_msg_gen::generate_untyped_service_helper(&msg_list);
         let untyped_service_file = bindgen_dir.join(UNTYPED_SERVICE_FILENAME);
-        write_to_file(&untyped_service_file, &untyped_service_helper).unwrap();
+        write_to_file(&untyped_service_file, &pretty_tokenstream(untyped_service_helper)).unwrap();
     }
 
     {
         let untyped_action_helper = r2r_msg_gen::generate_untyped_action_helper(&msg_list);
         let untyped_action_file = bindgen_dir.join(UNTYPED_ACTION_FILENAME);
-        write_to_file(&untyped_action_file, &untyped_action_helper).unwrap();
+        write_to_file(&untyped_action_file, &pretty_tokenstream(untyped_action_helper)).unwrap();
     }
 
     // Save file list
@@ -285,6 +303,7 @@ fn copy_files(src_dir: &Path, tgt_dir: &Path) {
     fs::copy(&src_list_file, &tgt_list_file).unwrap();
 }
 
+#[cfg(not(feature = "doc-only"))]
 fn touch(path: &Path) {
     OpenOptions::new()
         .create(true)
@@ -293,6 +312,7 @@ fn touch(path: &Path) {
         .unwrap_or_else(|_| panic!("Unable to create file '{}'", path.display()));
 }
 
+#[cfg(not(feature = "doc-only"))]
 fn write_to_file(path: &Path, content: impl fmt::Display) -> io::Result<()> {
     let mut writer = BufWriter::new(File::create(path)?);
     write!(writer, "{}", content)?;
@@ -300,6 +320,12 @@ fn write_to_file(path: &Path, content: impl fmt::Display) -> io::Result<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "doc-only"))]
 unsafe fn force_send<T>(value: T) -> force_send_sync::Send<T> {
     force_send_sync::Send::new(value)
+}
+
+#[cfg(not(feature = "doc-only"))]
+fn pretty_tokenstream(stream: proc_macro2::TokenStream) -> String {
+    prettyplease::unparse(&syn::parse2::<syn::File>(stream).unwrap())
 }
