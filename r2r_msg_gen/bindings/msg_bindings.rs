@@ -6,6 +6,9 @@ pub type rosidl_message_typesupport_handle_function = ::std::option::Option<
         arg2: *const ::std::os::raw::c_char,
     ) -> *const rosidl_message_type_support_t,
 >;
+pub type __uint16_t = ::std::os::raw::c_ushort;
+pub type __uint_least16_t = __uint16_t;
+pub type uint_least16_t = __uint_least16_t;
 #[repr(C)]
 #[derive(Debug)]
 pub struct unique_identifier_msgs__msg__UUID {
@@ -6383,602 +6386,91 @@ fn bindgen_test_layout_lifecycle_msgs__srv__GetState_Response__Sequence() {
     );
 }
 #[repr(C)]
-pub struct map_msgs__msg__OccupancyGridUpdate {
+pub struct nav_msgs__msg__GridCells {
     pub header: std_msgs__msg__Header,
-    pub x: i32,
-    pub y: i32,
-    pub width: u32,
-    pub height: u32,
-    pub data: rosidl_runtime_c__int8__Sequence,
+    pub cell_width: f32,
+    pub cell_height: f32,
+    pub cells: geometry_msgs__msg__Point__Sequence,
 }
 #[test]
-fn bindgen_test_layout_map_msgs__msg__OccupancyGridUpdate() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__OccupancyGridUpdate> =
+fn bindgen_test_layout_nav_msgs__msg__GridCells() {
+    const UNINIT: ::std::mem::MaybeUninit<nav_msgs__msg__GridCells> =
         ::std::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__OccupancyGridUpdate>(),
-        72usize,
-        concat!("Size of: ", stringify!(map_msgs__msg__OccupancyGridUpdate))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__OccupancyGridUpdate>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).header) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(header)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        44usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate),
-            "::",
-            stringify!(data)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__msg__OccupancyGridUpdate__Sequence {
-    pub data: *mut map_msgs__msg__OccupancyGridUpdate,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__OccupancyGridUpdate__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__OccupancyGridUpdate__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__OccupancyGridUpdate__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__OccupancyGridUpdate__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__OccupancyGridUpdate__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-pub const map_msgs__msg__PointCloud2Update__ADD: _bindgen_ty_57 =
-    _bindgen_ty_57::map_msgs__msg__PointCloud2Update__ADD;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_57 {
-    map_msgs__msg__PointCloud2Update__ADD = 0,
-}
-pub const map_msgs__msg__PointCloud2Update__DELETE: _bindgen_ty_58 =
-    _bindgen_ty_58::map_msgs__msg__PointCloud2Update__DELETE;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_58 {
-    map_msgs__msg__PointCloud2Update__DELETE = 1,
-}
-pub const sensor_msgs__msg__PointField__INT8: _bindgen_ty_59 =
-    _bindgen_ty_59::sensor_msgs__msg__PointField__INT8;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_59 {
-    sensor_msgs__msg__PointField__INT8 = 1,
-}
-pub const sensor_msgs__msg__PointField__UINT8: _bindgen_ty_60 =
-    _bindgen_ty_60::sensor_msgs__msg__PointField__UINT8;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_60 {
-    sensor_msgs__msg__PointField__UINT8 = 2,
-}
-pub const sensor_msgs__msg__PointField__INT16: _bindgen_ty_61 =
-    _bindgen_ty_61::sensor_msgs__msg__PointField__INT16;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_61 {
-    sensor_msgs__msg__PointField__INT16 = 3,
-}
-pub const sensor_msgs__msg__PointField__UINT16: _bindgen_ty_62 =
-    _bindgen_ty_62::sensor_msgs__msg__PointField__UINT16;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_62 {
-    sensor_msgs__msg__PointField__UINT16 = 4,
-}
-pub const sensor_msgs__msg__PointField__INT32: _bindgen_ty_63 =
-    _bindgen_ty_63::sensor_msgs__msg__PointField__INT32;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_63 {
-    sensor_msgs__msg__PointField__INT32 = 5,
-}
-pub const sensor_msgs__msg__PointField__UINT32: _bindgen_ty_64 =
-    _bindgen_ty_64::sensor_msgs__msg__PointField__UINT32;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_64 {
-    sensor_msgs__msg__PointField__UINT32 = 6,
-}
-pub const sensor_msgs__msg__PointField__FLOAT32: _bindgen_ty_65 =
-    _bindgen_ty_65::sensor_msgs__msg__PointField__FLOAT32;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_65 {
-    sensor_msgs__msg__PointField__FLOAT32 = 7,
-}
-pub const sensor_msgs__msg__PointField__FLOAT64: _bindgen_ty_66 =
-    _bindgen_ty_66::sensor_msgs__msg__PointField__FLOAT64;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_66 {
-    sensor_msgs__msg__PointField__FLOAT64 = 8,
-}
-#[repr(C)]
-pub struct sensor_msgs__msg__PointField {
-    pub name: rosidl_runtime_c__String,
-    pub offset: u32,
-    pub datatype: u8,
-    pub count: u32,
-}
-#[test]
-fn bindgen_test_layout_sensor_msgs__msg__PointField() {
-    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointField> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<sensor_msgs__msg__PointField>(),
-        40usize,
-        concat!("Size of: ", stringify!(sensor_msgs__msg__PointField))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<sensor_msgs__msg__PointField>(),
-        8usize,
-        concat!("Alignment of ", stringify!(sensor_msgs__msg__PointField))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField),
-            "::",
-            stringify!(name)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).offset) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField),
-            "::",
-            stringify!(offset)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).datatype) as usize - ptr as usize },
-        28usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField),
-            "::",
-            stringify!(datatype)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField),
-            "::",
-            stringify!(count)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct sensor_msgs__msg__PointField__Sequence {
-    pub data: *mut sensor_msgs__msg__PointField,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_sensor_msgs__msg__PointField__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointField__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<sensor_msgs__msg__PointField__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(sensor_msgs__msg__PointField__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<sensor_msgs__msg__PointField__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(sensor_msgs__msg__PointField__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointField__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct sensor_msgs__msg__PointCloud2 {
-    pub header: std_msgs__msg__Header,
-    pub height: u32,
-    pub width: u32,
-    pub fields: sensor_msgs__msg__PointField__Sequence,
-    pub is_bigendian: bool,
-    pub point_step: u32,
-    pub row_step: u32,
-    pub data: rosidl_runtime_c__uint8__Sequence,
-    pub is_dense: bool,
-}
-#[test]
-fn bindgen_test_layout_sensor_msgs__msg__PointCloud2() {
-    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointCloud2> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<sensor_msgs__msg__PointCloud2>(),
-        112usize,
-        concat!("Size of: ", stringify!(sensor_msgs__msg__PointCloud2))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<sensor_msgs__msg__PointCloud2>(),
-        8usize,
-        concat!("Alignment of ", stringify!(sensor_msgs__msg__PointCloud2))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).header) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(header)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).fields) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(fields)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).is_bigendian) as usize - ptr as usize },
+        ::std::mem::size_of::<nav_msgs__msg__GridCells>(),
         64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(is_bigendian)
-        )
+        concat!("Size of: ", stringify!(nav_msgs__msg__GridCells))
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).point_step) as usize - ptr as usize },
-        68usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(point_step)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).row_step) as usize - ptr as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(row_step)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).is_dense) as usize - ptr as usize },
-        104usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2),
-            "::",
-            stringify!(is_dense)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct sensor_msgs__msg__PointCloud2__Sequence {
-    pub data: *mut sensor_msgs__msg__PointCloud2,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_sensor_msgs__msg__PointCloud2__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointCloud2__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<sensor_msgs__msg__PointCloud2__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(sensor_msgs__msg__PointCloud2__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<sensor_msgs__msg__PointCloud2__Sequence>(),
+        ::std::mem::align_of::<nav_msgs__msg__GridCells>(),
         8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(sensor_msgs__msg__PointCloud2__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__msg__PointCloud2Update {
-    pub header: std_msgs__msg__Header,
-    pub type_: u32,
-    pub points: sensor_msgs__msg__PointCloud2,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__PointCloud2Update() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__PointCloud2Update> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__PointCloud2Update>(),
-        152usize,
-        concat!("Size of: ", stringify!(map_msgs__msg__PointCloud2Update))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__PointCloud2Update>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__msg__PointCloud2Update)
-        )
+        concat!("Alignment of ", stringify!(nav_msgs__msg__GridCells))
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).header) as usize - ptr as usize },
         0usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update),
+            stringify!(nav_msgs__msg__GridCells),
             "::",
             stringify!(header)
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).type_) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).cell_width) as usize - ptr as usize },
         32usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update),
+            stringify!(nav_msgs__msg__GridCells),
             "::",
-            stringify!(type_)
+            stringify!(cell_width)
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).points) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).cell_height) as usize - ptr as usize },
+        36usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(nav_msgs__msg__GridCells),
+            "::",
+            stringify!(cell_height)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).cells) as usize - ptr as usize },
         40usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update),
+            stringify!(nav_msgs__msg__GridCells),
             "::",
-            stringify!(points)
+            stringify!(cells)
         )
     );
 }
 #[repr(C)]
 #[derive(Debug)]
-pub struct map_msgs__msg__PointCloud2Update__Sequence {
-    pub data: *mut map_msgs__msg__PointCloud2Update,
+pub struct nav_msgs__msg__GridCells__Sequence {
+    pub data: *mut nav_msgs__msg__GridCells,
     pub size: usize,
     pub capacity: usize,
 }
 #[test]
-fn bindgen_test_layout_map_msgs__msg__PointCloud2Update__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__PointCloud2Update__Sequence> =
+fn bindgen_test_layout_nav_msgs__msg__GridCells__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<nav_msgs__msg__GridCells__Sequence> =
         ::std::mem::MaybeUninit::uninit();
     let ptr = UNINIT.as_ptr();
     assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__PointCloud2Update__Sequence>(),
+        ::std::mem::size_of::<nav_msgs__msg__GridCells__Sequence>(),
         24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__msg__PointCloud2Update__Sequence)
-        )
+        concat!("Size of: ", stringify!(nav_msgs__msg__GridCells__Sequence))
     );
     assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__PointCloud2Update__Sequence>(),
+        ::std::mem::align_of::<nav_msgs__msg__GridCells__Sequence>(),
         8usize,
         concat!(
             "Alignment of ",
-            stringify!(map_msgs__msg__PointCloud2Update__Sequence)
+            stringify!(nav_msgs__msg__GridCells__Sequence)
         )
     );
     assert_eq!(
@@ -6986,7 +6478,7 @@ fn bindgen_test_layout_map_msgs__msg__PointCloud2Update__Sequence() {
         0usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update__Sequence),
+            stringify!(nav_msgs__msg__GridCells__Sequence),
             "::",
             stringify!(data)
         )
@@ -6996,7 +6488,7 @@ fn bindgen_test_layout_map_msgs__msg__PointCloud2Update__Sequence() {
         8usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update__Sequence),
+            stringify!(nav_msgs__msg__GridCells__Sequence),
             "::",
             stringify!(size)
         )
@@ -7006,7 +6498,7 @@ fn bindgen_test_layout_map_msgs__msg__PointCloud2Update__Sequence() {
         16usize,
         concat!(
             "Offset of field: ",
-            stringify!(map_msgs__msg__PointCloud2Update__Sequence),
+            stringify!(nav_msgs__msg__GridCells__Sequence),
             "::",
             stringify!(capacity)
         )
@@ -7252,1705 +6744,6 @@ fn bindgen_test_layout_nav_msgs__msg__OccupancyGrid__Sequence() {
         concat!(
             "Offset of field: ",
             stringify!(nav_msgs__msg__OccupancyGrid__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__msg__ProjectedMap {
-    pub map: nav_msgs__msg__OccupancyGrid,
-    pub min_z: f64,
-    pub max_z: f64,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__ProjectedMap() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__ProjectedMap> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__ProjectedMap>(),
-        152usize,
-        concat!("Size of: ", stringify!(map_msgs__msg__ProjectedMap))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__ProjectedMap>(),
-        8usize,
-        concat!("Alignment of ", stringify!(map_msgs__msg__ProjectedMap))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).map) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap),
-            "::",
-            stringify!(map)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).min_z) as usize - ptr as usize },
-        136usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap),
-            "::",
-            stringify!(min_z)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).max_z) as usize - ptr as usize },
-        144usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap),
-            "::",
-            stringify!(max_z)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__msg__ProjectedMap__Sequence {
-    pub data: *mut map_msgs__msg__ProjectedMap,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__ProjectedMap__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__ProjectedMap__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__ProjectedMap__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__msg__ProjectedMap__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__ProjectedMap__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__msg__ProjectedMap__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMap__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__msg__ProjectedMapInfo {
-    pub frame_id: rosidl_runtime_c__String,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-    pub min_z: f64,
-    pub max_z: f64,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__ProjectedMapInfo() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__ProjectedMapInfo> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__ProjectedMapInfo>(),
-        72usize,
-        concat!("Size of: ", stringify!(map_msgs__msg__ProjectedMapInfo))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__ProjectedMapInfo>(),
-        8usize,
-        concat!("Alignment of ", stringify!(map_msgs__msg__ProjectedMapInfo))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).frame_id) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(frame_id)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).min_z) as usize - ptr as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(min_z)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).max_z) as usize - ptr as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo),
-            "::",
-            stringify!(max_z)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__msg__ProjectedMapInfo__Sequence {
-    pub data: *mut map_msgs__msg__ProjectedMapInfo,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__msg__ProjectedMapInfo__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__msg__ProjectedMapInfo__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__msg__ProjectedMapInfo__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__msg__ProjectedMapInfo__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__msg__ProjectedMapInfo__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__msg__ProjectedMapInfo__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetMapROI_Request {
-    pub x: f64,
-    pub y: f64,
-    pub l_x: f64,
-    pub l_y: f64,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetMapROI_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetMapROI_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetMapROI_Request>(),
-        32usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__GetMapROI_Request))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetMapROI_Request>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetMapROI_Request)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).l_x) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request),
-            "::",
-            stringify!(l_x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).l_y) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request),
-            "::",
-            stringify!(l_y)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetMapROI_Request__Sequence {
-    pub data: *mut map_msgs__srv__GetMapROI_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetMapROI_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetMapROI_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetMapROI_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetMapROI_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetMapROI_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetMapROI_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__srv__GetMapROI_Response {
-    pub sub_map: nav_msgs__msg__OccupancyGrid,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetMapROI_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetMapROI_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetMapROI_Response>(),
-        136usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__GetMapROI_Response))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetMapROI_Response>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetMapROI_Response)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sub_map) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Response),
-            "::",
-            stringify!(sub_map)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetMapROI_Response__Sequence {
-    pub data: *mut map_msgs__srv__GetMapROI_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetMapROI_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetMapROI_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetMapROI_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetMapROI_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetMapROI_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetMapROI_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetMapROI_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMap_Request {
-    pub structure_needs_at_least_one_member: u8,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMap_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMap_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMap_Request>(),
-        1usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__GetPointMap_Request))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMap_Request>(),
-        1usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMap_Request)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Request),
-            "::",
-            stringify!(structure_needs_at_least_one_member)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMap_Request__Sequence {
-    pub data: *mut map_msgs__srv__GetPointMap_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMap_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMap_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMap_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMap_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMap_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMap_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__srv__GetPointMap_Response {
-    pub map: sensor_msgs__msg__PointCloud2,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMap_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMap_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMap_Response>(),
-        112usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__GetPointMap_Response))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMap_Response>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMap_Response)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).map) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Response),
-            "::",
-            stringify!(map)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMap_Response__Sequence {
-    pub data: *mut map_msgs__srv__GetPointMap_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMap_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMap_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMap_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMap_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMap_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMap_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMap_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMapROI_Request {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-    pub r: f64,
-    pub l_x: f64,
-    pub l_y: f64,
-    pub l_z: f64,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMapROI_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMapROI_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMapROI_Request>(),
-        56usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMapROI_Request>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).x) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).y) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).z) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(z)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).r) as usize - ptr as usize },
-        24usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(r)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).l_x) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(l_x)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).l_y) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(l_y)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).l_z) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request),
-            "::",
-            stringify!(l_z)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMapROI_Request__Sequence {
-    pub data: *mut map_msgs__srv__GetPointMapROI_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMapROI_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMapROI_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMapROI_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMapROI_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__srv__GetPointMapROI_Response {
-    pub sub_map: sensor_msgs__msg__PointCloud2,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMapROI_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMapROI_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMapROI_Response>(),
-        112usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMapROI_Response>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).sub_map) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response),
-            "::",
-            stringify!(sub_map)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__GetPointMapROI_Response__Sequence {
-    pub data: *mut map_msgs__srv__GetPointMapROI_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__GetPointMapROI_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__GetPointMapROI_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__GetPointMapROI_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__GetPointMapROI_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__GetPointMapROI_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__ProjectedMapsInfo_Request {
-    pub projected_maps_info: map_msgs__msg__ProjectedMapInfo__Sequence,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__ProjectedMapsInfo_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__ProjectedMapsInfo_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__ProjectedMapsInfo_Request>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__ProjectedMapsInfo_Request>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).projected_maps_info) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request),
-            "::",
-            stringify!(projected_maps_info)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__ProjectedMapsInfo_Request__Sequence {
-    pub data: *mut map_msgs__srv__ProjectedMapsInfo_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__ProjectedMapsInfo_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__ProjectedMapsInfo_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__ProjectedMapsInfo_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__ProjectedMapsInfo_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__ProjectedMapsInfo_Response {
-    pub structure_needs_at_least_one_member: u8,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__ProjectedMapsInfo_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__ProjectedMapsInfo_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__ProjectedMapsInfo_Response>(),
-        1usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__ProjectedMapsInfo_Response>(),
-        1usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response),
-            "::",
-            stringify!(structure_needs_at_least_one_member)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__ProjectedMapsInfo_Response__Sequence {
-    pub data: *mut map_msgs__srv__ProjectedMapsInfo_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__ProjectedMapsInfo_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__ProjectedMapsInfo_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__ProjectedMapsInfo_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__ProjectedMapsInfo_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__ProjectedMapsInfo_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct std_msgs__msg__String {
-    pub data: rosidl_runtime_c__String,
-}
-#[test]
-fn bindgen_test_layout_std_msgs__msg__String() {
-    const UNINIT: ::std::mem::MaybeUninit<std_msgs__msg__String> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<std_msgs__msg__String>(),
-        24usize,
-        concat!("Size of: ", stringify!(std_msgs__msg__String))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<std_msgs__msg__String>(),
-        8usize,
-        concat!("Alignment of ", stringify!(std_msgs__msg__String))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(std_msgs__msg__String),
-            "::",
-            stringify!(data)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct std_msgs__msg__String__Sequence {
-    pub data: *mut std_msgs__msg__String,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_std_msgs__msg__String__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<std_msgs__msg__String__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<std_msgs__msg__String__Sequence>(),
-        24usize,
-        concat!("Size of: ", stringify!(std_msgs__msg__String__Sequence))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<std_msgs__msg__String__Sequence>(),
-        8usize,
-        concat!("Alignment of ", stringify!(std_msgs__msg__String__Sequence))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(std_msgs__msg__String__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(std_msgs__msg__String__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(std_msgs__msg__String__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct map_msgs__srv__SaveMap_Request {
-    pub filename: std_msgs__msg__String,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SaveMap_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SaveMap_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SaveMap_Request>(),
-        24usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__SaveMap_Request))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SaveMap_Request>(),
-        8usize,
-        concat!("Alignment of ", stringify!(map_msgs__srv__SaveMap_Request))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).filename) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Request),
-            "::",
-            stringify!(filename)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SaveMap_Request__Sequence {
-    pub data: *mut map_msgs__srv__SaveMap_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SaveMap_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SaveMap_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SaveMap_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SaveMap_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SaveMap_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SaveMap_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SaveMap_Response {
-    pub structure_needs_at_least_one_member: u8,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SaveMap_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SaveMap_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SaveMap_Response>(),
-        1usize,
-        concat!("Size of: ", stringify!(map_msgs__srv__SaveMap_Response))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SaveMap_Response>(),
-        1usize,
-        concat!("Alignment of ", stringify!(map_msgs__srv__SaveMap_Response))
-    );
-    assert_eq!(
-        unsafe {
-            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Response),
-            "::",
-            stringify!(structure_needs_at_least_one_member)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SaveMap_Response__Sequence {
-    pub data: *mut map_msgs__srv__SaveMap_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SaveMap_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SaveMap_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SaveMap_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SaveMap_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SaveMap_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SaveMap_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SaveMap_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SetMapProjections_Request {
-    pub structure_needs_at_least_one_member: u8,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SetMapProjections_Request() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SetMapProjections_Request> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SetMapProjections_Request>(),
-        1usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SetMapProjections_Request>(),
-        1usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SetMapProjections_Request)
-        )
-    );
-    assert_eq!(
-        unsafe {
-            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
-        },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request),
-            "::",
-            stringify!(structure_needs_at_least_one_member)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SetMapProjections_Request__Sequence {
-    pub data: *mut map_msgs__srv__SetMapProjections_Request,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SetMapProjections_Request__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SetMapProjections_Request__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SetMapProjections_Request__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SetMapProjections_Request__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SetMapProjections_Request__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Request__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SetMapProjections_Response {
-    pub projected_maps_info: map_msgs__msg__ProjectedMapInfo__Sequence,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SetMapProjections_Response() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SetMapProjections_Response> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SetMapProjections_Response>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SetMapProjections_Response>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SetMapProjections_Response)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).projected_maps_info) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response),
-            "::",
-            stringify!(projected_maps_info)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct map_msgs__srv__SetMapProjections_Response__Sequence {
-    pub data: *mut map_msgs__srv__SetMapProjections_Response,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_map_msgs__srv__SetMapProjections_Response__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<map_msgs__srv__SetMapProjections_Response__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<map_msgs__srv__SetMapProjections_Response__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<map_msgs__srv__SetMapProjections_Response__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(map_msgs__srv__SetMapProjections_Response__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(map_msgs__srv__SetMapProjections_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-pub struct nav_msgs__msg__GridCells {
-    pub header: std_msgs__msg__Header,
-    pub cell_width: f32,
-    pub cell_height: f32,
-    pub cells: geometry_msgs__msg__Point__Sequence,
-}
-#[test]
-fn bindgen_test_layout_nav_msgs__msg__GridCells() {
-    const UNINIT: ::std::mem::MaybeUninit<nav_msgs__msg__GridCells> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<nav_msgs__msg__GridCells>(),
-        64usize,
-        concat!("Size of: ", stringify!(nav_msgs__msg__GridCells))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<nav_msgs__msg__GridCells>(),
-        8usize,
-        concat!("Alignment of ", stringify!(nav_msgs__msg__GridCells))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).header) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells),
-            "::",
-            stringify!(header)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cell_width) as usize - ptr as usize },
-        32usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells),
-            "::",
-            stringify!(cell_width)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cell_height) as usize - ptr as usize },
-        36usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells),
-            "::",
-            stringify!(cell_height)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cells) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells),
-            "::",
-            stringify!(cells)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct nav_msgs__msg__GridCells__Sequence {
-    pub data: *mut nav_msgs__msg__GridCells,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_nav_msgs__msg__GridCells__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<nav_msgs__msg__GridCells__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<nav_msgs__msg__GridCells__Sequence>(),
-        24usize,
-        concat!("Size of: ", stringify!(nav_msgs__msg__GridCells__Sequence))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<nav_msgs__msg__GridCells__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(nav_msgs__msg__GridCells__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(nav_msgs__msg__GridCells__Sequence),
             "::",
             stringify!(capacity)
         )
@@ -9638,39 +7431,39 @@ fn bindgen_test_layout_nav_msgs__srv__LoadMap_Request__Sequence() {
         )
     );
 }
-pub const nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS: _bindgen_ty_67 =
-    _bindgen_ty_67::nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS;
+pub const nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS: _bindgen_ty_57 =
+    _bindgen_ty_57::nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_67 {
+pub enum _bindgen_ty_57 {
     nav_msgs__srv__LoadMap_Response__RESULT_SUCCESS = 0,
 }
-pub const nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST: _bindgen_ty_68 =
-    _bindgen_ty_68::nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST;
+pub const nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST: _bindgen_ty_58 =
+    _bindgen_ty_58::nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_68 {
+pub enum _bindgen_ty_58 {
     nav_msgs__srv__LoadMap_Response__RESULT_MAP_DOES_NOT_EXIST = 1,
 }
-pub const nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA: _bindgen_ty_69 =
-    _bindgen_ty_69::nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA;
+pub const nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA: _bindgen_ty_59 =
+    _bindgen_ty_59::nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_69 {
+pub enum _bindgen_ty_59 {
     nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_DATA = 2,
 }
-pub const nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA: _bindgen_ty_70 =
-    _bindgen_ty_70::nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA;
+pub const nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA: _bindgen_ty_60 =
+    _bindgen_ty_60::nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_70 {
+pub enum _bindgen_ty_60 {
     nav_msgs__srv__LoadMap_Response__RESULT_INVALID_MAP_METADATA = 3,
 }
-pub const nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE: _bindgen_ty_71 =
-    _bindgen_ty_71::nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE;
+pub const nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE: _bindgen_ty_61 =
+    _bindgen_ty_61::nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_71 {
+pub enum _bindgen_ty_61 {
     nav_msgs__srv__LoadMap_Response__RESULT_UNDEFINED_FAILURE = 255,
 }
 #[repr(C)]
@@ -9958,392 +7751,6 @@ fn bindgen_test_layout_nav_msgs__srv__SetMap_Response__Sequence() {
         concat!(
             "Offset of field: ",
             stringify!(nav_msgs__srv__SetMap_Response__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__JointCommand {
-    pub position: f64,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__JointCommand() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__JointCommand> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__JointCommand>(),
-        8usize,
-        concat!("Size of: ", stringify!(pendulum_msgs__msg__JointCommand))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__JointCommand>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pendulum_msgs__msg__JointCommand)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).position) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointCommand),
-            "::",
-            stringify!(position)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__JointCommand__Sequence {
-    pub data: *mut pendulum_msgs__msg__JointCommand,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__JointCommand__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__JointCommand__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__JointCommand__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(pendulum_msgs__msg__JointCommand__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__JointCommand__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pendulum_msgs__msg__JointCommand__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointCommand__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointCommand__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointCommand__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__JointState {
-    pub position: f64,
-    pub velocity: f64,
-    pub effort: f64,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__JointState() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__JointState> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__JointState>(),
-        24usize,
-        concat!("Size of: ", stringify!(pendulum_msgs__msg__JointState))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__JointState>(),
-        8usize,
-        concat!("Alignment of ", stringify!(pendulum_msgs__msg__JointState))
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).position) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState),
-            "::",
-            stringify!(position)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).velocity) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState),
-            "::",
-            stringify!(velocity)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).effort) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState),
-            "::",
-            stringify!(effort)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__JointState__Sequence {
-    pub data: *mut pendulum_msgs__msg__JointState,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__JointState__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__JointState__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__JointState__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(pendulum_msgs__msg__JointState__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__JointState__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pendulum_msgs__msg__JointState__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__JointState__Sequence),
-            "::",
-            stringify!(capacity)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__RttestResults {
-    pub stamp: builtin_interfaces__msg__Time,
-    pub command: pendulum_msgs__msg__JointCommand,
-    pub state: pendulum_msgs__msg__JointState,
-    pub cur_latency: u64,
-    pub mean_latency: f64,
-    pub min_latency: u64,
-    pub max_latency: u64,
-    pub minor_pagefaults: u64,
-    pub major_pagefaults: u64,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__RttestResults() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__RttestResults> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__RttestResults>(),
-        88usize,
-        concat!("Size of: ", stringify!(pendulum_msgs__msg__RttestResults))
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__RttestResults>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pendulum_msgs__msg__RttestResults)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).stamp) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(stamp)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).command) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(command)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).state) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(state)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).cur_latency) as usize - ptr as usize },
-        40usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(cur_latency)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).mean_latency) as usize - ptr as usize },
-        48usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(mean_latency)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).min_latency) as usize - ptr as usize },
-        56usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(min_latency)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).max_latency) as usize - ptr as usize },
-        64usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(max_latency)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).minor_pagefaults) as usize - ptr as usize },
-        72usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(minor_pagefaults)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).major_pagefaults) as usize - ptr as usize },
-        80usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults),
-            "::",
-            stringify!(major_pagefaults)
-        )
-    );
-}
-#[repr(C)]
-#[derive(Debug)]
-pub struct pendulum_msgs__msg__RttestResults__Sequence {
-    pub data: *mut pendulum_msgs__msg__RttestResults,
-    pub size: usize,
-    pub capacity: usize,
-}
-#[test]
-fn bindgen_test_layout_pendulum_msgs__msg__RttestResults__Sequence() {
-    const UNINIT: ::std::mem::MaybeUninit<pendulum_msgs__msg__RttestResults__Sequence> =
-        ::std::mem::MaybeUninit::uninit();
-    let ptr = UNINIT.as_ptr();
-    assert_eq!(
-        ::std::mem::size_of::<pendulum_msgs__msg__RttestResults__Sequence>(),
-        24usize,
-        concat!(
-            "Size of: ",
-            stringify!(pendulum_msgs__msg__RttestResults__Sequence)
-        )
-    );
-    assert_eq!(
-        ::std::mem::align_of::<pendulum_msgs__msg__RttestResults__Sequence>(),
-        8usize,
-        concat!(
-            "Alignment of ",
-            stringify!(pendulum_msgs__msg__RttestResults__Sequence)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
-        0usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults__Sequence),
-            "::",
-            stringify!(data)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
-        8usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults__Sequence),
-            "::",
-            stringify!(size)
-        )
-    );
-    assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
-        16usize,
-        concat!(
-            "Offset of field: ",
-            stringify!(pendulum_msgs__msg__RttestResults__Sequence),
             "::",
             stringify!(capacity)
         )
@@ -10688,39 +8095,39 @@ fn bindgen_test_layout_rcl_interfaces__msg__ListParametersResult__Sequence() {
         )
     );
 }
-pub const rcl_interfaces__msg__Log__DEBUG: _bindgen_ty_72 =
-    _bindgen_ty_72::rcl_interfaces__msg__Log__DEBUG;
+pub const rcl_interfaces__msg__Log__DEBUG: _bindgen_ty_62 =
+    _bindgen_ty_62::rcl_interfaces__msg__Log__DEBUG;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_72 {
+pub enum _bindgen_ty_62 {
     rcl_interfaces__msg__Log__DEBUG = 10,
 }
-pub const rcl_interfaces__msg__Log__INFO: _bindgen_ty_73 =
-    _bindgen_ty_73::rcl_interfaces__msg__Log__INFO;
+pub const rcl_interfaces__msg__Log__INFO: _bindgen_ty_63 =
+    _bindgen_ty_63::rcl_interfaces__msg__Log__INFO;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_73 {
+pub enum _bindgen_ty_63 {
     rcl_interfaces__msg__Log__INFO = 20,
 }
-pub const rcl_interfaces__msg__Log__WARN: _bindgen_ty_74 =
-    _bindgen_ty_74::rcl_interfaces__msg__Log__WARN;
+pub const rcl_interfaces__msg__Log__WARN: _bindgen_ty_64 =
+    _bindgen_ty_64::rcl_interfaces__msg__Log__WARN;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_74 {
+pub enum _bindgen_ty_64 {
     rcl_interfaces__msg__Log__WARN = 30,
 }
-pub const rcl_interfaces__msg__Log__ERROR: _bindgen_ty_75 =
-    _bindgen_ty_75::rcl_interfaces__msg__Log__ERROR;
+pub const rcl_interfaces__msg__Log__ERROR: _bindgen_ty_65 =
+    _bindgen_ty_65::rcl_interfaces__msg__Log__ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_75 {
+pub enum _bindgen_ty_65 {
     rcl_interfaces__msg__Log__ERROR = 40,
 }
-pub const rcl_interfaces__msg__Log__FATAL: _bindgen_ty_76 =
-    _bindgen_ty_76::rcl_interfaces__msg__Log__FATAL;
+pub const rcl_interfaces__msg__Log__FATAL: _bindgen_ty_66 =
+    _bindgen_ty_66::rcl_interfaces__msg__Log__FATAL;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_76 {
+pub enum _bindgen_ty_66 {
     rcl_interfaces__msg__Log__FATAL = 50,
 }
 #[repr(C)]
@@ -11166,18 +8573,18 @@ fn bindgen_test_layout_rcl_interfaces__msg__Parameter__Sequence() {
         )
     );
 }
-pub const rcl_interfaces__msg__ParameterDescriptor__floating_point_range__MAX_SIZE: _bindgen_ty_77 =
-    _bindgen_ty_77::rcl_interfaces__msg__ParameterDescriptor__floating_point_range__MAX_SIZE;
+pub const rcl_interfaces__msg__ParameterDescriptor__floating_point_range__MAX_SIZE: _bindgen_ty_67 =
+    _bindgen_ty_67::rcl_interfaces__msg__ParameterDescriptor__floating_point_range__MAX_SIZE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_77 {
+pub enum _bindgen_ty_67 {
     rcl_interfaces__msg__ParameterDescriptor__floating_point_range__MAX_SIZE = 1,
 }
-pub const rcl_interfaces__msg__ParameterDescriptor__integer_range__MAX_SIZE: _bindgen_ty_78 =
-    _bindgen_ty_78::rcl_interfaces__msg__ParameterDescriptor__integer_range__MAX_SIZE;
+pub const rcl_interfaces__msg__ParameterDescriptor__integer_range__MAX_SIZE: _bindgen_ty_68 =
+    _bindgen_ty_68::rcl_interfaces__msg__ParameterDescriptor__integer_range__MAX_SIZE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_78 {
+pub enum _bindgen_ty_68 {
     rcl_interfaces__msg__ParameterDescriptor__integer_range__MAX_SIZE = 1,
 }
 #[repr(C)]
@@ -11607,74 +9014,74 @@ fn bindgen_test_layout_rcl_interfaces__msg__ParameterEventDescriptors__Sequence(
         )
     );
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET: _bindgen_ty_79 =
-    _bindgen_ty_79::rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET: _bindgen_ty_69 =
+    _bindgen_ty_69::rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_79 {
+pub enum _bindgen_ty_69 {
     rcl_interfaces__msg__ParameterType__PARAMETER_NOT_SET = 0,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_BOOL: _bindgen_ty_80 =
-    _bindgen_ty_80::rcl_interfaces__msg__ParameterType__PARAMETER_BOOL;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_BOOL: _bindgen_ty_70 =
+    _bindgen_ty_70::rcl_interfaces__msg__ParameterType__PARAMETER_BOOL;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_80 {
+pub enum _bindgen_ty_70 {
     rcl_interfaces__msg__ParameterType__PARAMETER_BOOL = 1,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER: _bindgen_ty_81 =
-    _bindgen_ty_81::rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER: _bindgen_ty_71 =
+    _bindgen_ty_71::rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_81 {
+pub enum _bindgen_ty_71 {
     rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER = 2,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE: _bindgen_ty_82 =
-    _bindgen_ty_82::rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE: _bindgen_ty_72 =
+    _bindgen_ty_72::rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_82 {
+pub enum _bindgen_ty_72 {
     rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE = 3,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_STRING: _bindgen_ty_83 =
-    _bindgen_ty_83::rcl_interfaces__msg__ParameterType__PARAMETER_STRING;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_STRING: _bindgen_ty_73 =
+    _bindgen_ty_73::rcl_interfaces__msg__ParameterType__PARAMETER_STRING;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_83 {
+pub enum _bindgen_ty_73 {
     rcl_interfaces__msg__ParameterType__PARAMETER_STRING = 4,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY: _bindgen_ty_84 =
-    _bindgen_ty_84::rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY: _bindgen_ty_74 =
+    _bindgen_ty_74::rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_84 {
+pub enum _bindgen_ty_74 {
     rcl_interfaces__msg__ParameterType__PARAMETER_BYTE_ARRAY = 5,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY: _bindgen_ty_85 =
-    _bindgen_ty_85::rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY: _bindgen_ty_75 =
+    _bindgen_ty_75::rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_85 {
+pub enum _bindgen_ty_75 {
     rcl_interfaces__msg__ParameterType__PARAMETER_BOOL_ARRAY = 6,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY: _bindgen_ty_86 =
-    _bindgen_ty_86::rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY: _bindgen_ty_76 =
+    _bindgen_ty_76::rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_86 {
+pub enum _bindgen_ty_76 {
     rcl_interfaces__msg__ParameterType__PARAMETER_INTEGER_ARRAY = 7,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY: _bindgen_ty_87 =
-    _bindgen_ty_87::rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY: _bindgen_ty_77 =
+    _bindgen_ty_77::rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_87 {
+pub enum _bindgen_ty_77 {
     rcl_interfaces__msg__ParameterType__PARAMETER_DOUBLE_ARRAY = 8,
 }
-pub const rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY: _bindgen_ty_88 =
-    _bindgen_ty_88::rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY;
+pub const rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY: _bindgen_ty_78 =
+    _bindgen_ty_78::rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_88 {
+pub enum _bindgen_ty_78 {
     rcl_interfaces__msg__ParameterType__PARAMETER_STRING_ARRAY = 9,
 }
 #[repr(C)]
@@ -12454,11 +9861,11 @@ fn bindgen_test_layout_rcl_interfaces__srv__GetParameters_Response__Sequence() {
         )
     );
 }
-pub const rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE: _bindgen_ty_89 =
-    _bindgen_ty_89::rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE;
+pub const rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE: _bindgen_ty_79 =
+    _bindgen_ty_79::rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_89 {
+pub enum _bindgen_ty_79 {
     rcl_interfaces__srv__ListParameters_Request__DEPTH_RECURSIVE = 0,
 }
 #[repr(C)]
@@ -13134,152 +10541,152 @@ fn bindgen_test_layout_rosgraph_msgs__msg__Clock__Sequence() {
         )
     );
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN: _bindgen_ty_90 =
-    _bindgen_ty_90::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN: _bindgen_ty_80 =
+    _bindgen_ty_80::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_80 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN = 0,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING: _bindgen_ty_81 =
+    _bindgen_ty_81::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_81 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING = 1,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING: _bindgen_ty_82 =
+    _bindgen_ty_82::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_82 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING = 2,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING: _bindgen_ty_83 =
+    _bindgen_ty_83::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_83 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL: _bindgen_ty_84 =
+    _bindgen_ty_84::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_84 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL = 4,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN: _bindgen_ty_85 =
+    _bindgen_ty_85::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_85 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN = 0,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD: _bindgen_ty_86 =
+    _bindgen_ty_86::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_86 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD = 1,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT: _bindgen_ty_87 =
+    _bindgen_ty_87::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_87 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT = 2,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD: _bindgen_ty_88 =
+    _bindgen_ty_88::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_88 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD = 3,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE: _bindgen_ty_89 =
+    _bindgen_ty_89::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_89 {
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
+}
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE: _bindgen_ty_90 =
+    _bindgen_ty_90::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_90 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_UNKNOWN = 0,
+    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING: _bindgen_ty_91 =
-    _bindgen_ty_91::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD: _bindgen_ty_91 =
+    _bindgen_ty_91::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_91 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_CHARGING = 1,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING: _bindgen_ty_92 =
-    _bindgen_ty_92::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_92 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_DISCHARGING = 2,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING: _bindgen_ty_93 =
-    _bindgen_ty_93::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_93 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_NOT_CHARGING = 3,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL: _bindgen_ty_94 =
-    _bindgen_ty_94::sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_94 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_STATUS_FULL = 4,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN: _bindgen_ty_95 =
-    _bindgen_ty_95::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_95 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNKNOWN = 0,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD: _bindgen_ty_96 =
-    _bindgen_ty_96::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_96 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_GOOD = 1,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT: _bindgen_ty_97 =
-    _bindgen_ty_97::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_97 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERHEAT = 2,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD: _bindgen_ty_98 =
-    _bindgen_ty_98::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_98 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_DEAD = 3,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE: _bindgen_ty_99 =
-    _bindgen_ty_99::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_99 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_OVERVOLTAGE = 4,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE: _bindgen_ty_100 =
-    _bindgen_ty_100::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_100 {
-    sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = 5,
-}
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD: _bindgen_ty_101 =
-    _bindgen_ty_101::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_101 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_COLD = 6,
 }
 pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE:
-    _bindgen_ty_102 =
-    _bindgen_ty_102::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE;
+    _bindgen_ty_92 =
+    _bindgen_ty_92::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_102 {
+pub enum _bindgen_ty_92 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = 7,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE: _bindgen_ty_103 =
-    _bindgen_ty_103::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE: _bindgen_ty_93 =
+    _bindgen_ty_93::sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_103 {
+pub enum _bindgen_ty_93 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = 8,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN: _bindgen_ty_104 =
-    _bindgen_ty_104::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN: _bindgen_ty_94 =
+    _bindgen_ty_94::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_104 {
+pub enum _bindgen_ty_94 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_UNKNOWN = 0,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH: _bindgen_ty_105 =
-    _bindgen_ty_105::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH: _bindgen_ty_95 =
+    _bindgen_ty_95::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_105 {
+pub enum _bindgen_ty_95 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NIMH = 1,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION: _bindgen_ty_106 =
-    _bindgen_ty_106::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION: _bindgen_ty_96 =
+    _bindgen_ty_96::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_106 {
+pub enum _bindgen_ty_96 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LION = 2,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO: _bindgen_ty_107 =
-    _bindgen_ty_107::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO: _bindgen_ty_97 =
+    _bindgen_ty_97::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_107 {
+pub enum _bindgen_ty_97 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIPO = 3,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE: _bindgen_ty_108 =
-    _bindgen_ty_108::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE: _bindgen_ty_98 =
+    _bindgen_ty_98::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_108 {
+pub enum _bindgen_ty_98 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIFE = 4,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD: _bindgen_ty_109 =
-    _bindgen_ty_109::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD: _bindgen_ty_99 =
+    _bindgen_ty_99::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_109 {
+pub enum _bindgen_ty_99 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_NICD = 5,
 }
-pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN: _bindgen_ty_110 =
-    _bindgen_ty_110::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN;
+pub const sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN: _bindgen_ty_100 =
+    _bindgen_ty_100::sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_110 {
+pub enum _bindgen_ty_100 {
     sensor_msgs__msg__BatteryState__POWER_SUPPLY_TECHNOLOGY_LIMN = 6,
 }
 #[repr(C)]
@@ -14852,25 +12259,25 @@ fn bindgen_test_layout_sensor_msgs__msg__Joy__Sequence() {
         )
     );
 }
-pub const sensor_msgs__msg__JoyFeedback__TYPE_LED: _bindgen_ty_111 =
-    _bindgen_ty_111::sensor_msgs__msg__JoyFeedback__TYPE_LED;
+pub const sensor_msgs__msg__JoyFeedback__TYPE_LED: _bindgen_ty_101 =
+    _bindgen_ty_101::sensor_msgs__msg__JoyFeedback__TYPE_LED;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_111 {
+pub enum _bindgen_ty_101 {
     sensor_msgs__msg__JoyFeedback__TYPE_LED = 0,
 }
-pub const sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE: _bindgen_ty_112 =
-    _bindgen_ty_112::sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE;
+pub const sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE: _bindgen_ty_102 =
+    _bindgen_ty_102::sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_112 {
+pub enum _bindgen_ty_102 {
     sensor_msgs__msg__JoyFeedback__TYPE_RUMBLE = 1,
 }
-pub const sensor_msgs__msg__JoyFeedback__TYPE_BUZZER: _bindgen_ty_113 =
-    _bindgen_ty_113::sensor_msgs__msg__JoyFeedback__TYPE_BUZZER;
+pub const sensor_msgs__msg__JoyFeedback__TYPE_BUZZER: _bindgen_ty_103 =
+    _bindgen_ty_103::sensor_msgs__msg__JoyFeedback__TYPE_BUZZER;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_113 {
+pub enum _bindgen_ty_103 {
     sensor_msgs__msg__JoyFeedback__TYPE_BUZZER = 2,
 }
 #[repr(C)]
@@ -15799,88 +13206,88 @@ fn bindgen_test_layout_sensor_msgs__msg__MultiEchoLaserScan__Sequence() {
         )
     );
 }
-pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN: _bindgen_ty_114 =
-    _bindgen_ty_114::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN;
+pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN: _bindgen_ty_104 =
+    _bindgen_ty_104::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_104 {
+    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN = 0,
+}
+pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED: _bindgen_ty_105 =
+    _bindgen_ty_105::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_105 {
+    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED = 1,
+}
+pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN: _bindgen_ty_106 =
+    _bindgen_ty_106::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_106 {
+    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
+}
+pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN: _bindgen_ty_107 =
+    _bindgen_ty_107::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_107 {
+    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN = 3,
+}
+pub const sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX: _bindgen_ty_108 =
+    _bindgen_ty_108::sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX;
+#[repr(i32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_108 {
+    sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX = -1,
+}
+pub const sensor_msgs__msg__NavSatStatus__STATUS_FIX: _bindgen_ty_109 =
+    _bindgen_ty_109::sensor_msgs__msg__NavSatStatus__STATUS_FIX;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_109 {
+    sensor_msgs__msg__NavSatStatus__STATUS_FIX = 0,
+}
+pub const sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX: _bindgen_ty_110 =
+    _bindgen_ty_110::sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_110 {
+    sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX = 1,
+}
+pub const sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX: _bindgen_ty_111 =
+    _bindgen_ty_111::sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_111 {
+    sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX = 2,
+}
+pub const sensor_msgs__msg__NavSatStatus__SERVICE_GPS: _bindgen_ty_112 =
+    _bindgen_ty_112::sensor_msgs__msg__NavSatStatus__SERVICE_GPS;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_112 {
+    sensor_msgs__msg__NavSatStatus__SERVICE_GPS = 1,
+}
+pub const sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS: _bindgen_ty_113 =
+    _bindgen_ty_113::sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_113 {
+    sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS = 2,
+}
+pub const sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS: _bindgen_ty_114 =
+    _bindgen_ty_114::sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_114 {
-    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_UNKNOWN = 0,
+    sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS = 4,
 }
-pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED: _bindgen_ty_115 =
-    _bindgen_ty_115::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED;
+pub const sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO: _bindgen_ty_115 =
+    _bindgen_ty_115::sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_115 {
-    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_APPROXIMATED = 1,
-}
-pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN: _bindgen_ty_116 =
-    _bindgen_ty_116::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_116 {
-    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_DIAGONAL_KNOWN = 2,
-}
-pub const sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN: _bindgen_ty_117 =
-    _bindgen_ty_117::sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_117 {
-    sensor_msgs__msg__NavSatFix__COVARIANCE_TYPE_KNOWN = 3,
-}
-pub const sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX: _bindgen_ty_118 =
-    _bindgen_ty_118::sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX;
-#[repr(i32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_118 {
-    sensor_msgs__msg__NavSatStatus__STATUS_NO_FIX = -1,
-}
-pub const sensor_msgs__msg__NavSatStatus__STATUS_FIX: _bindgen_ty_119 =
-    _bindgen_ty_119::sensor_msgs__msg__NavSatStatus__STATUS_FIX;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_119 {
-    sensor_msgs__msg__NavSatStatus__STATUS_FIX = 0,
-}
-pub const sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX: _bindgen_ty_120 =
-    _bindgen_ty_120::sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_120 {
-    sensor_msgs__msg__NavSatStatus__STATUS_SBAS_FIX = 1,
-}
-pub const sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX: _bindgen_ty_121 =
-    _bindgen_ty_121::sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_121 {
-    sensor_msgs__msg__NavSatStatus__STATUS_GBAS_FIX = 2,
-}
-pub const sensor_msgs__msg__NavSatStatus__SERVICE_GPS: _bindgen_ty_122 =
-    _bindgen_ty_122::sensor_msgs__msg__NavSatStatus__SERVICE_GPS;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_122 {
-    sensor_msgs__msg__NavSatStatus__SERVICE_GPS = 1,
-}
-pub const sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS: _bindgen_ty_123 =
-    _bindgen_ty_123::sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_123 {
-    sensor_msgs__msg__NavSatStatus__SERVICE_GLONASS = 2,
-}
-pub const sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS: _bindgen_ty_124 =
-    _bindgen_ty_124::sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_124 {
-    sensor_msgs__msg__NavSatStatus__SERVICE_COMPASS = 4,
-}
-pub const sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO: _bindgen_ty_125 =
-    _bindgen_ty_125::sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO;
-#[repr(u32)]
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_125 {
     sensor_msgs__msg__NavSatStatus__SERVICE_GALILEO = 8,
 }
 #[repr(C)]
@@ -16250,18 +13657,373 @@ fn bindgen_test_layout_sensor_msgs__msg__PointCloud__Sequence() {
         )
     );
 }
-pub const sensor_msgs__msg__Range__ULTRASOUND: _bindgen_ty_126 =
-    _bindgen_ty_126::sensor_msgs__msg__Range__ULTRASOUND;
+pub const sensor_msgs__msg__PointField__INT8: _bindgen_ty_116 =
+    _bindgen_ty_116::sensor_msgs__msg__PointField__INT8;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_126 {
+pub enum _bindgen_ty_116 {
+    sensor_msgs__msg__PointField__INT8 = 1,
+}
+pub const sensor_msgs__msg__PointField__UINT8: _bindgen_ty_117 =
+    _bindgen_ty_117::sensor_msgs__msg__PointField__UINT8;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_117 {
+    sensor_msgs__msg__PointField__UINT8 = 2,
+}
+pub const sensor_msgs__msg__PointField__INT16: _bindgen_ty_118 =
+    _bindgen_ty_118::sensor_msgs__msg__PointField__INT16;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_118 {
+    sensor_msgs__msg__PointField__INT16 = 3,
+}
+pub const sensor_msgs__msg__PointField__UINT16: _bindgen_ty_119 =
+    _bindgen_ty_119::sensor_msgs__msg__PointField__UINT16;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_119 {
+    sensor_msgs__msg__PointField__UINT16 = 4,
+}
+pub const sensor_msgs__msg__PointField__INT32: _bindgen_ty_120 =
+    _bindgen_ty_120::sensor_msgs__msg__PointField__INT32;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_120 {
+    sensor_msgs__msg__PointField__INT32 = 5,
+}
+pub const sensor_msgs__msg__PointField__UINT32: _bindgen_ty_121 =
+    _bindgen_ty_121::sensor_msgs__msg__PointField__UINT32;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_121 {
+    sensor_msgs__msg__PointField__UINT32 = 6,
+}
+pub const sensor_msgs__msg__PointField__FLOAT32: _bindgen_ty_122 =
+    _bindgen_ty_122::sensor_msgs__msg__PointField__FLOAT32;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_122 {
+    sensor_msgs__msg__PointField__FLOAT32 = 7,
+}
+pub const sensor_msgs__msg__PointField__FLOAT64: _bindgen_ty_123 =
+    _bindgen_ty_123::sensor_msgs__msg__PointField__FLOAT64;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_123 {
+    sensor_msgs__msg__PointField__FLOAT64 = 8,
+}
+#[repr(C)]
+pub struct sensor_msgs__msg__PointField {
+    pub name: rosidl_runtime_c__String,
+    pub offset: u32,
+    pub datatype: u8,
+    pub count: u32,
+}
+#[test]
+fn bindgen_test_layout_sensor_msgs__msg__PointField() {
+    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointField> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<sensor_msgs__msg__PointField>(),
+        40usize,
+        concat!("Size of: ", stringify!(sensor_msgs__msg__PointField))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<sensor_msgs__msg__PointField>(),
+        8usize,
+        concat!("Alignment of ", stringify!(sensor_msgs__msg__PointField))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).name) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField),
+            "::",
+            stringify!(name)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).offset) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField),
+            "::",
+            stringify!(offset)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).datatype) as usize - ptr as usize },
+        28usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField),
+            "::",
+            stringify!(datatype)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).count) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField),
+            "::",
+            stringify!(count)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct sensor_msgs__msg__PointField__Sequence {
+    pub data: *mut sensor_msgs__msg__PointField,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_sensor_msgs__msg__PointField__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointField__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<sensor_msgs__msg__PointField__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(sensor_msgs__msg__PointField__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<sensor_msgs__msg__PointField__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(sensor_msgs__msg__PointField__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointField__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct sensor_msgs__msg__PointCloud2 {
+    pub header: std_msgs__msg__Header,
+    pub height: u32,
+    pub width: u32,
+    pub fields: sensor_msgs__msg__PointField__Sequence,
+    pub is_bigendian: bool,
+    pub point_step: u32,
+    pub row_step: u32,
+    pub data: rosidl_runtime_c__uint8__Sequence,
+    pub is_dense: bool,
+}
+#[test]
+fn bindgen_test_layout_sensor_msgs__msg__PointCloud2() {
+    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointCloud2> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<sensor_msgs__msg__PointCloud2>(),
+        112usize,
+        concat!("Size of: ", stringify!(sensor_msgs__msg__PointCloud2))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<sensor_msgs__msg__PointCloud2>(),
+        8usize,
+        concat!("Alignment of ", stringify!(sensor_msgs__msg__PointCloud2))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).header) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(header)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).height) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(height)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).width) as usize - ptr as usize },
+        36usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(width)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).fields) as usize - ptr as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(fields)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).is_bigendian) as usize - ptr as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(is_bigendian)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).point_step) as usize - ptr as usize },
+        68usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(point_step)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).row_step) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(row_step)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).is_dense) as usize - ptr as usize },
+        104usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2),
+            "::",
+            stringify!(is_dense)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct sensor_msgs__msg__PointCloud2__Sequence {
+    pub data: *mut sensor_msgs__msg__PointCloud2,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_sensor_msgs__msg__PointCloud2__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<sensor_msgs__msg__PointCloud2__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<sensor_msgs__msg__PointCloud2__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(sensor_msgs__msg__PointCloud2__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<sensor_msgs__msg__PointCloud2__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(sensor_msgs__msg__PointCloud2__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(sensor_msgs__msg__PointCloud2__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const sensor_msgs__msg__Range__ULTRASOUND: _bindgen_ty_124 =
+    _bindgen_ty_124::sensor_msgs__msg__Range__ULTRASOUND;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_124 {
     sensor_msgs__msg__Range__ULTRASOUND = 0,
 }
-pub const sensor_msgs__msg__Range__INFRARED: _bindgen_ty_127 =
-    _bindgen_ty_127::sensor_msgs__msg__Range__INFRARED;
+pub const sensor_msgs__msg__Range__INFRARED: _bindgen_ty_125 =
+    _bindgen_ty_125::sensor_msgs__msg__Range__INFRARED;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_127 {
+pub enum _bindgen_ty_125 {
     sensor_msgs__msg__Range__INFRARED = 1,
 }
 #[repr(C)]
@@ -17214,89 +14976,103 @@ fn bindgen_test_layout_shape_msgs__msg__Plane__Sequence() {
         )
     );
 }
-pub const shape_msgs__msg__SolidPrimitive__BOX: _bindgen_ty_128 =
-    _bindgen_ty_128::shape_msgs__msg__SolidPrimitive__BOX;
+pub const shape_msgs__msg__SolidPrimitive__BOX: _bindgen_ty_126 =
+    _bindgen_ty_126::shape_msgs__msg__SolidPrimitive__BOX;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_126 {
+    shape_msgs__msg__SolidPrimitive__BOX = 1,
+}
+pub const shape_msgs__msg__SolidPrimitive__SPHERE: _bindgen_ty_127 =
+    _bindgen_ty_127::shape_msgs__msg__SolidPrimitive__SPHERE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_127 {
+    shape_msgs__msg__SolidPrimitive__SPHERE = 2,
+}
+pub const shape_msgs__msg__SolidPrimitive__CYLINDER: _bindgen_ty_128 =
+    _bindgen_ty_128::shape_msgs__msg__SolidPrimitive__CYLINDER;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_128 {
-    shape_msgs__msg__SolidPrimitive__BOX = 1,
+    shape_msgs__msg__SolidPrimitive__CYLINDER = 3,
 }
-pub const shape_msgs__msg__SolidPrimitive__SPHERE: _bindgen_ty_129 =
-    _bindgen_ty_129::shape_msgs__msg__SolidPrimitive__SPHERE;
+pub const shape_msgs__msg__SolidPrimitive__CONE: _bindgen_ty_129 =
+    _bindgen_ty_129::shape_msgs__msg__SolidPrimitive__CONE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_129 {
-    shape_msgs__msg__SolidPrimitive__SPHERE = 2,
+    shape_msgs__msg__SolidPrimitive__CONE = 4,
 }
-pub const shape_msgs__msg__SolidPrimitive__CYLINDER: _bindgen_ty_130 =
-    _bindgen_ty_130::shape_msgs__msg__SolidPrimitive__CYLINDER;
+pub const shape_msgs__msg__SolidPrimitive__PRISM: _bindgen_ty_130 =
+    _bindgen_ty_130::shape_msgs__msg__SolidPrimitive__PRISM;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_130 {
-    shape_msgs__msg__SolidPrimitive__CYLINDER = 3,
+    shape_msgs__msg__SolidPrimitive__PRISM = 5,
 }
-pub const shape_msgs__msg__SolidPrimitive__CONE: _bindgen_ty_131 =
-    _bindgen_ty_131::shape_msgs__msg__SolidPrimitive__CONE;
+pub const shape_msgs__msg__SolidPrimitive__BOX_X: _bindgen_ty_131 =
+    _bindgen_ty_131::shape_msgs__msg__SolidPrimitive__BOX_X;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_131 {
-    shape_msgs__msg__SolidPrimitive__CONE = 4,
+    shape_msgs__msg__SolidPrimitive__BOX_X = 0,
 }
-pub const shape_msgs__msg__SolidPrimitive__BOX_X: _bindgen_ty_132 =
-    _bindgen_ty_132::shape_msgs__msg__SolidPrimitive__BOX_X;
+pub const shape_msgs__msg__SolidPrimitive__BOX_Y: _bindgen_ty_132 =
+    _bindgen_ty_132::shape_msgs__msg__SolidPrimitive__BOX_Y;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_132 {
-    shape_msgs__msg__SolidPrimitive__BOX_X = 0,
+    shape_msgs__msg__SolidPrimitive__BOX_Y = 1,
 }
-pub const shape_msgs__msg__SolidPrimitive__BOX_Y: _bindgen_ty_133 =
-    _bindgen_ty_133::shape_msgs__msg__SolidPrimitive__BOX_Y;
+pub const shape_msgs__msg__SolidPrimitive__BOX_Z: _bindgen_ty_133 =
+    _bindgen_ty_133::shape_msgs__msg__SolidPrimitive__BOX_Z;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_133 {
-    shape_msgs__msg__SolidPrimitive__BOX_Y = 1,
+    shape_msgs__msg__SolidPrimitive__BOX_Z = 2,
 }
-pub const shape_msgs__msg__SolidPrimitive__BOX_Z: _bindgen_ty_134 =
-    _bindgen_ty_134::shape_msgs__msg__SolidPrimitive__BOX_Z;
+pub const shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS: _bindgen_ty_134 =
+    _bindgen_ty_134::shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_134 {
-    shape_msgs__msg__SolidPrimitive__BOX_Z = 2,
+    shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS = 0,
 }
-pub const shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS: _bindgen_ty_135 =
-    _bindgen_ty_135::shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS;
+pub const shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT: _bindgen_ty_135 =
+    _bindgen_ty_135::shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_135 {
-    shape_msgs__msg__SolidPrimitive__SPHERE_RADIUS = 0,
+    shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT = 0,
 }
-pub const shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT: _bindgen_ty_136 =
-    _bindgen_ty_136::shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT;
+pub const shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS: _bindgen_ty_136 =
+    _bindgen_ty_136::shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_136 {
-    shape_msgs__msg__SolidPrimitive__CYLINDER_HEIGHT = 0,
+    shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS = 1,
 }
-pub const shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS: _bindgen_ty_137 =
-    _bindgen_ty_137::shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS;
+pub const shape_msgs__msg__SolidPrimitive__CONE_HEIGHT: _bindgen_ty_137 =
+    _bindgen_ty_137::shape_msgs__msg__SolidPrimitive__CONE_HEIGHT;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_137 {
-    shape_msgs__msg__SolidPrimitive__CYLINDER_RADIUS = 1,
+    shape_msgs__msg__SolidPrimitive__CONE_HEIGHT = 0,
 }
-pub const shape_msgs__msg__SolidPrimitive__CONE_HEIGHT: _bindgen_ty_138 =
-    _bindgen_ty_138::shape_msgs__msg__SolidPrimitive__CONE_HEIGHT;
+pub const shape_msgs__msg__SolidPrimitive__CONE_RADIUS: _bindgen_ty_138 =
+    _bindgen_ty_138::shape_msgs__msg__SolidPrimitive__CONE_RADIUS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_138 {
-    shape_msgs__msg__SolidPrimitive__CONE_HEIGHT = 0,
+    shape_msgs__msg__SolidPrimitive__CONE_RADIUS = 1,
 }
-pub const shape_msgs__msg__SolidPrimitive__CONE_RADIUS: _bindgen_ty_139 =
-    _bindgen_ty_139::shape_msgs__msg__SolidPrimitive__CONE_RADIUS;
+pub const shape_msgs__msg__SolidPrimitive__PRISM_HEIGHT: _bindgen_ty_139 =
+    _bindgen_ty_139::shape_msgs__msg__SolidPrimitive__PRISM_HEIGHT;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum _bindgen_ty_139 {
-    shape_msgs__msg__SolidPrimitive__CONE_RADIUS = 1,
+    shape_msgs__msg__SolidPrimitive__PRISM_HEIGHT = 0,
 }
 pub const shape_msgs__msg__SolidPrimitive__dimensions__MAX_SIZE: _bindgen_ty_140 =
     _bindgen_ty_140::shape_msgs__msg__SolidPrimitive__dimensions__MAX_SIZE;
@@ -17309,6 +15085,7 @@ pub enum _bindgen_ty_140 {
 pub struct shape_msgs__msg__SolidPrimitive {
     pub type_: u8,
     pub dimensions: rosidl_runtime_c__double__Sequence,
+    pub polygon: geometry_msgs__msg__Polygon,
 }
 #[test]
 fn bindgen_test_layout_shape_msgs__msg__SolidPrimitive() {
@@ -17317,7 +15094,7 @@ fn bindgen_test_layout_shape_msgs__msg__SolidPrimitive() {
     let ptr = UNINIT.as_ptr();
     assert_eq!(
         ::std::mem::size_of::<shape_msgs__msg__SolidPrimitive>(),
-        32usize,
+        56usize,
         concat!("Size of: ", stringify!(shape_msgs__msg__SolidPrimitive))
     );
     assert_eq!(
@@ -17343,6 +15120,16 @@ fn bindgen_test_layout_shape_msgs__msg__SolidPrimitive() {
             stringify!(shape_msgs__msg__SolidPrimitive),
             "::",
             stringify!(dimensions)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).polygon) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(shape_msgs__msg__SolidPrimitive),
+            "::",
+            stringify!(polygon)
         )
     );
 }
@@ -19686,6 +17473,89 @@ fn bindgen_test_layout_std_msgs__msg__Int8MultiArray__Sequence() {
     );
 }
 #[repr(C)]
+pub struct std_msgs__msg__String {
+    pub data: rosidl_runtime_c__String,
+}
+#[test]
+fn bindgen_test_layout_std_msgs__msg__String() {
+    const UNINIT: ::std::mem::MaybeUninit<std_msgs__msg__String> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<std_msgs__msg__String>(),
+        24usize,
+        concat!("Size of: ", stringify!(std_msgs__msg__String))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<std_msgs__msg__String>(),
+        8usize,
+        concat!("Alignment of ", stringify!(std_msgs__msg__String))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(std_msgs__msg__String),
+            "::",
+            stringify!(data)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct std_msgs__msg__String__Sequence {
+    pub data: *mut std_msgs__msg__String,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_std_msgs__msg__String__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<std_msgs__msg__String__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<std_msgs__msg__String__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(std_msgs__msg__String__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<std_msgs__msg__String__Sequence>(),
+        8usize,
+        concat!("Alignment of ", stringify!(std_msgs__msg__String__Sequence))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(std_msgs__msg__String__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(std_msgs__msg__String__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(std_msgs__msg__String__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
 #[derive(Debug)]
 pub struct std_msgs__msg__UInt16 {
     pub data: u16,
@@ -20590,6 +18460,6826 @@ fn bindgen_test_layout_stereo_msgs__msg__DisparityImage__Sequence() {
     );
 }
 #[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_Goal {
+    pub order: i32,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Goal() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Goal> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Goal>(),
+        4usize,
+        concat!("Size of: ", stringify!(test_msgs__action__Fibonacci_Goal))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Goal>(),
+        4usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Goal)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).order) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Goal),
+            "::",
+            stringify!(order)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_Goal__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_Goal,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Goal__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Goal__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Goal__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_Goal__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Goal__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Goal__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Goal__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Goal__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Goal__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__action__Fibonacci_Result {
+    pub sequence: rosidl_runtime_c__int32__Sequence,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Result() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Result> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Result>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__action__Fibonacci_Result))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Result>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Result)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).sequence) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Result),
+            "::",
+            stringify!(sequence)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_Result__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_Result,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Result__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Result__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Result__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_Result__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Result__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Result__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Result__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Result__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Result__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__action__Fibonacci_Feedback {
+    pub sequence: rosidl_runtime_c__int32__Sequence,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Feedback() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Feedback> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Feedback>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Feedback>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Feedback)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).sequence) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback),
+            "::",
+            stringify!(sequence)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_Feedback__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_Feedback,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_Feedback__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_Feedback__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_Feedback__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_Feedback__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_Feedback__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_Feedback__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_SendGoal_Request {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+    pub goal: test_msgs__action__Fibonacci_Goal,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_SendGoal_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_SendGoal_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_SendGoal_Request>(),
+        20usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_SendGoal_Request>(),
+        4usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request),
+            "::",
+            stringify!(goal)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_SendGoal_Request__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_SendGoal_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_SendGoal_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_SendGoal_Request__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_SendGoal_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_SendGoal_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_SendGoal_Response {
+    pub accepted: bool,
+    pub stamp: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_SendGoal_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_SendGoal_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_SendGoal_Response>(),
+        12usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_SendGoal_Response>(),
+        4usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).accepted) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response),
+            "::",
+            stringify!(accepted)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).stamp) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response),
+            "::",
+            stringify!(stamp)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_SendGoal_Response__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_SendGoal_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_SendGoal_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__Fibonacci_SendGoal_Response__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_SendGoal_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_SendGoal_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_SendGoal_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_GetResult_Request {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_GetResult_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_GetResult_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_GetResult_Request>(),
+        16usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_GetResult_Request>(),
+        1usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_GetResult_Request__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_GetResult_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_GetResult_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__Fibonacci_GetResult_Request__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_GetResult_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_GetResult_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__action__Fibonacci_GetResult_Response {
+    pub status: i8,
+    pub result: test_msgs__action__Fibonacci_Result,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_GetResult_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_GetResult_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_GetResult_Response>(),
+        32usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_GetResult_Response>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).status) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response),
+            "::",
+            stringify!(status)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).result) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response),
+            "::",
+            stringify!(result)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_GetResult_Response__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_GetResult_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_GetResult_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__Fibonacci_GetResult_Response__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_GetResult_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_GetResult_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_GetResult_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__action__Fibonacci_FeedbackMessage {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+    pub feedback: test_msgs__action__Fibonacci_Feedback,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_FeedbackMessage() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_FeedbackMessage> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_FeedbackMessage>(),
+        40usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_FeedbackMessage>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).feedback) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage),
+            "::",
+            stringify!(feedback)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__Fibonacci_FeedbackMessage__Sequence {
+    pub data: *mut test_msgs__action__Fibonacci_FeedbackMessage,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__Fibonacci_FeedbackMessage__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__Fibonacci_FeedbackMessage__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__Fibonacci_FeedbackMessage__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__Fibonacci_FeedbackMessage__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__Fibonacci_FeedbackMessage__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Builtins {
+    pub duration_value: builtin_interfaces__msg__Duration,
+    pub time_value: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Builtins() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Builtins> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Builtins>(),
+        16usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Builtins))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Builtins>(),
+        4usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Builtins))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).duration_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Builtins),
+            "::",
+            stringify!(duration_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).time_value) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Builtins),
+            "::",
+            stringify!(time_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Builtins__Sequence {
+    pub data: *mut test_msgs__msg__Builtins,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Builtins__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Builtins__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Builtins__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Builtins__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Builtins__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Builtins__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Builtins__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Builtins__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Builtins__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__BasicTypes {
+    pub bool_value: bool,
+    pub byte_value: u8,
+    pub char_value: u8,
+    pub float32_value: f32,
+    pub float64_value: f64,
+    pub int8_value: i8,
+    pub uint8_value: u8,
+    pub int16_value: i16,
+    pub uint16_value: u16,
+    pub int32_value: i32,
+    pub uint32_value: u32,
+    pub int64_value: i64,
+    pub uint64_value: u64,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BasicTypes() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BasicTypes> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BasicTypes>(),
+        48usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__BasicTypes))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BasicTypes>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__BasicTypes))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(bool_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_value) as usize - ptr as usize },
+        1usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(byte_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_value) as usize - ptr as usize },
+        2usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(char_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_value) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(float32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_value) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(float64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_value) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(int8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_value) as usize - ptr as usize },
+        17usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(uint8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_value) as usize - ptr as usize },
+        18usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(int16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_value) as usize - ptr as usize },
+        20usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(uint16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_value) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(int32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_value) as usize - ptr as usize },
+        28usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(uint32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_value) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(int64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_value) as usize - ptr as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes),
+            "::",
+            stringify!(uint64_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__BasicTypes__Sequence {
+    pub data: *mut test_msgs__msg__BasicTypes,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BasicTypes__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BasicTypes__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BasicTypes__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__BasicTypes__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BasicTypes__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__BasicTypes__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BasicTypes__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Goal {
+    pub nested_field_no_pkg: test_msgs__msg__Builtins,
+    pub nested_field: test_msgs__msg__BasicTypes,
+    pub nested_different_pkg: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Goal() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Goal> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Goal>(),
+        72usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Goal)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Goal>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Goal)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field_no_pkg) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal),
+            "::",
+            stringify!(nested_field_no_pkg)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal),
+            "::",
+            stringify!(nested_field)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_different_pkg) as usize - ptr as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal),
+            "::",
+            stringify!(nested_different_pkg)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Goal__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_Goal,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Goal__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Goal__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Goal__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Goal__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Goal__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Goal__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Goal__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Result {
+    pub nested_field_no_pkg: test_msgs__msg__Builtins,
+    pub nested_field: test_msgs__msg__BasicTypes,
+    pub nested_different_pkg: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Result() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Result> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Result>(),
+        72usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Result)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Result>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Result)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field_no_pkg) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result),
+            "::",
+            stringify!(nested_field_no_pkg)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result),
+            "::",
+            stringify!(nested_field)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_different_pkg) as usize - ptr as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result),
+            "::",
+            stringify!(nested_different_pkg)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Result__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_Result,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Result__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Result__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Result__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Result__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Result__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Result__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Result__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Feedback {
+    pub nested_field_no_pkg: test_msgs__msg__Builtins,
+    pub nested_field: test_msgs__msg__BasicTypes,
+    pub nested_different_pkg: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Feedback() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Feedback> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Feedback>(),
+        72usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Feedback>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Feedback)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field_no_pkg) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback),
+            "::",
+            stringify!(nested_field_no_pkg)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_field) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback),
+            "::",
+            stringify!(nested_field)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).nested_different_pkg) as usize - ptr as usize },
+        64usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback),
+            "::",
+            stringify!(nested_different_pkg)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_Feedback__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_Feedback,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_Feedback__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_Feedback__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_Feedback__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_Feedback__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_Feedback__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_Feedback__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_SendGoal_Request {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+    pub goal: test_msgs__action__NestedMessage_Goal,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_SendGoal_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_SendGoal_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_SendGoal_Request>(),
+        88usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_SendGoal_Request>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request),
+            "::",
+            stringify!(goal)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_SendGoal_Request__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_SendGoal_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_SendGoal_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__NestedMessage_SendGoal_Request__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_SendGoal_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_SendGoal_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_SendGoal_Response {
+    pub accepted: bool,
+    pub stamp: builtin_interfaces__msg__Time,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_SendGoal_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_SendGoal_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_SendGoal_Response>(),
+        12usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_SendGoal_Response>(),
+        4usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).accepted) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response),
+            "::",
+            stringify!(accepted)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).stamp) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response),
+            "::",
+            stringify!(stamp)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_SendGoal_Response__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_SendGoal_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_SendGoal_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__NestedMessage_SendGoal_Response__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_SendGoal_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_SendGoal_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_SendGoal_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_GetResult_Request {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_GetResult_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_GetResult_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_GetResult_Request>(),
+        16usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_GetResult_Request>(),
+        1usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_GetResult_Request__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_GetResult_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_GetResult_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__NestedMessage_GetResult_Request__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_GetResult_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_GetResult_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_GetResult_Response {
+    pub status: i8,
+    pub result: test_msgs__action__NestedMessage_Result,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_GetResult_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_GetResult_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_GetResult_Response>(),
+        80usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_GetResult_Response>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).status) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response),
+            "::",
+            stringify!(status)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).result) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response),
+            "::",
+            stringify!(result)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_GetResult_Response__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_GetResult_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_GetResult_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__NestedMessage_GetResult_Response__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_GetResult_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_GetResult_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_GetResult_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_FeedbackMessage {
+    pub goal_id: unique_identifier_msgs__msg__UUID,
+    pub feedback: test_msgs__action__NestedMessage_Feedback,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_FeedbackMessage() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__action__NestedMessage_FeedbackMessage> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_FeedbackMessage>(),
+        88usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_FeedbackMessage>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).goal_id) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage),
+            "::",
+            stringify!(goal_id)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).feedback) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage),
+            "::",
+            stringify!(feedback)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__action__NestedMessage_FeedbackMessage__Sequence {
+    pub data: *mut test_msgs__action__NestedMessage_FeedbackMessage,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__action__NestedMessage_FeedbackMessage__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<
+        test_msgs__action__NestedMessage_FeedbackMessage__Sequence,
+    > = ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__action__NestedMessage_FeedbackMessage__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__action__NestedMessage_FeedbackMessage__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__action__NestedMessage_FeedbackMessage__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__Constants__BOOL_CONST: bool = true;
+pub const test_msgs__msg__Constants__BYTE_CONST: _bindgen_ty_147 =
+    _bindgen_ty_147::test_msgs__msg__Constants__BYTE_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_147 {
+    test_msgs__msg__Constants__BYTE_CONST = 50,
+}
+pub const test_msgs__msg__Constants__CHAR_CONST: _bindgen_ty_148 =
+    _bindgen_ty_148::test_msgs__msg__Constants__CHAR_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_148 {
+    test_msgs__msg__Constants__CHAR_CONST = 100,
+}
+pub const test_msgs__msg__Constants__FLOAT32_CONST: f32 = 1.125;
+pub const test_msgs__msg__Constants__FLOAT64_CONST: f64 = 1.125;
+pub const test_msgs__msg__Constants__INT8_CONST: _bindgen_ty_149 =
+    _bindgen_ty_149::test_msgs__msg__Constants__INT8_CONST;
+#[repr(i32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_149 {
+    test_msgs__msg__Constants__INT8_CONST = -50,
+}
+pub const test_msgs__msg__Constants__UINT8_CONST: _bindgen_ty_150 =
+    _bindgen_ty_150::test_msgs__msg__Constants__UINT8_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_150 {
+    test_msgs__msg__Constants__UINT8_CONST = 200,
+}
+pub const test_msgs__msg__Constants__INT16_CONST: _bindgen_ty_151 =
+    _bindgen_ty_151::test_msgs__msg__Constants__INT16_CONST;
+#[repr(i32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_151 {
+    test_msgs__msg__Constants__INT16_CONST = -1000,
+}
+pub const test_msgs__msg__Constants__UINT16_CONST: _bindgen_ty_152 =
+    _bindgen_ty_152::test_msgs__msg__Constants__UINT16_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_152 {
+    test_msgs__msg__Constants__UINT16_CONST = 2000,
+}
+pub const test_msgs__msg__Constants__INT32_CONST: _bindgen_ty_153 =
+    _bindgen_ty_153::test_msgs__msg__Constants__INT32_CONST;
+#[repr(i32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_153 {
+    test_msgs__msg__Constants__INT32_CONST = -30000,
+}
+pub const test_msgs__msg__Constants__UINT32_CONST: _bindgen_ty_154 =
+    _bindgen_ty_154::test_msgs__msg__Constants__UINT32_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_154 {
+    test_msgs__msg__Constants__UINT32_CONST = 60000,
+}
+pub const test_msgs__msg__Constants__INT64_CONST: _bindgen_ty_155 =
+    _bindgen_ty_155::test_msgs__msg__Constants__INT64_CONST;
+#[repr(i32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_155 {
+    test_msgs__msg__Constants__INT64_CONST = -40000000,
+}
+pub const test_msgs__msg__Constants__UINT64_CONST: _bindgen_ty_156 =
+    _bindgen_ty_156::test_msgs__msg__Constants__UINT64_CONST;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_156 {
+    test_msgs__msg__Constants__UINT64_CONST = 50000000,
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Constants {
+    pub structure_needs_at_least_one_member: u8,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Constants() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Constants> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Constants>(),
+        1usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Constants))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Constants>(),
+        1usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Constants))
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
+        },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Constants),
+            "::",
+            stringify!(structure_needs_at_least_one_member)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Constants__Sequence {
+    pub data: *mut test_msgs__msg__Constants,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Constants__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Constants__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Constants__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Constants__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Constants__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Constants__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Constants__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Constants__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Constants__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Defaults {
+    pub bool_value: bool,
+    pub byte_value: u8,
+    pub char_value: u8,
+    pub float32_value: f32,
+    pub float64_value: f64,
+    pub int8_value: i8,
+    pub uint8_value: u8,
+    pub int16_value: i16,
+    pub uint16_value: u16,
+    pub int32_value: i32,
+    pub uint32_value: u32,
+    pub int64_value: i64,
+    pub uint64_value: u64,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Defaults() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Defaults> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Defaults>(),
+        48usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Defaults))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Defaults>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Defaults))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(bool_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_value) as usize - ptr as usize },
+        1usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(byte_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_value) as usize - ptr as usize },
+        2usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(char_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_value) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(float32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_value) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(float64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_value) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(int8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_value) as usize - ptr as usize },
+        17usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(uint8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_value) as usize - ptr as usize },
+        18usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(int16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_value) as usize - ptr as usize },
+        20usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(uint16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_value) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(int32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_value) as usize - ptr as usize },
+        28usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(uint32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_value) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(int64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_value) as usize - ptr as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults),
+            "::",
+            stringify!(uint64_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Defaults__Sequence {
+    pub data: *mut test_msgs__msg__Defaults,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Defaults__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Defaults__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Defaults__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Defaults__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Defaults__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Defaults__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Defaults__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__msg__Arrays {
+    pub bool_values: [bool; 3usize],
+    pub byte_values: [u8; 3usize],
+    pub char_values: [u8; 3usize],
+    pub float32_values: [f32; 3usize],
+    pub float64_values: [f64; 3usize],
+    pub int8_values: [i8; 3usize],
+    pub uint8_values: [u8; 3usize],
+    pub int16_values: [i16; 3usize],
+    pub uint16_values: [u16; 3usize],
+    pub int32_values: [i32; 3usize],
+    pub uint32_values: [u32; 3usize],
+    pub int64_values: [i64; 3usize],
+    pub uint64_values: [u64; 3usize],
+    pub string_values: [rosidl_runtime_c__String; 3usize],
+    pub basic_types_values: [test_msgs__msg__BasicTypes; 3usize],
+    pub constants_values: [test_msgs__msg__Constants; 3usize],
+    pub defaults_values: [test_msgs__msg__Defaults; 3usize],
+    pub bool_values_default: [bool; 3usize],
+    pub byte_values_default: [u8; 3usize],
+    pub char_values_default: [u8; 3usize],
+    pub float32_values_default: [f32; 3usize],
+    pub float64_values_default: [f64; 3usize],
+    pub int8_values_default: [i8; 3usize],
+    pub uint8_values_default: [u8; 3usize],
+    pub int16_values_default: [i16; 3usize],
+    pub uint16_values_default: [u16; 3usize],
+    pub int32_values_default: [i32; 3usize],
+    pub uint32_values_default: [u32; 3usize],
+    pub int64_values_default: [i64; 3usize],
+    pub uint64_values_default: [u64; 3usize],
+    pub string_values_default: [rosidl_runtime_c__String; 3usize],
+    pub alignment_check: i32,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Arrays() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Arrays> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Arrays>(),
+        736usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Arrays))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Arrays>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Arrays))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        3usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        6usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        51usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        54usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        60usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        68usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(string_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        368usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        512usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        515usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        518usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        524usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        536usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        560usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        563usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        566usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        572usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        580usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        592usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        608usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        632usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values_default) as usize - ptr as usize },
+        656usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(string_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).alignment_check) as usize - ptr as usize },
+        728usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays),
+            "::",
+            stringify!(alignment_check)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Arrays__Sequence {
+    pub data: *mut test_msgs__msg__Arrays,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Arrays__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Arrays__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Arrays__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Arrays__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Arrays__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Arrays__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Arrays__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__BoundedPlainSequences__bool_values__MAX_SIZE: _bindgen_ty_157 =
+    _bindgen_ty_157::test_msgs__msg__BoundedPlainSequences__bool_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_157 {
+    test_msgs__msg__BoundedPlainSequences__bool_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__byte_values__MAX_SIZE: _bindgen_ty_158 =
+    _bindgen_ty_158::test_msgs__msg__BoundedPlainSequences__byte_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_158 {
+    test_msgs__msg__BoundedPlainSequences__byte_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__char_values__MAX_SIZE: _bindgen_ty_159 =
+    _bindgen_ty_159::test_msgs__msg__BoundedPlainSequences__char_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_159 {
+    test_msgs__msg__BoundedPlainSequences__char_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__float32_values__MAX_SIZE: _bindgen_ty_160 =
+    _bindgen_ty_160::test_msgs__msg__BoundedPlainSequences__float32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_160 {
+    test_msgs__msg__BoundedPlainSequences__float32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__float64_values__MAX_SIZE: _bindgen_ty_161 =
+    _bindgen_ty_161::test_msgs__msg__BoundedPlainSequences__float64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_161 {
+    test_msgs__msg__BoundedPlainSequences__float64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int8_values__MAX_SIZE: _bindgen_ty_162 =
+    _bindgen_ty_162::test_msgs__msg__BoundedPlainSequences__int8_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_162 {
+    test_msgs__msg__BoundedPlainSequences__int8_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint8_values__MAX_SIZE: _bindgen_ty_163 =
+    _bindgen_ty_163::test_msgs__msg__BoundedPlainSequences__uint8_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_163 {
+    test_msgs__msg__BoundedPlainSequences__uint8_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int16_values__MAX_SIZE: _bindgen_ty_164 =
+    _bindgen_ty_164::test_msgs__msg__BoundedPlainSequences__int16_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_164 {
+    test_msgs__msg__BoundedPlainSequences__int16_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint16_values__MAX_SIZE: _bindgen_ty_165 =
+    _bindgen_ty_165::test_msgs__msg__BoundedPlainSequences__uint16_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_165 {
+    test_msgs__msg__BoundedPlainSequences__uint16_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int32_values__MAX_SIZE: _bindgen_ty_166 =
+    _bindgen_ty_166::test_msgs__msg__BoundedPlainSequences__int32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_166 {
+    test_msgs__msg__BoundedPlainSequences__int32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint32_values__MAX_SIZE: _bindgen_ty_167 =
+    _bindgen_ty_167::test_msgs__msg__BoundedPlainSequences__uint32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_167 {
+    test_msgs__msg__BoundedPlainSequences__uint32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int64_values__MAX_SIZE: _bindgen_ty_168 =
+    _bindgen_ty_168::test_msgs__msg__BoundedPlainSequences__int64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_168 {
+    test_msgs__msg__BoundedPlainSequences__int64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint64_values__MAX_SIZE: _bindgen_ty_169 =
+    _bindgen_ty_169::test_msgs__msg__BoundedPlainSequences__uint64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_169 {
+    test_msgs__msg__BoundedPlainSequences__uint64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__basic_types_values__MAX_SIZE: _bindgen_ty_170 =
+    _bindgen_ty_170::test_msgs__msg__BoundedPlainSequences__basic_types_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_170 {
+    test_msgs__msg__BoundedPlainSequences__basic_types_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__constants_values__MAX_SIZE: _bindgen_ty_171 =
+    _bindgen_ty_171::test_msgs__msg__BoundedPlainSequences__constants_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_171 {
+    test_msgs__msg__BoundedPlainSequences__constants_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__defaults_values__MAX_SIZE: _bindgen_ty_172 =
+    _bindgen_ty_172::test_msgs__msg__BoundedPlainSequences__defaults_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_172 {
+    test_msgs__msg__BoundedPlainSequences__defaults_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__bool_values_default__MAX_SIZE: _bindgen_ty_173 =
+    _bindgen_ty_173::test_msgs__msg__BoundedPlainSequences__bool_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_173 {
+    test_msgs__msg__BoundedPlainSequences__bool_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__byte_values_default__MAX_SIZE: _bindgen_ty_174 =
+    _bindgen_ty_174::test_msgs__msg__BoundedPlainSequences__byte_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_174 {
+    test_msgs__msg__BoundedPlainSequences__byte_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__char_values_default__MAX_SIZE: _bindgen_ty_175 =
+    _bindgen_ty_175::test_msgs__msg__BoundedPlainSequences__char_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_175 {
+    test_msgs__msg__BoundedPlainSequences__char_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__float32_values_default__MAX_SIZE: _bindgen_ty_176 =
+    _bindgen_ty_176::test_msgs__msg__BoundedPlainSequences__float32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_176 {
+    test_msgs__msg__BoundedPlainSequences__float32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__float64_values_default__MAX_SIZE: _bindgen_ty_177 =
+    _bindgen_ty_177::test_msgs__msg__BoundedPlainSequences__float64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_177 {
+    test_msgs__msg__BoundedPlainSequences__float64_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int8_values_default__MAX_SIZE: _bindgen_ty_178 =
+    _bindgen_ty_178::test_msgs__msg__BoundedPlainSequences__int8_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_178 {
+    test_msgs__msg__BoundedPlainSequences__int8_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint8_values_default__MAX_SIZE: _bindgen_ty_179 =
+    _bindgen_ty_179::test_msgs__msg__BoundedPlainSequences__uint8_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_179 {
+    test_msgs__msg__BoundedPlainSequences__uint8_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int16_values_default__MAX_SIZE: _bindgen_ty_180 =
+    _bindgen_ty_180::test_msgs__msg__BoundedPlainSequences__int16_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_180 {
+    test_msgs__msg__BoundedPlainSequences__int16_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint16_values_default__MAX_SIZE: _bindgen_ty_181 =
+    _bindgen_ty_181::test_msgs__msg__BoundedPlainSequences__uint16_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_181 {
+    test_msgs__msg__BoundedPlainSequences__uint16_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int32_values_default__MAX_SIZE: _bindgen_ty_182 =
+    _bindgen_ty_182::test_msgs__msg__BoundedPlainSequences__int32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_182 {
+    test_msgs__msg__BoundedPlainSequences__int32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint32_values_default__MAX_SIZE: _bindgen_ty_183 =
+    _bindgen_ty_183::test_msgs__msg__BoundedPlainSequences__uint32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_183 {
+    test_msgs__msg__BoundedPlainSequences__uint32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__int64_values_default__MAX_SIZE: _bindgen_ty_184 =
+    _bindgen_ty_184::test_msgs__msg__BoundedPlainSequences__int64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_184 {
+    test_msgs__msg__BoundedPlainSequences__int64_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedPlainSequences__uint64_values_default__MAX_SIZE: _bindgen_ty_185 =
+    _bindgen_ty_185::test_msgs__msg__BoundedPlainSequences__uint64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_185 {
+    test_msgs__msg__BoundedPlainSequences__uint64_values_default__MAX_SIZE = 3,
+}
+#[repr(C)]
+pub struct test_msgs__msg__BoundedPlainSequences {
+    pub bool_values: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values: rosidl_runtime_c__octet__Sequence,
+    pub char_values: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values: rosidl_runtime_c__float__Sequence,
+    pub float64_values: rosidl_runtime_c__double__Sequence,
+    pub int8_values: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values: rosidl_runtime_c__uint64__Sequence,
+    pub basic_types_values: test_msgs__msg__BasicTypes__Sequence,
+    pub constants_values: test_msgs__msg__Constants__Sequence,
+    pub defaults_values: test_msgs__msg__Defaults__Sequence,
+    pub bool_values_default: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values_default: rosidl_runtime_c__octet__Sequence,
+    pub char_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values_default: rosidl_runtime_c__float__Sequence,
+    pub float64_values_default: rosidl_runtime_c__double__Sequence,
+    pub int8_values_default: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values_default: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values_default: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values_default: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values_default: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values_default: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values_default: rosidl_runtime_c__uint64__Sequence,
+    pub alignment_check: i32,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BoundedPlainSequences() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BoundedPlainSequences> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BoundedPlainSequences>(),
+        704usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BoundedPlainSequences>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__BoundedPlainSequences)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        288usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        312usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        336usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        384usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        408usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        432usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        456usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        480usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        504usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        528usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        552usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        576usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        600usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        624usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        648usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        672usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).alignment_check) as usize - ptr as usize },
+        696usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences),
+            "::",
+            stringify!(alignment_check)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__BoundedPlainSequences__Sequence {
+    pub data: *mut test_msgs__msg__BoundedPlainSequences,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BoundedPlainSequences__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BoundedPlainSequences__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BoundedPlainSequences__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BoundedPlainSequences__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__BoundedPlainSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedPlainSequences__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__BoundedSequences__bool_values__MAX_SIZE: _bindgen_ty_186 =
+    _bindgen_ty_186::test_msgs__msg__BoundedSequences__bool_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_186 {
+    test_msgs__msg__BoundedSequences__bool_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__byte_values__MAX_SIZE: _bindgen_ty_187 =
+    _bindgen_ty_187::test_msgs__msg__BoundedSequences__byte_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_187 {
+    test_msgs__msg__BoundedSequences__byte_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__char_values__MAX_SIZE: _bindgen_ty_188 =
+    _bindgen_ty_188::test_msgs__msg__BoundedSequences__char_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_188 {
+    test_msgs__msg__BoundedSequences__char_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__float32_values__MAX_SIZE: _bindgen_ty_189 =
+    _bindgen_ty_189::test_msgs__msg__BoundedSequences__float32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_189 {
+    test_msgs__msg__BoundedSequences__float32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__float64_values__MAX_SIZE: _bindgen_ty_190 =
+    _bindgen_ty_190::test_msgs__msg__BoundedSequences__float64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_190 {
+    test_msgs__msg__BoundedSequences__float64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int8_values__MAX_SIZE: _bindgen_ty_191 =
+    _bindgen_ty_191::test_msgs__msg__BoundedSequences__int8_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_191 {
+    test_msgs__msg__BoundedSequences__int8_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint8_values__MAX_SIZE: _bindgen_ty_192 =
+    _bindgen_ty_192::test_msgs__msg__BoundedSequences__uint8_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_192 {
+    test_msgs__msg__BoundedSequences__uint8_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int16_values__MAX_SIZE: _bindgen_ty_193 =
+    _bindgen_ty_193::test_msgs__msg__BoundedSequences__int16_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_193 {
+    test_msgs__msg__BoundedSequences__int16_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint16_values__MAX_SIZE: _bindgen_ty_194 =
+    _bindgen_ty_194::test_msgs__msg__BoundedSequences__uint16_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_194 {
+    test_msgs__msg__BoundedSequences__uint16_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int32_values__MAX_SIZE: _bindgen_ty_195 =
+    _bindgen_ty_195::test_msgs__msg__BoundedSequences__int32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_195 {
+    test_msgs__msg__BoundedSequences__int32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint32_values__MAX_SIZE: _bindgen_ty_196 =
+    _bindgen_ty_196::test_msgs__msg__BoundedSequences__uint32_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_196 {
+    test_msgs__msg__BoundedSequences__uint32_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int64_values__MAX_SIZE: _bindgen_ty_197 =
+    _bindgen_ty_197::test_msgs__msg__BoundedSequences__int64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_197 {
+    test_msgs__msg__BoundedSequences__int64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint64_values__MAX_SIZE: _bindgen_ty_198 =
+    _bindgen_ty_198::test_msgs__msg__BoundedSequences__uint64_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_198 {
+    test_msgs__msg__BoundedSequences__uint64_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__string_values__MAX_SIZE: _bindgen_ty_199 =
+    _bindgen_ty_199::test_msgs__msg__BoundedSequences__string_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_199 {
+    test_msgs__msg__BoundedSequences__string_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__basic_types_values__MAX_SIZE: _bindgen_ty_200 =
+    _bindgen_ty_200::test_msgs__msg__BoundedSequences__basic_types_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_200 {
+    test_msgs__msg__BoundedSequences__basic_types_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__constants_values__MAX_SIZE: _bindgen_ty_201 =
+    _bindgen_ty_201::test_msgs__msg__BoundedSequences__constants_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_201 {
+    test_msgs__msg__BoundedSequences__constants_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__defaults_values__MAX_SIZE: _bindgen_ty_202 =
+    _bindgen_ty_202::test_msgs__msg__BoundedSequences__defaults_values__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_202 {
+    test_msgs__msg__BoundedSequences__defaults_values__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__bool_values_default__MAX_SIZE: _bindgen_ty_203 =
+    _bindgen_ty_203::test_msgs__msg__BoundedSequences__bool_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_203 {
+    test_msgs__msg__BoundedSequences__bool_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__byte_values_default__MAX_SIZE: _bindgen_ty_204 =
+    _bindgen_ty_204::test_msgs__msg__BoundedSequences__byte_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_204 {
+    test_msgs__msg__BoundedSequences__byte_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__char_values_default__MAX_SIZE: _bindgen_ty_205 =
+    _bindgen_ty_205::test_msgs__msg__BoundedSequences__char_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_205 {
+    test_msgs__msg__BoundedSequences__char_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__float32_values_default__MAX_SIZE: _bindgen_ty_206 =
+    _bindgen_ty_206::test_msgs__msg__BoundedSequences__float32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_206 {
+    test_msgs__msg__BoundedSequences__float32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__float64_values_default__MAX_SIZE: _bindgen_ty_207 =
+    _bindgen_ty_207::test_msgs__msg__BoundedSequences__float64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_207 {
+    test_msgs__msg__BoundedSequences__float64_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int8_values_default__MAX_SIZE: _bindgen_ty_208 =
+    _bindgen_ty_208::test_msgs__msg__BoundedSequences__int8_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_208 {
+    test_msgs__msg__BoundedSequences__int8_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint8_values_default__MAX_SIZE: _bindgen_ty_209 =
+    _bindgen_ty_209::test_msgs__msg__BoundedSequences__uint8_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_209 {
+    test_msgs__msg__BoundedSequences__uint8_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int16_values_default__MAX_SIZE: _bindgen_ty_210 =
+    _bindgen_ty_210::test_msgs__msg__BoundedSequences__int16_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_210 {
+    test_msgs__msg__BoundedSequences__int16_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint16_values_default__MAX_SIZE: _bindgen_ty_211 =
+    _bindgen_ty_211::test_msgs__msg__BoundedSequences__uint16_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_211 {
+    test_msgs__msg__BoundedSequences__uint16_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int32_values_default__MAX_SIZE: _bindgen_ty_212 =
+    _bindgen_ty_212::test_msgs__msg__BoundedSequences__int32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_212 {
+    test_msgs__msg__BoundedSequences__int32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint32_values_default__MAX_SIZE: _bindgen_ty_213 =
+    _bindgen_ty_213::test_msgs__msg__BoundedSequences__uint32_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_213 {
+    test_msgs__msg__BoundedSequences__uint32_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__int64_values_default__MAX_SIZE: _bindgen_ty_214 =
+    _bindgen_ty_214::test_msgs__msg__BoundedSequences__int64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_214 {
+    test_msgs__msg__BoundedSequences__int64_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__uint64_values_default__MAX_SIZE: _bindgen_ty_215 =
+    _bindgen_ty_215::test_msgs__msg__BoundedSequences__uint64_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_215 {
+    test_msgs__msg__BoundedSequences__uint64_values_default__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__BoundedSequences__string_values_default__MAX_SIZE: _bindgen_ty_216 =
+    _bindgen_ty_216::test_msgs__msg__BoundedSequences__string_values_default__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_216 {
+    test_msgs__msg__BoundedSequences__string_values_default__MAX_SIZE = 3,
+}
+#[repr(C)]
+pub struct test_msgs__msg__BoundedSequences {
+    pub bool_values: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values: rosidl_runtime_c__octet__Sequence,
+    pub char_values: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values: rosidl_runtime_c__float__Sequence,
+    pub float64_values: rosidl_runtime_c__double__Sequence,
+    pub int8_values: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values: rosidl_runtime_c__uint64__Sequence,
+    pub string_values: rosidl_runtime_c__String__Sequence,
+    pub basic_types_values: test_msgs__msg__BasicTypes__Sequence,
+    pub constants_values: test_msgs__msg__Constants__Sequence,
+    pub defaults_values: test_msgs__msg__Defaults__Sequence,
+    pub bool_values_default: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values_default: rosidl_runtime_c__octet__Sequence,
+    pub char_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values_default: rosidl_runtime_c__float__Sequence,
+    pub float64_values_default: rosidl_runtime_c__double__Sequence,
+    pub int8_values_default: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values_default: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values_default: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values_default: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values_default: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values_default: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values_default: rosidl_runtime_c__uint64__Sequence,
+    pub string_values_default: rosidl_runtime_c__String__Sequence,
+    pub alignment_check: i32,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BoundedSequences() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BoundedSequences> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BoundedSequences>(),
+        752usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__BoundedSequences))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BoundedSequences>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__BoundedSequences)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        288usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values) as usize - ptr as usize },
+        312usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(string_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        336usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        384usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        408usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        432usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        456usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        480usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        504usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        528usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        552usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        576usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        600usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        624usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        648usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        672usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        696usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values_default) as usize - ptr as usize },
+        720usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(string_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).alignment_check) as usize - ptr as usize },
+        744usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences),
+            "::",
+            stringify!(alignment_check)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__BoundedSequences__Sequence {
+    pub data: *mut test_msgs__msg__BoundedSequences,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__BoundedSequences__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__BoundedSequences__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__BoundedSequences__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__BoundedSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__BoundedSequences__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__BoundedSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__BoundedSequences__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Empty {
+    pub structure_needs_at_least_one_member: u8,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Empty() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Empty> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Empty>(),
+        1usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Empty))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Empty>(),
+        1usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Empty))
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
+        },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Empty),
+            "::",
+            stringify!(structure_needs_at_least_one_member)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Empty__Sequence {
+    pub data: *mut test_msgs__msg__Empty,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Empty__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Empty__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Empty__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Empty__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Empty__Sequence>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Empty__Sequence))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Empty__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Empty__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Empty__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__msg__UnboundedSequences {
+    pub bool_values: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values: rosidl_runtime_c__octet__Sequence,
+    pub char_values: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values: rosidl_runtime_c__float__Sequence,
+    pub float64_values: rosidl_runtime_c__double__Sequence,
+    pub int8_values: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values: rosidl_runtime_c__uint64__Sequence,
+    pub string_values: rosidl_runtime_c__String__Sequence,
+    pub basic_types_values: test_msgs__msg__BasicTypes__Sequence,
+    pub constants_values: test_msgs__msg__Constants__Sequence,
+    pub defaults_values: test_msgs__msg__Defaults__Sequence,
+    pub bool_values_default: rosidl_runtime_c__boolean__Sequence,
+    pub byte_values_default: rosidl_runtime_c__octet__Sequence,
+    pub char_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub float32_values_default: rosidl_runtime_c__float__Sequence,
+    pub float64_values_default: rosidl_runtime_c__double__Sequence,
+    pub int8_values_default: rosidl_runtime_c__int8__Sequence,
+    pub uint8_values_default: rosidl_runtime_c__uint8__Sequence,
+    pub int16_values_default: rosidl_runtime_c__int16__Sequence,
+    pub uint16_values_default: rosidl_runtime_c__uint16__Sequence,
+    pub int32_values_default: rosidl_runtime_c__int32__Sequence,
+    pub uint32_values_default: rosidl_runtime_c__uint32__Sequence,
+    pub int64_values_default: rosidl_runtime_c__int64__Sequence,
+    pub uint64_values_default: rosidl_runtime_c__uint64__Sequence,
+    pub string_values_default: rosidl_runtime_c__String__Sequence,
+    pub alignment_check: i32,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__UnboundedSequences() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__UnboundedSequences> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__UnboundedSequences>(),
+        752usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__UnboundedSequences))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__UnboundedSequences>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__UnboundedSequences)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        288usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values) as usize - ptr as usize },
+        312usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(string_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        336usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        384usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        408usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        432usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        456usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        480usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        504usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        528usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        552usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        576usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        600usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        624usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        648usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        672usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        696usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values_default) as usize - ptr as usize },
+        720usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(string_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).alignment_check) as usize - ptr as usize },
+        744usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences),
+            "::",
+            stringify!(alignment_check)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__UnboundedSequences__Sequence {
+    pub data: *mut test_msgs__msg__UnboundedSequences,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__UnboundedSequences__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__UnboundedSequences__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__UnboundedSequences__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__UnboundedSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__UnboundedSequences__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__UnboundedSequences__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__UnboundedSequences__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__MultiNested__bounded_sequence_of_arrays__MAX_SIZE: _bindgen_ty_217 =
+    _bindgen_ty_217::test_msgs__msg__MultiNested__bounded_sequence_of_arrays__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_217 {
+    test_msgs__msg__MultiNested__bounded_sequence_of_arrays__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__MultiNested__bounded_sequence_of_bounded_sequences__MAX_SIZE:
+    _bindgen_ty_218 =
+    _bindgen_ty_218::test_msgs__msg__MultiNested__bounded_sequence_of_bounded_sequences__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_218 {
+    test_msgs__msg__MultiNested__bounded_sequence_of_bounded_sequences__MAX_SIZE = 3,
+}
+pub const test_msgs__msg__MultiNested__bounded_sequence_of_unbounded_sequences__MAX_SIZE:
+    _bindgen_ty_219 =
+    _bindgen_ty_219::test_msgs__msg__MultiNested__bounded_sequence_of_unbounded_sequences__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_219 {
+    test_msgs__msg__MultiNested__bounded_sequence_of_unbounded_sequences__MAX_SIZE = 3,
+}
+#[repr(C)]
+pub struct test_msgs__msg__MultiNested {
+    pub array_of_arrays: [test_msgs__msg__Arrays; 3usize],
+    pub array_of_bounded_sequences: [test_msgs__msg__BoundedSequences; 3usize],
+    pub array_of_unbounded_sequences: [test_msgs__msg__UnboundedSequences; 3usize],
+    pub bounded_sequence_of_arrays: test_msgs__msg__Arrays__Sequence,
+    pub bounded_sequence_of_bounded_sequences: test_msgs__msg__BoundedSequences__Sequence,
+    pub bounded_sequence_of_unbounded_sequences: test_msgs__msg__UnboundedSequences__Sequence,
+    pub unbounded_sequence_of_arrays: test_msgs__msg__Arrays__Sequence,
+    pub unbounded_sequence_of_bounded_sequences: test_msgs__msg__BoundedSequences__Sequence,
+    pub unbounded_sequence_of_unbounded_sequences: test_msgs__msg__UnboundedSequences__Sequence,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__MultiNested() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__MultiNested> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__MultiNested>(),
+        6864usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__MultiNested))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__MultiNested>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__MultiNested))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).array_of_arrays) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(array_of_arrays)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).array_of_bounded_sequences) as usize - ptr as usize },
+        2208usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(array_of_bounded_sequences)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).array_of_unbounded_sequences) as usize - ptr as usize
+        },
+        4464usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(array_of_unbounded_sequences)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bounded_sequence_of_arrays) as usize - ptr as usize },
+        6720usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(bounded_sequence_of_arrays)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_sequence_of_bounded_sequences) as usize
+                - ptr as usize
+        },
+        6744usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(bounded_sequence_of_bounded_sequences)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_sequence_of_unbounded_sequences) as usize
+                - ptr as usize
+        },
+        6768usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(bounded_sequence_of_unbounded_sequences)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).unbounded_sequence_of_arrays) as usize - ptr as usize
+        },
+        6792usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(unbounded_sequence_of_arrays)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).unbounded_sequence_of_bounded_sequences) as usize
+                - ptr as usize
+        },
+        6816usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(unbounded_sequence_of_bounded_sequences)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).unbounded_sequence_of_unbounded_sequences) as usize
+                - ptr as usize
+        },
+        6840usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested),
+            "::",
+            stringify!(unbounded_sequence_of_unbounded_sequences)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__MultiNested__Sequence {
+    pub data: *mut test_msgs__msg__MultiNested,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__MultiNested__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__MultiNested__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__MultiNested__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__msg__MultiNested__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__MultiNested__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__MultiNested__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__MultiNested__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Nested {
+    pub basic_types_value: test_msgs__msg__BasicTypes,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Nested() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Nested> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Nested>(),
+        48usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Nested))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Nested>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Nested))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Nested),
+            "::",
+            stringify!(basic_types_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Nested__Sequence {
+    pub data: *mut test_msgs__msg__Nested,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Nested__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Nested__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Nested__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Nested__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Nested__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Nested__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Nested__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Nested__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Nested__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__Strings__STRING_CONST: &[u8; 13usize] = b"Hello world!\0";
+pub const test_msgs__msg__Strings__bounded_string_value__MAX_STRING_SIZE: _bindgen_ty_220 =
+    _bindgen_ty_220::test_msgs__msg__Strings__bounded_string_value__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_220 {
+    test_msgs__msg__Strings__bounded_string_value__MAX_STRING_SIZE = 22,
+}
+pub const test_msgs__msg__Strings__bounded_string_value_default1__MAX_STRING_SIZE: _bindgen_ty_221 =
+    _bindgen_ty_221::test_msgs__msg__Strings__bounded_string_value_default1__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_221 {
+    test_msgs__msg__Strings__bounded_string_value_default1__MAX_STRING_SIZE = 22,
+}
+pub const test_msgs__msg__Strings__bounded_string_value_default2__MAX_STRING_SIZE: _bindgen_ty_222 =
+    _bindgen_ty_222::test_msgs__msg__Strings__bounded_string_value_default2__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_222 {
+    test_msgs__msg__Strings__bounded_string_value_default2__MAX_STRING_SIZE = 22,
+}
+pub const test_msgs__msg__Strings__bounded_string_value_default3__MAX_STRING_SIZE: _bindgen_ty_223 =
+    _bindgen_ty_223::test_msgs__msg__Strings__bounded_string_value_default3__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_223 {
+    test_msgs__msg__Strings__bounded_string_value_default3__MAX_STRING_SIZE = 22,
+}
+pub const test_msgs__msg__Strings__bounded_string_value_default4__MAX_STRING_SIZE: _bindgen_ty_224 =
+    _bindgen_ty_224::test_msgs__msg__Strings__bounded_string_value_default4__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_224 {
+    test_msgs__msg__Strings__bounded_string_value_default4__MAX_STRING_SIZE = 22,
+}
+pub const test_msgs__msg__Strings__bounded_string_value_default5__MAX_STRING_SIZE: _bindgen_ty_225 =
+    _bindgen_ty_225::test_msgs__msg__Strings__bounded_string_value_default5__MAX_STRING_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_225 {
+    test_msgs__msg__Strings__bounded_string_value_default5__MAX_STRING_SIZE = 22,
+}
+#[repr(C)]
+pub struct test_msgs__msg__Strings {
+    pub string_value: rosidl_runtime_c__String,
+    pub string_value_default1: rosidl_runtime_c__String,
+    pub string_value_default2: rosidl_runtime_c__String,
+    pub string_value_default3: rosidl_runtime_c__String,
+    pub string_value_default4: rosidl_runtime_c__String,
+    pub string_value_default5: rosidl_runtime_c__String,
+    pub bounded_string_value: rosidl_runtime_c__String,
+    pub bounded_string_value_default1: rosidl_runtime_c__String,
+    pub bounded_string_value_default2: rosidl_runtime_c__String,
+    pub bounded_string_value_default3: rosidl_runtime_c__String,
+    pub bounded_string_value_default4: rosidl_runtime_c__String,
+    pub bounded_string_value_default5: rosidl_runtime_c__String,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Strings() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Strings> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Strings>(),
+        288usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Strings))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Strings>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__Strings))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value_default1) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value_default1)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value_default2) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value_default2)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value_default3) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value_default3)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value_default4) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value_default4)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value_default5) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(string_value_default5)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bounded_string_value) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_string_value_default1) as usize - ptr as usize
+        },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value_default1)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_string_value_default2) as usize - ptr as usize
+        },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value_default2)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_string_value_default3) as usize - ptr as usize
+        },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value_default3)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_string_value_default4) as usize - ptr as usize
+        },
+        240usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value_default4)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_string_value_default5) as usize - ptr as usize
+        },
+        264usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings),
+            "::",
+            stringify!(bounded_string_value_default5)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__Strings__Sequence {
+    pub data: *mut test_msgs__msg__Strings,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__Strings__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__Strings__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__Strings__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__Strings__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__Strings__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__Strings__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__Strings__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+pub const test_msgs__msg__WStrings__bounded_sequence_of_wstrings__MAX_SIZE: _bindgen_ty_226 =
+    _bindgen_ty_226::test_msgs__msg__WStrings__bounded_sequence_of_wstrings__MAX_SIZE;
+#[repr(u32)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum _bindgen_ty_226 {
+    test_msgs__msg__WStrings__bounded_sequence_of_wstrings__MAX_SIZE = 3,
+}
+#[repr(C)]
+pub struct test_msgs__msg__WStrings {
+    pub wstring_value: rosidl_runtime_c__U16String,
+    pub wstring_value_default1: rosidl_runtime_c__U16String,
+    pub wstring_value_default2: rosidl_runtime_c__U16String,
+    pub wstring_value_default3: rosidl_runtime_c__U16String,
+    pub array_of_wstrings: [rosidl_runtime_c__U16String; 3usize],
+    pub bounded_sequence_of_wstrings: rosidl_runtime_c__U16String__Sequence,
+    pub unbounded_sequence_of_wstrings: rosidl_runtime_c__U16String__Sequence,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__WStrings() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__WStrings> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__WStrings>(),
+        216usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__WStrings))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__WStrings>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__msg__WStrings))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).wstring_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(wstring_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).wstring_value_default1) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(wstring_value_default1)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).wstring_value_default2) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(wstring_value_default2)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).wstring_value_default3) as usize - ptr as usize },
+        72usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(wstring_value_default3)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).array_of_wstrings) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(array_of_wstrings)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).bounded_sequence_of_wstrings) as usize - ptr as usize
+        },
+        168usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(bounded_sequence_of_wstrings)
+        )
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).unbounded_sequence_of_wstrings) as usize - ptr as usize
+        },
+        192usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings),
+            "::",
+            stringify!(unbounded_sequence_of_wstrings)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__msg__WStrings__Sequence {
+    pub data: *mut test_msgs__msg__WStrings,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__msg__WStrings__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__msg__WStrings__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__msg__WStrings__Sequence>(),
+        24usize,
+        concat!("Size of: ", stringify!(test_msgs__msg__WStrings__Sequence))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__msg__WStrings__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__msg__WStrings__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__msg__WStrings__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__srv__Arrays_Request {
+    pub bool_values: [bool; 3usize],
+    pub byte_values: [u8; 3usize],
+    pub char_values: [u8; 3usize],
+    pub float32_values: [f32; 3usize],
+    pub float64_values: [f64; 3usize],
+    pub int8_values: [i8; 3usize],
+    pub uint8_values: [u8; 3usize],
+    pub int16_values: [i16; 3usize],
+    pub uint16_values: [u16; 3usize],
+    pub int32_values: [i32; 3usize],
+    pub uint32_values: [u32; 3usize],
+    pub int64_values: [i64; 3usize],
+    pub uint64_values: [u64; 3usize],
+    pub string_values: [rosidl_runtime_c__String; 3usize],
+    pub basic_types_values: [test_msgs__msg__BasicTypes; 3usize],
+    pub constants_values: [test_msgs__msg__Constants; 3usize],
+    pub defaults_values: [test_msgs__msg__Defaults; 3usize],
+    pub bool_values_default: [bool; 3usize],
+    pub byte_values_default: [u8; 3usize],
+    pub char_values_default: [u8; 3usize],
+    pub float32_values_default: [f32; 3usize],
+    pub float64_values_default: [f64; 3usize],
+    pub int8_values_default: [i8; 3usize],
+    pub uint8_values_default: [u8; 3usize],
+    pub int16_values_default: [i16; 3usize],
+    pub uint16_values_default: [u16; 3usize],
+    pub int32_values_default: [i32; 3usize],
+    pub uint32_values_default: [u32; 3usize],
+    pub int64_values_default: [i64; 3usize],
+    pub uint64_values_default: [u64; 3usize],
+    pub string_values_default: [rosidl_runtime_c__String; 3usize],
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Arrays_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Arrays_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Arrays_Request>(),
+        728usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__Arrays_Request))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Arrays_Request>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__srv__Arrays_Request))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        3usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        6usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        51usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        54usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        60usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        68usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(string_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        368usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        512usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        515usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        518usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        524usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        536usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        560usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        563usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        566usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        572usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        580usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        592usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        608usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        632usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values_default) as usize - ptr as usize },
+        656usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request),
+            "::",
+            stringify!(string_values_default)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Arrays_Request__Sequence {
+    pub data: *mut test_msgs__srv__Arrays_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Arrays_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Arrays_Request__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Arrays_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__Arrays_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Arrays_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__Arrays_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__srv__Arrays_Response {
+    pub bool_values: [bool; 3usize],
+    pub byte_values: [u8; 3usize],
+    pub char_values: [u8; 3usize],
+    pub float32_values: [f32; 3usize],
+    pub float64_values: [f64; 3usize],
+    pub int8_values: [i8; 3usize],
+    pub uint8_values: [u8; 3usize],
+    pub int16_values: [i16; 3usize],
+    pub uint16_values: [u16; 3usize],
+    pub int32_values: [i32; 3usize],
+    pub uint32_values: [u32; 3usize],
+    pub int64_values: [i64; 3usize],
+    pub uint64_values: [u64; 3usize],
+    pub string_values: [rosidl_runtime_c__String; 3usize],
+    pub basic_types_values: [test_msgs__msg__BasicTypes; 3usize],
+    pub constants_values: [test_msgs__msg__Constants; 3usize],
+    pub defaults_values: [test_msgs__msg__Defaults; 3usize],
+    pub bool_values_default: [bool; 3usize],
+    pub byte_values_default: [u8; 3usize],
+    pub char_values_default: [u8; 3usize],
+    pub float32_values_default: [f32; 3usize],
+    pub float64_values_default: [f64; 3usize],
+    pub int8_values_default: [i8; 3usize],
+    pub uint8_values_default: [u8; 3usize],
+    pub int16_values_default: [i16; 3usize],
+    pub uint16_values_default: [u16; 3usize],
+    pub int32_values_default: [i32; 3usize],
+    pub uint32_values_default: [u32; 3usize],
+    pub int64_values_default: [i64; 3usize],
+    pub uint64_values_default: [u64; 3usize],
+    pub string_values_default: [rosidl_runtime_c__String; 3usize],
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Arrays_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Arrays_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Arrays_Response>(),
+        728usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__Arrays_Response))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Arrays_Response>(),
+        8usize,
+        concat!("Alignment of ", stringify!(test_msgs__srv__Arrays_Response))
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(bool_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values) as usize - ptr as usize },
+        3usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(byte_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values) as usize - ptr as usize },
+        6usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(char_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values) as usize - ptr as usize },
+        12usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(float32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(float64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values) as usize - ptr as usize },
+        51usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint8_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values) as usize - ptr as usize },
+        54usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values) as usize - ptr as usize },
+        60usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint16_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values) as usize - ptr as usize },
+        68usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values) as usize - ptr as usize },
+        80usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint32_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values) as usize - ptr as usize },
+        96usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values) as usize - ptr as usize },
+        120usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint64_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values) as usize - ptr as usize },
+        144usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(string_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).basic_types_values) as usize - ptr as usize },
+        216usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(basic_types_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).constants_values) as usize - ptr as usize },
+        360usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(constants_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).defaults_values) as usize - ptr as usize },
+        368usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(defaults_values)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_values_default) as usize - ptr as usize },
+        512usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(bool_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_values_default) as usize - ptr as usize },
+        515usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(byte_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_values_default) as usize - ptr as usize },
+        518usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(char_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_values_default) as usize - ptr as usize },
+        524usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(float32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_values_default) as usize - ptr as usize },
+        536usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(float64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_values_default) as usize - ptr as usize },
+        560usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_values_default) as usize - ptr as usize },
+        563usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint8_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_values_default) as usize - ptr as usize },
+        566usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_values_default) as usize - ptr as usize },
+        572usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint16_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_values_default) as usize - ptr as usize },
+        580usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_values_default) as usize - ptr as usize },
+        592usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint32_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_values_default) as usize - ptr as usize },
+        608usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(int64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_values_default) as usize - ptr as usize },
+        632usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(uint64_values_default)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_values_default) as usize - ptr as usize },
+        656usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response),
+            "::",
+            stringify!(string_values_default)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Arrays_Response__Sequence {
+    pub data: *mut test_msgs__srv__Arrays_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Arrays_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Arrays_Response__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Arrays_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__Arrays_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Arrays_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__Arrays_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Arrays_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__srv__BasicTypes_Request {
+    pub bool_value: bool,
+    pub byte_value: u8,
+    pub char_value: u8,
+    pub float32_value: f32,
+    pub float64_value: f64,
+    pub int8_value: i8,
+    pub uint8_value: u8,
+    pub int16_value: i16,
+    pub uint16_value: u16,
+    pub int32_value: i32,
+    pub uint32_value: u32,
+    pub int64_value: i64,
+    pub uint64_value: u64,
+    pub string_value: rosidl_runtime_c__String,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__BasicTypes_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__BasicTypes_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__BasicTypes_Request>(),
+        72usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__BasicTypes_Request))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__BasicTypes_Request>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__BasicTypes_Request)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(bool_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_value) as usize - ptr as usize },
+        1usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(byte_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_value) as usize - ptr as usize },
+        2usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(char_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_value) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(float32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_value) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(float64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_value) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(int8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_value) as usize - ptr as usize },
+        17usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(uint8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_value) as usize - ptr as usize },
+        18usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(int16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_value) as usize - ptr as usize },
+        20usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(uint16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_value) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(int32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_value) as usize - ptr as usize },
+        28usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(uint32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_value) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(int64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_value) as usize - ptr as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(uint64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request),
+            "::",
+            stringify!(string_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__BasicTypes_Request__Sequence {
+    pub data: *mut test_msgs__srv__BasicTypes_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__BasicTypes_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__BasicTypes_Request__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__BasicTypes_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__BasicTypes_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__BasicTypes_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__BasicTypes_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct test_msgs__srv__BasicTypes_Response {
+    pub bool_value: bool,
+    pub byte_value: u8,
+    pub char_value: u8,
+    pub float32_value: f32,
+    pub float64_value: f64,
+    pub int8_value: i8,
+    pub uint8_value: u8,
+    pub int16_value: i16,
+    pub uint16_value: u16,
+    pub int32_value: i32,
+    pub uint32_value: u32,
+    pub int64_value: i64,
+    pub uint64_value: u64,
+    pub string_value: rosidl_runtime_c__String,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__BasicTypes_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__BasicTypes_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__BasicTypes_Response>(),
+        72usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__BasicTypes_Response))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__BasicTypes_Response>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__BasicTypes_Response)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).bool_value) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(bool_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).byte_value) as usize - ptr as usize },
+        1usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(byte_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).char_value) as usize - ptr as usize },
+        2usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(char_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float32_value) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(float32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).float64_value) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(float64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int8_value) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(int8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint8_value) as usize - ptr as usize },
+        17usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(uint8_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int16_value) as usize - ptr as usize },
+        18usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(int16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint16_value) as usize - ptr as usize },
+        20usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(uint16_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int32_value) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(int32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint32_value) as usize - ptr as usize },
+        28usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(uint32_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).int64_value) as usize - ptr as usize },
+        32usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(int64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uint64_value) as usize - ptr as usize },
+        40usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(uint64_value)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).string_value) as usize - ptr as usize },
+        48usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response),
+            "::",
+            stringify!(string_value)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__BasicTypes_Response__Sequence {
+    pub data: *mut test_msgs__srv__BasicTypes_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__BasicTypes_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__BasicTypes_Response__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__BasicTypes_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__BasicTypes_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__BasicTypes_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__BasicTypes_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__BasicTypes_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Empty_Request {
+    pub structure_needs_at_least_one_member: u8,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Empty_Request() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Empty_Request> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Empty_Request>(),
+        1usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__Empty_Request))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Empty_Request>(),
+        1usize,
+        concat!("Alignment of ", stringify!(test_msgs__srv__Empty_Request))
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
+        },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Request),
+            "::",
+            stringify!(structure_needs_at_least_one_member)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Empty_Request__Sequence {
+    pub data: *mut test_msgs__srv__Empty_Request,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Empty_Request__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Empty_Request__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Empty_Request__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__Empty_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Empty_Request__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__Empty_Request__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Request__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Request__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Request__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Empty_Response {
+    pub structure_needs_at_least_one_member: u8,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Empty_Response() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Empty_Response> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Empty_Response>(),
+        1usize,
+        concat!("Size of: ", stringify!(test_msgs__srv__Empty_Response))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Empty_Response>(),
+        1usize,
+        concat!("Alignment of ", stringify!(test_msgs__srv__Empty_Response))
+    );
+    assert_eq!(
+        unsafe {
+            ::std::ptr::addr_of!((*ptr).structure_needs_at_least_one_member) as usize - ptr as usize
+        },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Response),
+            "::",
+            stringify!(structure_needs_at_least_one_member)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct test_msgs__srv__Empty_Response__Sequence {
+    pub data: *mut test_msgs__srv__Empty_Response,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_test_msgs__srv__Empty_Response__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<test_msgs__srv__Empty_Response__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<test_msgs__srv__Empty_Response__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(test_msgs__srv__Empty_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<test_msgs__srv__Empty_Response__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(test_msgs__srv__Empty_Response__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Response__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Response__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(test_msgs__srv__Empty_Response__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
 pub struct tf2_msgs__action__LookupTransform_Goal {
     pub target_frame: rosidl_runtime_c__String,
     pub source_frame: rosidl_runtime_c__String,
@@ -20750,53 +25440,53 @@ fn bindgen_test_layout_tf2_msgs__action__LookupTransform_Goal__Sequence() {
         )
     );
 }
-pub const tf2_msgs__msg__TF2Error__NO_ERROR: _bindgen_ty_147 =
-    _bindgen_ty_147::tf2_msgs__msg__TF2Error__NO_ERROR;
+pub const tf2_msgs__msg__TF2Error__NO_ERROR: _bindgen_ty_227 =
+    _bindgen_ty_227::tf2_msgs__msg__TF2Error__NO_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_147 {
+pub enum _bindgen_ty_227 {
     tf2_msgs__msg__TF2Error__NO_ERROR = 0,
 }
-pub const tf2_msgs__msg__TF2Error__LOOKUP_ERROR: _bindgen_ty_148 =
-    _bindgen_ty_148::tf2_msgs__msg__TF2Error__LOOKUP_ERROR;
+pub const tf2_msgs__msg__TF2Error__LOOKUP_ERROR: _bindgen_ty_228 =
+    _bindgen_ty_228::tf2_msgs__msg__TF2Error__LOOKUP_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_148 {
+pub enum _bindgen_ty_228 {
     tf2_msgs__msg__TF2Error__LOOKUP_ERROR = 1,
 }
-pub const tf2_msgs__msg__TF2Error__CONNECTIVITY_ERROR: _bindgen_ty_149 =
-    _bindgen_ty_149::tf2_msgs__msg__TF2Error__CONNECTIVITY_ERROR;
+pub const tf2_msgs__msg__TF2Error__CONNECTIVITY_ERROR: _bindgen_ty_229 =
+    _bindgen_ty_229::tf2_msgs__msg__TF2Error__CONNECTIVITY_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_149 {
+pub enum _bindgen_ty_229 {
     tf2_msgs__msg__TF2Error__CONNECTIVITY_ERROR = 2,
 }
-pub const tf2_msgs__msg__TF2Error__EXTRAPOLATION_ERROR: _bindgen_ty_150 =
-    _bindgen_ty_150::tf2_msgs__msg__TF2Error__EXTRAPOLATION_ERROR;
+pub const tf2_msgs__msg__TF2Error__EXTRAPOLATION_ERROR: _bindgen_ty_230 =
+    _bindgen_ty_230::tf2_msgs__msg__TF2Error__EXTRAPOLATION_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_150 {
+pub enum _bindgen_ty_230 {
     tf2_msgs__msg__TF2Error__EXTRAPOLATION_ERROR = 3,
 }
-pub const tf2_msgs__msg__TF2Error__INVALID_ARGUMENT_ERROR: _bindgen_ty_151 =
-    _bindgen_ty_151::tf2_msgs__msg__TF2Error__INVALID_ARGUMENT_ERROR;
+pub const tf2_msgs__msg__TF2Error__INVALID_ARGUMENT_ERROR: _bindgen_ty_231 =
+    _bindgen_ty_231::tf2_msgs__msg__TF2Error__INVALID_ARGUMENT_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_151 {
+pub enum _bindgen_ty_231 {
     tf2_msgs__msg__TF2Error__INVALID_ARGUMENT_ERROR = 4,
 }
-pub const tf2_msgs__msg__TF2Error__TIMEOUT_ERROR: _bindgen_ty_152 =
-    _bindgen_ty_152::tf2_msgs__msg__TF2Error__TIMEOUT_ERROR;
+pub const tf2_msgs__msg__TF2Error__TIMEOUT_ERROR: _bindgen_ty_232 =
+    _bindgen_ty_232::tf2_msgs__msg__TF2Error__TIMEOUT_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_152 {
+pub enum _bindgen_ty_232 {
     tf2_msgs__msg__TF2Error__TIMEOUT_ERROR = 5,
 }
-pub const tf2_msgs__msg__TF2Error__TRANSFORM_ERROR: _bindgen_ty_153 =
-    _bindgen_ty_153::tf2_msgs__msg__TF2Error__TRANSFORM_ERROR;
+pub const tf2_msgs__msg__TF2Error__TRANSFORM_ERROR: _bindgen_ty_233 =
+    _bindgen_ty_233::tf2_msgs__msg__TF2Error__TRANSFORM_ERROR;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_153 {
+pub enum _bindgen_ty_233 {
     tf2_msgs__msg__TF2Error__TRANSFORM_ERROR = 6,
 }
 #[repr(C)]
@@ -22404,53 +27094,53 @@ fn bindgen_test_layout_trajectory_msgs__msg__MultiDOFJointTrajectory__Sequence()
         )
     );
 }
-pub const visualization_msgs__msg__ImageMarker__CIRCLE: _bindgen_ty_154 =
-    _bindgen_ty_154::visualization_msgs__msg__ImageMarker__CIRCLE;
+pub const visualization_msgs__msg__ImageMarker__CIRCLE: _bindgen_ty_234 =
+    _bindgen_ty_234::visualization_msgs__msg__ImageMarker__CIRCLE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_154 {
+pub enum _bindgen_ty_234 {
     visualization_msgs__msg__ImageMarker__CIRCLE = 0,
 }
-pub const visualization_msgs__msg__ImageMarker__LINE_STRIP: _bindgen_ty_155 =
-    _bindgen_ty_155::visualization_msgs__msg__ImageMarker__LINE_STRIP;
+pub const visualization_msgs__msg__ImageMarker__LINE_STRIP: _bindgen_ty_235 =
+    _bindgen_ty_235::visualization_msgs__msg__ImageMarker__LINE_STRIP;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_155 {
+pub enum _bindgen_ty_235 {
     visualization_msgs__msg__ImageMarker__LINE_STRIP = 1,
 }
-pub const visualization_msgs__msg__ImageMarker__LINE_LIST: _bindgen_ty_156 =
-    _bindgen_ty_156::visualization_msgs__msg__ImageMarker__LINE_LIST;
+pub const visualization_msgs__msg__ImageMarker__LINE_LIST: _bindgen_ty_236 =
+    _bindgen_ty_236::visualization_msgs__msg__ImageMarker__LINE_LIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_156 {
+pub enum _bindgen_ty_236 {
     visualization_msgs__msg__ImageMarker__LINE_LIST = 2,
 }
-pub const visualization_msgs__msg__ImageMarker__POLYGON: _bindgen_ty_157 =
-    _bindgen_ty_157::visualization_msgs__msg__ImageMarker__POLYGON;
+pub const visualization_msgs__msg__ImageMarker__POLYGON: _bindgen_ty_237 =
+    _bindgen_ty_237::visualization_msgs__msg__ImageMarker__POLYGON;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_157 {
+pub enum _bindgen_ty_237 {
     visualization_msgs__msg__ImageMarker__POLYGON = 3,
 }
-pub const visualization_msgs__msg__ImageMarker__POINTS: _bindgen_ty_158 =
-    _bindgen_ty_158::visualization_msgs__msg__ImageMarker__POINTS;
+pub const visualization_msgs__msg__ImageMarker__POINTS: _bindgen_ty_238 =
+    _bindgen_ty_238::visualization_msgs__msg__ImageMarker__POINTS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_158 {
+pub enum _bindgen_ty_238 {
     visualization_msgs__msg__ImageMarker__POINTS = 4,
 }
-pub const visualization_msgs__msg__ImageMarker__ADD: _bindgen_ty_159 =
-    _bindgen_ty_159::visualization_msgs__msg__ImageMarker__ADD;
+pub const visualization_msgs__msg__ImageMarker__ADD: _bindgen_ty_239 =
+    _bindgen_ty_239::visualization_msgs__msg__ImageMarker__ADD;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_159 {
+pub enum _bindgen_ty_239 {
     visualization_msgs__msg__ImageMarker__ADD = 0,
 }
-pub const visualization_msgs__msg__ImageMarker__REMOVE: _bindgen_ty_160 =
-    _bindgen_ty_160::visualization_msgs__msg__ImageMarker__REMOVE;
+pub const visualization_msgs__msg__ImageMarker__REMOVE: _bindgen_ty_240 =
+    _bindgen_ty_240::visualization_msgs__msg__ImageMarker__REMOVE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_160 {
+pub enum _bindgen_ty_240 {
     visualization_msgs__msg__ImageMarker__REMOVE = 1,
 }
 #[repr(C)]
@@ -22680,25 +27370,25 @@ fn bindgen_test_layout_visualization_msgs__msg__ImageMarker__Sequence() {
         )
     );
 }
-pub const visualization_msgs__msg__MenuEntry__FEEDBACK: _bindgen_ty_161 =
-    _bindgen_ty_161::visualization_msgs__msg__MenuEntry__FEEDBACK;
+pub const visualization_msgs__msg__MenuEntry__FEEDBACK: _bindgen_ty_241 =
+    _bindgen_ty_241::visualization_msgs__msg__MenuEntry__FEEDBACK;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_161 {
+pub enum _bindgen_ty_241 {
     visualization_msgs__msg__MenuEntry__FEEDBACK = 0,
 }
-pub const visualization_msgs__msg__MenuEntry__ROSRUN: _bindgen_ty_162 =
-    _bindgen_ty_162::visualization_msgs__msg__MenuEntry__ROSRUN;
+pub const visualization_msgs__msg__MenuEntry__ROSRUN: _bindgen_ty_242 =
+    _bindgen_ty_242::visualization_msgs__msg__MenuEntry__ROSRUN;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_162 {
+pub enum _bindgen_ty_242 {
     visualization_msgs__msg__MenuEntry__ROSRUN = 1,
 }
-pub const visualization_msgs__msg__MenuEntry__ROSLAUNCH: _bindgen_ty_163 =
-    _bindgen_ty_163::visualization_msgs__msg__MenuEntry__ROSLAUNCH;
+pub const visualization_msgs__msg__MenuEntry__ROSLAUNCH: _bindgen_ty_243 =
+    _bindgen_ty_243::visualization_msgs__msg__MenuEntry__ROSLAUNCH;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_163 {
+pub enum _bindgen_ty_243 {
     visualization_msgs__msg__MenuEntry__ROSLAUNCH = 2,
 }
 #[repr(C)]
@@ -22837,208 +27527,418 @@ fn bindgen_test_layout_visualization_msgs__msg__MenuEntry__Sequence() {
         )
     );
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__INHERIT: _bindgen_ty_164 =
-    _bindgen_ty_164::visualization_msgs__msg__InteractiveMarkerControl__INHERIT;
+pub const visualization_msgs__msg__InteractiveMarkerControl__INHERIT: _bindgen_ty_244 =
+    _bindgen_ty_244::visualization_msgs__msg__InteractiveMarkerControl__INHERIT;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_164 {
+pub enum _bindgen_ty_244 {
     visualization_msgs__msg__InteractiveMarkerControl__INHERIT = 0,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__FIXED: _bindgen_ty_165 =
-    _bindgen_ty_165::visualization_msgs__msg__InteractiveMarkerControl__FIXED;
+pub const visualization_msgs__msg__InteractiveMarkerControl__FIXED: _bindgen_ty_245 =
+    _bindgen_ty_245::visualization_msgs__msg__InteractiveMarkerControl__FIXED;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_165 {
+pub enum _bindgen_ty_245 {
     visualization_msgs__msg__InteractiveMarkerControl__FIXED = 1,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING: _bindgen_ty_166 =
-    _bindgen_ty_166::visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING;
+pub const visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING: _bindgen_ty_246 =
+    _bindgen_ty_246::visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_166 {
+pub enum _bindgen_ty_246 {
     visualization_msgs__msg__InteractiveMarkerControl__VIEW_FACING = 2,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__NONE: _bindgen_ty_167 =
-    _bindgen_ty_167::visualization_msgs__msg__InteractiveMarkerControl__NONE;
+pub const visualization_msgs__msg__InteractiveMarkerControl__NONE: _bindgen_ty_247 =
+    _bindgen_ty_247::visualization_msgs__msg__InteractiveMarkerControl__NONE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_167 {
+pub enum _bindgen_ty_247 {
     visualization_msgs__msg__InteractiveMarkerControl__NONE = 0,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MENU: _bindgen_ty_168 =
-    _bindgen_ty_168::visualization_msgs__msg__InteractiveMarkerControl__MENU;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MENU: _bindgen_ty_248 =
+    _bindgen_ty_248::visualization_msgs__msg__InteractiveMarkerControl__MENU;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_168 {
+pub enum _bindgen_ty_248 {
     visualization_msgs__msg__InteractiveMarkerControl__MENU = 1,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__BUTTON: _bindgen_ty_169 =
-    _bindgen_ty_169::visualization_msgs__msg__InteractiveMarkerControl__BUTTON;
+pub const visualization_msgs__msg__InteractiveMarkerControl__BUTTON: _bindgen_ty_249 =
+    _bindgen_ty_249::visualization_msgs__msg__InteractiveMarkerControl__BUTTON;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_169 {
+pub enum _bindgen_ty_249 {
     visualization_msgs__msg__InteractiveMarkerControl__BUTTON = 2,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS: _bindgen_ty_170 =
-    _bindgen_ty_170::visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS: _bindgen_ty_250 =
+    _bindgen_ty_250::visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_170 {
+pub enum _bindgen_ty_250 {
     visualization_msgs__msg__InteractiveMarkerControl__MOVE_AXIS = 3,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE: _bindgen_ty_171 =
-    _bindgen_ty_171::visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE: _bindgen_ty_251 =
+    _bindgen_ty_251::visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_171 {
+pub enum _bindgen_ty_251 {
     visualization_msgs__msg__InteractiveMarkerControl__MOVE_PLANE = 4,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS: _bindgen_ty_172 =
-    _bindgen_ty_172::visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS;
+pub const visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS: _bindgen_ty_252 =
+    _bindgen_ty_252::visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_172 {
+pub enum _bindgen_ty_252 {
     visualization_msgs__msg__InteractiveMarkerControl__ROTATE_AXIS = 5,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE: _bindgen_ty_173 =
-    _bindgen_ty_173::visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE: _bindgen_ty_253 =
+    _bindgen_ty_253::visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_173 {
+pub enum _bindgen_ty_253 {
     visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE = 6,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D: _bindgen_ty_174 =
-    _bindgen_ty_174::visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D: _bindgen_ty_254 =
+    _bindgen_ty_254::visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_174 {
+pub enum _bindgen_ty_254 {
     visualization_msgs__msg__InteractiveMarkerControl__MOVE_3D = 7,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D: _bindgen_ty_175 =
-    _bindgen_ty_175::visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D;
+pub const visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D: _bindgen_ty_255 =
+    _bindgen_ty_255::visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_175 {
+pub enum _bindgen_ty_255 {
     visualization_msgs__msg__InteractiveMarkerControl__ROTATE_3D = 8,
 }
-pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D: _bindgen_ty_176 =
-    _bindgen_ty_176::visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D;
+pub const visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D: _bindgen_ty_256 =
+    _bindgen_ty_256::visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_176 {
+pub enum _bindgen_ty_256 {
     visualization_msgs__msg__InteractiveMarkerControl__MOVE_ROTATE_3D = 9,
 }
-pub const visualization_msgs__msg__Marker__ARROW: _bindgen_ty_177 =
-    _bindgen_ty_177::visualization_msgs__msg__Marker__ARROW;
+pub const visualization_msgs__msg__Marker__ARROW: _bindgen_ty_257 =
+    _bindgen_ty_257::visualization_msgs__msg__Marker__ARROW;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_177 {
+pub enum _bindgen_ty_257 {
     visualization_msgs__msg__Marker__ARROW = 0,
 }
-pub const visualization_msgs__msg__Marker__CUBE: _bindgen_ty_178 =
-    _bindgen_ty_178::visualization_msgs__msg__Marker__CUBE;
+pub const visualization_msgs__msg__Marker__CUBE: _bindgen_ty_258 =
+    _bindgen_ty_258::visualization_msgs__msg__Marker__CUBE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_178 {
+pub enum _bindgen_ty_258 {
     visualization_msgs__msg__Marker__CUBE = 1,
 }
-pub const visualization_msgs__msg__Marker__SPHERE: _bindgen_ty_179 =
-    _bindgen_ty_179::visualization_msgs__msg__Marker__SPHERE;
+pub const visualization_msgs__msg__Marker__SPHERE: _bindgen_ty_259 =
+    _bindgen_ty_259::visualization_msgs__msg__Marker__SPHERE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_179 {
+pub enum _bindgen_ty_259 {
     visualization_msgs__msg__Marker__SPHERE = 2,
 }
-pub const visualization_msgs__msg__Marker__CYLINDER: _bindgen_ty_180 =
-    _bindgen_ty_180::visualization_msgs__msg__Marker__CYLINDER;
+pub const visualization_msgs__msg__Marker__CYLINDER: _bindgen_ty_260 =
+    _bindgen_ty_260::visualization_msgs__msg__Marker__CYLINDER;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_180 {
+pub enum _bindgen_ty_260 {
     visualization_msgs__msg__Marker__CYLINDER = 3,
 }
-pub const visualization_msgs__msg__Marker__LINE_STRIP: _bindgen_ty_181 =
-    _bindgen_ty_181::visualization_msgs__msg__Marker__LINE_STRIP;
+pub const visualization_msgs__msg__Marker__LINE_STRIP: _bindgen_ty_261 =
+    _bindgen_ty_261::visualization_msgs__msg__Marker__LINE_STRIP;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_181 {
+pub enum _bindgen_ty_261 {
     visualization_msgs__msg__Marker__LINE_STRIP = 4,
 }
-pub const visualization_msgs__msg__Marker__LINE_LIST: _bindgen_ty_182 =
-    _bindgen_ty_182::visualization_msgs__msg__Marker__LINE_LIST;
+pub const visualization_msgs__msg__Marker__LINE_LIST: _bindgen_ty_262 =
+    _bindgen_ty_262::visualization_msgs__msg__Marker__LINE_LIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_182 {
+pub enum _bindgen_ty_262 {
     visualization_msgs__msg__Marker__LINE_LIST = 5,
 }
-pub const visualization_msgs__msg__Marker__CUBE_LIST: _bindgen_ty_183 =
-    _bindgen_ty_183::visualization_msgs__msg__Marker__CUBE_LIST;
+pub const visualization_msgs__msg__Marker__CUBE_LIST: _bindgen_ty_263 =
+    _bindgen_ty_263::visualization_msgs__msg__Marker__CUBE_LIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_183 {
+pub enum _bindgen_ty_263 {
     visualization_msgs__msg__Marker__CUBE_LIST = 6,
 }
-pub const visualization_msgs__msg__Marker__SPHERE_LIST: _bindgen_ty_184 =
-    _bindgen_ty_184::visualization_msgs__msg__Marker__SPHERE_LIST;
+pub const visualization_msgs__msg__Marker__SPHERE_LIST: _bindgen_ty_264 =
+    _bindgen_ty_264::visualization_msgs__msg__Marker__SPHERE_LIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_184 {
+pub enum _bindgen_ty_264 {
     visualization_msgs__msg__Marker__SPHERE_LIST = 7,
 }
-pub const visualization_msgs__msg__Marker__POINTS: _bindgen_ty_185 =
-    _bindgen_ty_185::visualization_msgs__msg__Marker__POINTS;
+pub const visualization_msgs__msg__Marker__POINTS: _bindgen_ty_265 =
+    _bindgen_ty_265::visualization_msgs__msg__Marker__POINTS;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_185 {
+pub enum _bindgen_ty_265 {
     visualization_msgs__msg__Marker__POINTS = 8,
 }
-pub const visualization_msgs__msg__Marker__TEXT_VIEW_FACING: _bindgen_ty_186 =
-    _bindgen_ty_186::visualization_msgs__msg__Marker__TEXT_VIEW_FACING;
+pub const visualization_msgs__msg__Marker__TEXT_VIEW_FACING: _bindgen_ty_266 =
+    _bindgen_ty_266::visualization_msgs__msg__Marker__TEXT_VIEW_FACING;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_186 {
+pub enum _bindgen_ty_266 {
     visualization_msgs__msg__Marker__TEXT_VIEW_FACING = 9,
 }
-pub const visualization_msgs__msg__Marker__MESH_RESOURCE: _bindgen_ty_187 =
-    _bindgen_ty_187::visualization_msgs__msg__Marker__MESH_RESOURCE;
+pub const visualization_msgs__msg__Marker__MESH_RESOURCE: _bindgen_ty_267 =
+    _bindgen_ty_267::visualization_msgs__msg__Marker__MESH_RESOURCE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_187 {
+pub enum _bindgen_ty_267 {
     visualization_msgs__msg__Marker__MESH_RESOURCE = 10,
 }
-pub const visualization_msgs__msg__Marker__TRIANGLE_LIST: _bindgen_ty_188 =
-    _bindgen_ty_188::visualization_msgs__msg__Marker__TRIANGLE_LIST;
+pub const visualization_msgs__msg__Marker__TRIANGLE_LIST: _bindgen_ty_268 =
+    _bindgen_ty_268::visualization_msgs__msg__Marker__TRIANGLE_LIST;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_188 {
+pub enum _bindgen_ty_268 {
     visualization_msgs__msg__Marker__TRIANGLE_LIST = 11,
 }
-pub const visualization_msgs__msg__Marker__ADD: _bindgen_ty_189 =
-    _bindgen_ty_189::visualization_msgs__msg__Marker__ADD;
+pub const visualization_msgs__msg__Marker__ADD: _bindgen_ty_269 =
+    _bindgen_ty_269::visualization_msgs__msg__Marker__ADD;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_189 {
+pub enum _bindgen_ty_269 {
     visualization_msgs__msg__Marker__ADD = 0,
 }
-pub const visualization_msgs__msg__Marker__MODIFY: _bindgen_ty_190 =
-    _bindgen_ty_190::visualization_msgs__msg__Marker__MODIFY;
+pub const visualization_msgs__msg__Marker__MODIFY: _bindgen_ty_270 =
+    _bindgen_ty_270::visualization_msgs__msg__Marker__MODIFY;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_190 {
+pub enum _bindgen_ty_270 {
     visualization_msgs__msg__Marker__MODIFY = 0,
 }
-pub const visualization_msgs__msg__Marker__DELETE: _bindgen_ty_191 =
-    _bindgen_ty_191::visualization_msgs__msg__Marker__DELETE;
+pub const visualization_msgs__msg__Marker__DELETE: _bindgen_ty_271 =
+    _bindgen_ty_271::visualization_msgs__msg__Marker__DELETE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_191 {
+pub enum _bindgen_ty_271 {
     visualization_msgs__msg__Marker__DELETE = 2,
 }
-pub const visualization_msgs__msg__Marker__DELETEALL: _bindgen_ty_192 =
-    _bindgen_ty_192::visualization_msgs__msg__Marker__DELETEALL;
+pub const visualization_msgs__msg__Marker__DELETEALL: _bindgen_ty_272 =
+    _bindgen_ty_272::visualization_msgs__msg__Marker__DELETEALL;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_192 {
+pub enum _bindgen_ty_272 {
     visualization_msgs__msg__Marker__DELETEALL = 3,
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct visualization_msgs__msg__UVCoordinate {
+    pub u: f32,
+    pub v: f32,
+}
+#[test]
+fn bindgen_test_layout_visualization_msgs__msg__UVCoordinate() {
+    const UNINIT: ::std::mem::MaybeUninit<visualization_msgs__msg__UVCoordinate> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<visualization_msgs__msg__UVCoordinate>(),
+        8usize,
+        concat!(
+            "Size of: ",
+            stringify!(visualization_msgs__msg__UVCoordinate)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<visualization_msgs__msg__UVCoordinate>(),
+        4usize,
+        concat!(
+            "Alignment of ",
+            stringify!(visualization_msgs__msg__UVCoordinate)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).u) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__UVCoordinate),
+            "::",
+            stringify!(u)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).v) as usize - ptr as usize },
+        4usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__UVCoordinate),
+            "::",
+            stringify!(v)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct visualization_msgs__msg__UVCoordinate__Sequence {
+    pub data: *mut visualization_msgs__msg__UVCoordinate,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_visualization_msgs__msg__UVCoordinate__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<visualization_msgs__msg__UVCoordinate__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<visualization_msgs__msg__UVCoordinate__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(visualization_msgs__msg__UVCoordinate__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<visualization_msgs__msg__UVCoordinate__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(visualization_msgs__msg__UVCoordinate__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__UVCoordinate__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__UVCoordinate__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__UVCoordinate__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
+}
+#[repr(C)]
+pub struct visualization_msgs__msg__MeshFile {
+    pub filename: rosidl_runtime_c__String,
+    pub data: rosidl_runtime_c__uint8__Sequence,
+}
+#[test]
+fn bindgen_test_layout_visualization_msgs__msg__MeshFile() {
+    const UNINIT: ::std::mem::MaybeUninit<visualization_msgs__msg__MeshFile> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<visualization_msgs__msg__MeshFile>(),
+        48usize,
+        concat!("Size of: ", stringify!(visualization_msgs__msg__MeshFile))
+    );
+    assert_eq!(
+        ::std::mem::align_of::<visualization_msgs__msg__MeshFile>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(visualization_msgs__msg__MeshFile)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).filename) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__MeshFile),
+            "::",
+            stringify!(filename)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        24usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__MeshFile),
+            "::",
+            stringify!(data)
+        )
+    );
+}
+#[repr(C)]
+#[derive(Debug)]
+pub struct visualization_msgs__msg__MeshFile__Sequence {
+    pub data: *mut visualization_msgs__msg__MeshFile,
+    pub size: usize,
+    pub capacity: usize,
+}
+#[test]
+fn bindgen_test_layout_visualization_msgs__msg__MeshFile__Sequence() {
+    const UNINIT: ::std::mem::MaybeUninit<visualization_msgs__msg__MeshFile__Sequence> =
+        ::std::mem::MaybeUninit::uninit();
+    let ptr = UNINIT.as_ptr();
+    assert_eq!(
+        ::std::mem::size_of::<visualization_msgs__msg__MeshFile__Sequence>(),
+        24usize,
+        concat!(
+            "Size of: ",
+            stringify!(visualization_msgs__msg__MeshFile__Sequence)
+        )
+    );
+    assert_eq!(
+        ::std::mem::align_of::<visualization_msgs__msg__MeshFile__Sequence>(),
+        8usize,
+        concat!(
+            "Alignment of ",
+            stringify!(visualization_msgs__msg__MeshFile__Sequence)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).data) as usize - ptr as usize },
+        0usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__MeshFile__Sequence),
+            "::",
+            stringify!(data)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).size) as usize - ptr as usize },
+        8usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__MeshFile__Sequence),
+            "::",
+            stringify!(size)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).capacity) as usize - ptr as usize },
+        16usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__MeshFile__Sequence),
+            "::",
+            stringify!(capacity)
+        )
+    );
 }
 #[repr(C)]
 pub struct visualization_msgs__msg__Marker {
@@ -23054,8 +27954,12 @@ pub struct visualization_msgs__msg__Marker {
     pub frame_locked: bool,
     pub points: geometry_msgs__msg__Point__Sequence,
     pub colors: std_msgs__msg__ColorRGBA__Sequence,
+    pub texture_resource: rosidl_runtime_c__String,
+    pub texture: sensor_msgs__msg__CompressedImage,
+    pub uv_coordinates: visualization_msgs__msg__UVCoordinate__Sequence,
     pub text: rosidl_runtime_c__String,
     pub mesh_resource: rosidl_runtime_c__String,
+    pub mesh_file: visualization_msgs__msg__MeshFile,
     pub mesh_use_embedded_materials: bool,
 }
 #[test]
@@ -23065,7 +27969,7 @@ fn bindgen_test_layout_visualization_msgs__msg__Marker() {
     let ptr = UNINIT.as_ptr();
     assert_eq!(
         ::std::mem::size_of::<visualization_msgs__msg__Marker>(),
-        288usize,
+        464usize,
         concat!("Size of: ", stringify!(visualization_msgs__msg__Marker))
     );
     assert_eq!(
@@ -23194,8 +28098,38 @@ fn bindgen_test_layout_visualization_msgs__msg__Marker() {
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).text) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).texture_resource) as usize - ptr as usize },
         232usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__Marker),
+            "::",
+            stringify!(texture_resource)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).texture) as usize - ptr as usize },
+        256usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__Marker),
+            "::",
+            stringify!(texture)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).uv_coordinates) as usize - ptr as usize },
+        336usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__Marker),
+            "::",
+            stringify!(uv_coordinates)
+        )
+    );
+    assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).text) as usize - ptr as usize },
+        360usize,
         concat!(
             "Offset of field: ",
             stringify!(visualization_msgs__msg__Marker),
@@ -23205,7 +28139,7 @@ fn bindgen_test_layout_visualization_msgs__msg__Marker() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mesh_resource) as usize - ptr as usize },
-        256usize,
+        384usize,
         concat!(
             "Offset of field: ",
             stringify!(visualization_msgs__msg__Marker),
@@ -23214,8 +28148,18 @@ fn bindgen_test_layout_visualization_msgs__msg__Marker() {
         )
     );
     assert_eq!(
+        unsafe { ::std::ptr::addr_of!((*ptr).mesh_file) as usize - ptr as usize },
+        408usize,
+        concat!(
+            "Offset of field: ",
+            stringify!(visualization_msgs__msg__Marker),
+            "::",
+            stringify!(mesh_file)
+        )
+    );
+    assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).mesh_use_embedded_materials) as usize - ptr as usize },
-        280usize,
+        456usize,
         concat!(
             "Offset of field: ",
             stringify!(visualization_msgs__msg__Marker),
@@ -23619,46 +28563,46 @@ fn bindgen_test_layout_visualization_msgs__msg__InteractiveMarker__Sequence() {
         )
     );
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE: _bindgen_ty_193 =
-    _bindgen_ty_193::visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE: _bindgen_ty_273 =
+    _bindgen_ty_273::visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_193 {
+pub enum _bindgen_ty_273 {
     visualization_msgs__msg__InteractiveMarkerFeedback__KEEP_ALIVE = 0,
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE: _bindgen_ty_194 =
-    _bindgen_ty_194::visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE: _bindgen_ty_274 =
+    _bindgen_ty_274::visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_194 {
+pub enum _bindgen_ty_274 {
     visualization_msgs__msg__InteractiveMarkerFeedback__POSE_UPDATE = 1,
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT: _bindgen_ty_195 =
-    _bindgen_ty_195::visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT: _bindgen_ty_275 =
+    _bindgen_ty_275::visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_195 {
+pub enum _bindgen_ty_275 {
     visualization_msgs__msg__InteractiveMarkerFeedback__MENU_SELECT = 2,
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK: _bindgen_ty_196 =
-    _bindgen_ty_196::visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK: _bindgen_ty_276 =
+    _bindgen_ty_276::visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_196 {
+pub enum _bindgen_ty_276 {
     visualization_msgs__msg__InteractiveMarkerFeedback__BUTTON_CLICK = 3,
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN: _bindgen_ty_197 =
-    _bindgen_ty_197::visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN: _bindgen_ty_277 =
+    _bindgen_ty_277::visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_197 {
+pub enum _bindgen_ty_277 {
     visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_DOWN = 4,
 }
-pub const visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP: _bindgen_ty_198 =
-    _bindgen_ty_198::visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP;
+pub const visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP: _bindgen_ty_278 =
+    _bindgen_ty_278::visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_198 {
+pub enum _bindgen_ty_278 {
     visualization_msgs__msg__InteractiveMarkerFeedback__MOUSE_UP = 5,
 }
 #[repr(C)]
@@ -24081,18 +29025,18 @@ fn bindgen_test_layout_visualization_msgs__msg__InteractiveMarkerPose__Sequence(
         )
     );
 }
-pub const visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE: _bindgen_ty_199 =
-    _bindgen_ty_199::visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE;
+pub const visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE: _bindgen_ty_279 =
+    _bindgen_ty_279::visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_199 {
+pub enum _bindgen_ty_279 {
     visualization_msgs__msg__InteractiveMarkerUpdate__KEEP_ALIVE = 0,
 }
-pub const visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE: _bindgen_ty_200 =
-    _bindgen_ty_200::visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE;
+pub const visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE: _bindgen_ty_280 =
+    _bindgen_ty_280::visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE;
 #[repr(u32)]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub enum _bindgen_ty_200 {
+pub enum _bindgen_ty_280 {
     visualization_msgs__msg__InteractiveMarkerUpdate__UPDATE = 1,
 }
 #[repr(C)]
@@ -25705,358 +30649,6 @@ extern "C" {
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_c__get_service_type_support_handle__lifecycle_msgs__srv__GetState(
     ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__msg__OccupancyGridUpdate(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__msg__PointCloud2Update(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__msg__ProjectedMap(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__msg__ProjectedMapInfo(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn map_msgs__msg__OccupancyGridUpdate__create() -> *mut map_msgs__msg__OccupancyGridUpdate;
-    pub fn map_msgs__msg__OccupancyGridUpdate__destroy(
-        msg: *mut map_msgs__msg__OccupancyGridUpdate,
-    );
-    pub fn map_msgs__msg__OccupancyGridUpdate__Sequence__init(
-        array: *mut map_msgs__msg__OccupancyGridUpdate__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__msg__OccupancyGridUpdate__Sequence__fini(
-        array: *mut map_msgs__msg__OccupancyGridUpdate__Sequence,
-    );
-    pub fn map_msgs__msg__OccupancyGridUpdate__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__msg__OccupancyGridUpdate__Sequence;
-    pub fn map_msgs__msg__OccupancyGridUpdate__Sequence__destroy(
-        array: *mut map_msgs__msg__OccupancyGridUpdate__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__msg__OccupancyGridUpdate(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn map_msgs__msg__PointCloud2Update__create() -> *mut map_msgs__msg__PointCloud2Update;
-    pub fn map_msgs__msg__PointCloud2Update__destroy(msg: *mut map_msgs__msg__PointCloud2Update);
-    pub fn map_msgs__msg__PointCloud2Update__Sequence__init(
-        array: *mut map_msgs__msg__PointCloud2Update__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__msg__PointCloud2Update__Sequence__fini(
-        array: *mut map_msgs__msg__PointCloud2Update__Sequence,
-    );
-    pub fn map_msgs__msg__PointCloud2Update__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__msg__PointCloud2Update__Sequence;
-    pub fn map_msgs__msg__PointCloud2Update__Sequence__destroy(
-        array: *mut map_msgs__msg__PointCloud2Update__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__msg__PointCloud2Update(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn map_msgs__msg__ProjectedMap__create() -> *mut map_msgs__msg__ProjectedMap;
-    pub fn map_msgs__msg__ProjectedMap__destroy(msg: *mut map_msgs__msg__ProjectedMap);
-    pub fn map_msgs__msg__ProjectedMap__Sequence__init(
-        array: *mut map_msgs__msg__ProjectedMap__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__msg__ProjectedMap__Sequence__fini(
-        array: *mut map_msgs__msg__ProjectedMap__Sequence,
-    );
-    pub fn map_msgs__msg__ProjectedMap__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__msg__ProjectedMap__Sequence;
-    pub fn map_msgs__msg__ProjectedMap__Sequence__destroy(
-        array: *mut map_msgs__msg__ProjectedMap__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__msg__ProjectedMap(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn map_msgs__msg__ProjectedMapInfo__create() -> *mut map_msgs__msg__ProjectedMapInfo;
-    pub fn map_msgs__msg__ProjectedMapInfo__destroy(msg: *mut map_msgs__msg__ProjectedMapInfo);
-    pub fn map_msgs__msg__ProjectedMapInfo__Sequence__init(
-        array: *mut map_msgs__msg__ProjectedMapInfo__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__msg__ProjectedMapInfo__Sequence__fini(
-        array: *mut map_msgs__msg__ProjectedMapInfo__Sequence,
-    );
-    pub fn map_msgs__msg__ProjectedMapInfo__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__msg__ProjectedMapInfo__Sequence;
-    pub fn map_msgs__msg__ProjectedMapInfo__Sequence__destroy(
-        array: *mut map_msgs__msg__ProjectedMapInfo__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__msg__ProjectedMapInfo(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetMapROI_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetMapROI_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__GetMapROI(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetPointMap_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetPointMap_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__GetPointMap(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetPointMapROI_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__GetPointMapROI_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__GetPointMapROI(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__ProjectedMapsInfo_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__ProjectedMapsInfo_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__ProjectedMapsInfo(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__SaveMap_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__SaveMap_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__SaveMap(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__SetMapProjections_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__map_msgs__srv__SetMapProjections_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__map_msgs__srv__SetMapProjections(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__GetMapROI_Request__create() -> *mut map_msgs__srv__GetMapROI_Request;
-    pub fn map_msgs__srv__GetMapROI_Request__destroy(msg: *mut map_msgs__srv__GetMapROI_Request);
-    pub fn map_msgs__srv__GetMapROI_Request__Sequence__init(
-        array: *mut map_msgs__srv__GetMapROI_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetMapROI_Request__Sequence__fini(
-        array: *mut map_msgs__srv__GetMapROI_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetMapROI_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetMapROI_Request__Sequence;
-    pub fn map_msgs__srv__GetMapROI_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__GetMapROI_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetMapROI_Response__create() -> *mut map_msgs__srv__GetMapROI_Response;
-    pub fn map_msgs__srv__GetMapROI_Response__destroy(msg: *mut map_msgs__srv__GetMapROI_Response);
-    pub fn map_msgs__srv__GetMapROI_Response__Sequence__init(
-        array: *mut map_msgs__srv__GetMapROI_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetMapROI_Response__Sequence__fini(
-        array: *mut map_msgs__srv__GetMapROI_Response__Sequence,
-    );
-    pub fn map_msgs__srv__GetMapROI_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetMapROI_Response__Sequence;
-    pub fn map_msgs__srv__GetMapROI_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__GetMapROI_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetMapROI_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetMapROI_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__GetMapROI(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__GetPointMap_Request__create() -> *mut map_msgs__srv__GetPointMap_Request;
-    pub fn map_msgs__srv__GetPointMap_Request__destroy(
-        msg: *mut map_msgs__srv__GetPointMap_Request,
-    );
-    pub fn map_msgs__srv__GetPointMap_Request__Sequence__init(
-        array: *mut map_msgs__srv__GetPointMap_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetPointMap_Request__Sequence__fini(
-        array: *mut map_msgs__srv__GetPointMap_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMap_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetPointMap_Request__Sequence;
-    pub fn map_msgs__srv__GetPointMap_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__GetPointMap_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMap_Response__create() -> *mut map_msgs__srv__GetPointMap_Response;
-    pub fn map_msgs__srv__GetPointMap_Response__destroy(
-        msg: *mut map_msgs__srv__GetPointMap_Response,
-    );
-    pub fn map_msgs__srv__GetPointMap_Response__Sequence__init(
-        array: *mut map_msgs__srv__GetPointMap_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetPointMap_Response__Sequence__fini(
-        array: *mut map_msgs__srv__GetPointMap_Response__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMap_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetPointMap_Response__Sequence;
-    pub fn map_msgs__srv__GetPointMap_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__GetPointMap_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetPointMap_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetPointMap_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__GetPointMap(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__GetPointMapROI_Request__create(
-    ) -> *mut map_msgs__srv__GetPointMapROI_Request;
-    pub fn map_msgs__srv__GetPointMapROI_Request__destroy(
-        msg: *mut map_msgs__srv__GetPointMapROI_Request,
-    );
-    pub fn map_msgs__srv__GetPointMapROI_Request__Sequence__init(
-        array: *mut map_msgs__srv__GetPointMapROI_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetPointMapROI_Request__Sequence__fini(
-        array: *mut map_msgs__srv__GetPointMapROI_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMapROI_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetPointMapROI_Request__Sequence;
-    pub fn map_msgs__srv__GetPointMapROI_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__GetPointMapROI_Request__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMapROI_Response__create(
-    ) -> *mut map_msgs__srv__GetPointMapROI_Response;
-    pub fn map_msgs__srv__GetPointMapROI_Response__destroy(
-        msg: *mut map_msgs__srv__GetPointMapROI_Response,
-    );
-    pub fn map_msgs__srv__GetPointMapROI_Response__Sequence__init(
-        array: *mut map_msgs__srv__GetPointMapROI_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__GetPointMapROI_Response__Sequence__fini(
-        array: *mut map_msgs__srv__GetPointMapROI_Response__Sequence,
-    );
-    pub fn map_msgs__srv__GetPointMapROI_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__GetPointMapROI_Response__Sequence;
-    pub fn map_msgs__srv__GetPointMapROI_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__GetPointMapROI_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetPointMapROI_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__GetPointMapROI_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__GetPointMapROI(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__create(
-    ) -> *mut map_msgs__srv__ProjectedMapsInfo_Request;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__destroy(
-        msg: *mut map_msgs__srv__ProjectedMapsInfo_Request,
-    );
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__Sequence__init(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__Sequence__fini(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Request__Sequence,
-    );
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__ProjectedMapsInfo_Request__Sequence;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Request__Sequence,
-    );
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__create(
-    ) -> *mut map_msgs__srv__ProjectedMapsInfo_Response;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__destroy(
-        msg: *mut map_msgs__srv__ProjectedMapsInfo_Response,
-    );
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__Sequence__init(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__Sequence__fini(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Response__Sequence,
-    );
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__ProjectedMapsInfo_Response__Sequence;
-    pub fn map_msgs__srv__ProjectedMapsInfo_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__ProjectedMapsInfo_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__ProjectedMapsInfo_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__ProjectedMapsInfo_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__ProjectedMapsInfo(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__SaveMap_Request__create() -> *mut map_msgs__srv__SaveMap_Request;
-    pub fn map_msgs__srv__SaveMap_Request__destroy(msg: *mut map_msgs__srv__SaveMap_Request);
-    pub fn map_msgs__srv__SaveMap_Request__Sequence__init(
-        array: *mut map_msgs__srv__SaveMap_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__SaveMap_Request__Sequence__fini(
-        array: *mut map_msgs__srv__SaveMap_Request__Sequence,
-    );
-    pub fn map_msgs__srv__SaveMap_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__SaveMap_Request__Sequence;
-    pub fn map_msgs__srv__SaveMap_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__SaveMap_Request__Sequence,
-    );
-    pub fn map_msgs__srv__SaveMap_Response__create() -> *mut map_msgs__srv__SaveMap_Response;
-    pub fn map_msgs__srv__SaveMap_Response__destroy(msg: *mut map_msgs__srv__SaveMap_Response);
-    pub fn map_msgs__srv__SaveMap_Response__Sequence__init(
-        array: *mut map_msgs__srv__SaveMap_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__SaveMap_Response__Sequence__fini(
-        array: *mut map_msgs__srv__SaveMap_Response__Sequence,
-    );
-    pub fn map_msgs__srv__SaveMap_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__SaveMap_Response__Sequence;
-    pub fn map_msgs__srv__SaveMap_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__SaveMap_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__SaveMap_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__SaveMap_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__SaveMap(
-    ) -> *const rosidl_service_type_support_t;
-    pub fn map_msgs__srv__SetMapProjections_Request__create(
-    ) -> *mut map_msgs__srv__SetMapProjections_Request;
-    pub fn map_msgs__srv__SetMapProjections_Request__destroy(
-        msg: *mut map_msgs__srv__SetMapProjections_Request,
-    );
-    pub fn map_msgs__srv__SetMapProjections_Request__Sequence__init(
-        array: *mut map_msgs__srv__SetMapProjections_Request__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__SetMapProjections_Request__Sequence__fini(
-        array: *mut map_msgs__srv__SetMapProjections_Request__Sequence,
-    );
-    pub fn map_msgs__srv__SetMapProjections_Request__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__SetMapProjections_Request__Sequence;
-    pub fn map_msgs__srv__SetMapProjections_Request__Sequence__destroy(
-        array: *mut map_msgs__srv__SetMapProjections_Request__Sequence,
-    );
-    pub fn map_msgs__srv__SetMapProjections_Response__create(
-    ) -> *mut map_msgs__srv__SetMapProjections_Response;
-    pub fn map_msgs__srv__SetMapProjections_Response__destroy(
-        msg: *mut map_msgs__srv__SetMapProjections_Response,
-    );
-    pub fn map_msgs__srv__SetMapProjections_Response__Sequence__init(
-        array: *mut map_msgs__srv__SetMapProjections_Response__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn map_msgs__srv__SetMapProjections_Response__Sequence__fini(
-        array: *mut map_msgs__srv__SetMapProjections_Response__Sequence,
-    );
-    pub fn map_msgs__srv__SetMapProjections_Response__Sequence__create(
-        size: usize,
-    ) -> *mut map_msgs__srv__SetMapProjections_Response__Sequence;
-    pub fn map_msgs__srv__SetMapProjections_Response__Sequence__destroy(
-        array: *mut map_msgs__srv__SetMapProjections_Response__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__SetMapProjections_Request(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__map_msgs__srv__SetMapProjections_Response(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_c__get_service_type_support_handle__map_msgs__srv__SetMapProjections(
-    ) -> *const rosidl_service_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__nav_msgs__msg__GridCells(
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__nav_msgs__msg__MapMetaData(
@@ -26311,63 +30903,6 @@ extern "C" {
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_c__get_service_type_support_handle__nav_msgs__srv__SetMap(
     ) -> *const rosidl_service_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__pendulum_msgs__msg__JointCommand(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__pendulum_msgs__msg__JointState(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__pendulum_msgs__msg__RttestResults(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn pendulum_msgs__msg__JointCommand__create() -> *mut pendulum_msgs__msg__JointCommand;
-    pub fn pendulum_msgs__msg__JointCommand__destroy(msg: *mut pendulum_msgs__msg__JointCommand);
-    pub fn pendulum_msgs__msg__JointCommand__Sequence__init(
-        array: *mut pendulum_msgs__msg__JointCommand__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn pendulum_msgs__msg__JointCommand__Sequence__fini(
-        array: *mut pendulum_msgs__msg__JointCommand__Sequence,
-    );
-    pub fn pendulum_msgs__msg__JointCommand__Sequence__create(
-        size: usize,
-    ) -> *mut pendulum_msgs__msg__JointCommand__Sequence;
-    pub fn pendulum_msgs__msg__JointCommand__Sequence__destroy(
-        array: *mut pendulum_msgs__msg__JointCommand__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__pendulum_msgs__msg__JointCommand(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn pendulum_msgs__msg__JointState__create() -> *mut pendulum_msgs__msg__JointState;
-    pub fn pendulum_msgs__msg__JointState__destroy(msg: *mut pendulum_msgs__msg__JointState);
-    pub fn pendulum_msgs__msg__JointState__Sequence__init(
-        array: *mut pendulum_msgs__msg__JointState__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn pendulum_msgs__msg__JointState__Sequence__fini(
-        array: *mut pendulum_msgs__msg__JointState__Sequence,
-    );
-    pub fn pendulum_msgs__msg__JointState__Sequence__create(
-        size: usize,
-    ) -> *mut pendulum_msgs__msg__JointState__Sequence;
-    pub fn pendulum_msgs__msg__JointState__Sequence__destroy(
-        array: *mut pendulum_msgs__msg__JointState__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__pendulum_msgs__msg__JointState(
-    ) -> *const rosidl_message_type_support_t;
-    pub fn pendulum_msgs__msg__RttestResults__create() -> *mut pendulum_msgs__msg__RttestResults;
-    pub fn pendulum_msgs__msg__RttestResults__destroy(msg: *mut pendulum_msgs__msg__RttestResults);
-    pub fn pendulum_msgs__msg__RttestResults__Sequence__init(
-        array: *mut pendulum_msgs__msg__RttestResults__Sequence,
-        size: usize,
-    ) -> bool;
-    pub fn pendulum_msgs__msg__RttestResults__Sequence__fini(
-        array: *mut pendulum_msgs__msg__RttestResults__Sequence,
-    );
-    pub fn pendulum_msgs__msg__RttestResults__Sequence__create(
-        size: usize,
-    ) -> *mut pendulum_msgs__msg__RttestResults__Sequence;
-    pub fn pendulum_msgs__msg__RttestResults__Sequence__destroy(
-        array: *mut pendulum_msgs__msg__RttestResults__Sequence,
-    );
-    pub fn rosidl_typesupport_c__get_message_type_support_handle__pendulum_msgs__msg__RttestResults(
-    ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__rcl_interfaces__msg__FloatingPointRange(
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__rcl_interfaces__msg__IntegerRange(
@@ -28119,6 +32654,736 @@ extern "C" {
     );
     pub fn rosidl_typesupport_c__get_message_type_support_handle__stereo_msgs__msg__DisparityImage(
     ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Goal(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Result(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Feedback(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_SendGoal_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_SendGoal_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__action__Fibonacci_SendGoal(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_GetResult_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_GetResult_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__action__Fibonacci_GetResult(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__Fibonacci_FeedbackMessage(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Goal(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Result(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Feedback(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_SendGoal_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_SendGoal_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__action__NestedMessage_SendGoal(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_GetResult_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_GetResult_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__action__NestedMessage_GetResult(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__action__NestedMessage_FeedbackMessage(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__action__Fibonacci_Goal__create() -> *mut test_msgs__action__Fibonacci_Goal;
+    pub fn test_msgs__action__Fibonacci_Goal__destroy(msg: *mut test_msgs__action__Fibonacci_Goal);
+    pub fn test_msgs__action__Fibonacci_Goal__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_Goal__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_Goal__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_Goal__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_Goal__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_Goal__Sequence;
+    pub fn test_msgs__action__Fibonacci_Goal__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_Goal__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_Result__create() -> *mut test_msgs__action__Fibonacci_Result;
+    pub fn test_msgs__action__Fibonacci_Result__destroy(
+        msg: *mut test_msgs__action__Fibonacci_Result,
+    );
+    pub fn test_msgs__action__Fibonacci_Result__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_Result__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_Result__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_Result__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_Result__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_Result__Sequence;
+    pub fn test_msgs__action__Fibonacci_Result__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_Result__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_Feedback__create(
+    ) -> *mut test_msgs__action__Fibonacci_Feedback;
+    pub fn test_msgs__action__Fibonacci_Feedback__destroy(
+        msg: *mut test_msgs__action__Fibonacci_Feedback,
+    );
+    pub fn test_msgs__action__Fibonacci_Feedback__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_Feedback__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_Feedback__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_Feedback__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_Feedback__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_Feedback__Sequence;
+    pub fn test_msgs__action__Fibonacci_Feedback__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_Feedback__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__create(
+    ) -> *mut test_msgs__action__Fibonacci_SendGoal_Request;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__destroy(
+        msg: *mut test_msgs__action__Fibonacci_SendGoal_Request,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Request__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_SendGoal_Request__Sequence;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Request__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Request__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__create(
+    ) -> *mut test_msgs__action__Fibonacci_SendGoal_Response;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__destroy(
+        msg: *mut test_msgs__action__Fibonacci_SendGoal_Response,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Response__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_SendGoal_Response__Sequence;
+    pub fn test_msgs__action__Fibonacci_SendGoal_Response__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_SendGoal_Response__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__create(
+    ) -> *mut test_msgs__action__Fibonacci_GetResult_Request;
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__destroy(
+        msg: *mut test_msgs__action__Fibonacci_GetResult_Request,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Request__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_GetResult_Request__Sequence;
+    pub fn test_msgs__action__Fibonacci_GetResult_Request__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Request__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__create(
+    ) -> *mut test_msgs__action__Fibonacci_GetResult_Response;
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__destroy(
+        msg: *mut test_msgs__action__Fibonacci_GetResult_Response,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Response__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_GetResult_Response__Sequence;
+    pub fn test_msgs__action__Fibonacci_GetResult_Response__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_GetResult_Response__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__create(
+    ) -> *mut test_msgs__action__Fibonacci_FeedbackMessage;
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__destroy(
+        msg: *mut test_msgs__action__Fibonacci_FeedbackMessage,
+    );
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__Sequence__init(
+        array: *mut test_msgs__action__Fibonacci_FeedbackMessage__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__Sequence__fini(
+        array: *mut test_msgs__action__Fibonacci_FeedbackMessage__Sequence,
+    );
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__Fibonacci_FeedbackMessage__Sequence;
+    pub fn test_msgs__action__Fibonacci_FeedbackMessage__Sequence__destroy(
+        array: *mut test_msgs__action__Fibonacci_FeedbackMessage__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_action_type_support_handle__test_msgs__action__Fibonacci(
+    ) -> *const rosidl_action_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Goal(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Result(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_Feedback(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_SendGoal_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_SendGoal_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__action__Fibonacci_SendGoal(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_GetResult_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_GetResult_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__action__Fibonacci_GetResult(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__Fibonacci_FeedbackMessage(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__action__NestedMessage_Goal__create(
+    ) -> *mut test_msgs__action__NestedMessage_Goal;
+    pub fn test_msgs__action__NestedMessage_Goal__destroy(
+        msg: *mut test_msgs__action__NestedMessage_Goal,
+    );
+    pub fn test_msgs__action__NestedMessage_Goal__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_Goal__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_Goal__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_Goal__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_Goal__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_Goal__Sequence;
+    pub fn test_msgs__action__NestedMessage_Goal__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_Goal__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_Result__create(
+    ) -> *mut test_msgs__action__NestedMessage_Result;
+    pub fn test_msgs__action__NestedMessage_Result__destroy(
+        msg: *mut test_msgs__action__NestedMessage_Result,
+    );
+    pub fn test_msgs__action__NestedMessage_Result__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_Result__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_Result__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_Result__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_Result__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_Result__Sequence;
+    pub fn test_msgs__action__NestedMessage_Result__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_Result__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_Feedback__create(
+    ) -> *mut test_msgs__action__NestedMessage_Feedback;
+    pub fn test_msgs__action__NestedMessage_Feedback__destroy(
+        msg: *mut test_msgs__action__NestedMessage_Feedback,
+    );
+    pub fn test_msgs__action__NestedMessage_Feedback__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_Feedback__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_Feedback__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_Feedback__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_Feedback__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_Feedback__Sequence;
+    pub fn test_msgs__action__NestedMessage_Feedback__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_Feedback__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__create(
+    ) -> *mut test_msgs__action__NestedMessage_SendGoal_Request;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__destroy(
+        msg: *mut test_msgs__action__NestedMessage_SendGoal_Request,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Request__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_SendGoal_Request__Sequence;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Request__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Request__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__create(
+    ) -> *mut test_msgs__action__NestedMessage_SendGoal_Response;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__destroy(
+        msg: *mut test_msgs__action__NestedMessage_SendGoal_Response,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Response__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_SendGoal_Response__Sequence;
+    pub fn test_msgs__action__NestedMessage_SendGoal_Response__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_SendGoal_Response__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__create(
+    ) -> *mut test_msgs__action__NestedMessage_GetResult_Request;
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__destroy(
+        msg: *mut test_msgs__action__NestedMessage_GetResult_Request,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Request__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_GetResult_Request__Sequence;
+    pub fn test_msgs__action__NestedMessage_GetResult_Request__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Request__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__create(
+    ) -> *mut test_msgs__action__NestedMessage_GetResult_Response;
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__destroy(
+        msg: *mut test_msgs__action__NestedMessage_GetResult_Response,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Response__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_GetResult_Response__Sequence;
+    pub fn test_msgs__action__NestedMessage_GetResult_Response__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_GetResult_Response__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__create(
+    ) -> *mut test_msgs__action__NestedMessage_FeedbackMessage;
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__destroy(
+        msg: *mut test_msgs__action__NestedMessage_FeedbackMessage,
+    );
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__Sequence__init(
+        array: *mut test_msgs__action__NestedMessage_FeedbackMessage__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__Sequence__fini(
+        array: *mut test_msgs__action__NestedMessage_FeedbackMessage__Sequence,
+    );
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__action__NestedMessage_FeedbackMessage__Sequence;
+    pub fn test_msgs__action__NestedMessage_FeedbackMessage__Sequence__destroy(
+        array: *mut test_msgs__action__NestedMessage_FeedbackMessage__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_action_type_support_handle__test_msgs__action__NestedMessage(
+    ) -> *const rosidl_action_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Goal(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Result(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_Feedback(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_SendGoal_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_SendGoal_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__action__NestedMessage_SendGoal(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_GetResult_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_GetResult_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__action__NestedMessage_GetResult(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__action__NestedMessage_FeedbackMessage(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Arrays__create() -> *mut test_msgs__msg__Arrays;
+    pub fn test_msgs__msg__Arrays__destroy(msg: *mut test_msgs__msg__Arrays);
+    pub fn test_msgs__msg__Arrays__Sequence__init(
+        array: *mut test_msgs__msg__Arrays__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Arrays__Sequence__fini(array: *mut test_msgs__msg__Arrays__Sequence);
+    pub fn test_msgs__msg__Arrays__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Arrays__Sequence;
+    pub fn test_msgs__msg__Arrays__Sequence__destroy(array: *mut test_msgs__msg__Arrays__Sequence);
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Arrays(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__BasicTypes__create() -> *mut test_msgs__msg__BasicTypes;
+    pub fn test_msgs__msg__BasicTypes__destroy(msg: *mut test_msgs__msg__BasicTypes);
+    pub fn test_msgs__msg__BasicTypes__Sequence__init(
+        array: *mut test_msgs__msg__BasicTypes__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__BasicTypes__Sequence__fini(
+        array: *mut test_msgs__msg__BasicTypes__Sequence,
+    );
+    pub fn test_msgs__msg__BasicTypes__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__BasicTypes__Sequence;
+    pub fn test_msgs__msg__BasicTypes__Sequence__destroy(
+        array: *mut test_msgs__msg__BasicTypes__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__BasicTypes(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__BoundedPlainSequences__create(
+    ) -> *mut test_msgs__msg__BoundedPlainSequences;
+    pub fn test_msgs__msg__BoundedPlainSequences__destroy(
+        msg: *mut test_msgs__msg__BoundedPlainSequences,
+    );
+    pub fn test_msgs__msg__BoundedPlainSequences__Sequence__init(
+        array: *mut test_msgs__msg__BoundedPlainSequences__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__BoundedPlainSequences__Sequence__fini(
+        array: *mut test_msgs__msg__BoundedPlainSequences__Sequence,
+    );
+    pub fn test_msgs__msg__BoundedPlainSequences__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__BoundedPlainSequences__Sequence;
+    pub fn test_msgs__msg__BoundedPlainSequences__Sequence__destroy(
+        array: *mut test_msgs__msg__BoundedPlainSequences__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__BoundedPlainSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__BoundedSequences__create() -> *mut test_msgs__msg__BoundedSequences;
+    pub fn test_msgs__msg__BoundedSequences__destroy(msg: *mut test_msgs__msg__BoundedSequences);
+    pub fn test_msgs__msg__BoundedSequences__Sequence__init(
+        array: *mut test_msgs__msg__BoundedSequences__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__BoundedSequences__Sequence__fini(
+        array: *mut test_msgs__msg__BoundedSequences__Sequence,
+    );
+    pub fn test_msgs__msg__BoundedSequences__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__BoundedSequences__Sequence;
+    pub fn test_msgs__msg__BoundedSequences__Sequence__destroy(
+        array: *mut test_msgs__msg__BoundedSequences__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__BoundedSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Builtins__create() -> *mut test_msgs__msg__Builtins;
+    pub fn test_msgs__msg__Builtins__destroy(msg: *mut test_msgs__msg__Builtins);
+    pub fn test_msgs__msg__Builtins__Sequence__init(
+        array: *mut test_msgs__msg__Builtins__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Builtins__Sequence__fini(array: *mut test_msgs__msg__Builtins__Sequence);
+    pub fn test_msgs__msg__Builtins__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Builtins__Sequence;
+    pub fn test_msgs__msg__Builtins__Sequence__destroy(
+        array: *mut test_msgs__msg__Builtins__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Builtins(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Constants__create() -> *mut test_msgs__msg__Constants;
+    pub fn test_msgs__msg__Constants__destroy(msg: *mut test_msgs__msg__Constants);
+    pub fn test_msgs__msg__Constants__Sequence__init(
+        array: *mut test_msgs__msg__Constants__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Constants__Sequence__fini(
+        array: *mut test_msgs__msg__Constants__Sequence,
+    );
+    pub fn test_msgs__msg__Constants__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Constants__Sequence;
+    pub fn test_msgs__msg__Constants__Sequence__destroy(
+        array: *mut test_msgs__msg__Constants__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Constants(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Defaults__create() -> *mut test_msgs__msg__Defaults;
+    pub fn test_msgs__msg__Defaults__destroy(msg: *mut test_msgs__msg__Defaults);
+    pub fn test_msgs__msg__Defaults__Sequence__init(
+        array: *mut test_msgs__msg__Defaults__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Defaults__Sequence__fini(array: *mut test_msgs__msg__Defaults__Sequence);
+    pub fn test_msgs__msg__Defaults__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Defaults__Sequence;
+    pub fn test_msgs__msg__Defaults__Sequence__destroy(
+        array: *mut test_msgs__msg__Defaults__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Defaults(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Arrays(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__BasicTypes(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__BoundedPlainSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__BoundedSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Builtins(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Constants(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Defaults(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Empty(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__MultiNested(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Nested(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__Strings(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__UnboundedSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__msg__WStrings(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Empty__create() -> *mut test_msgs__msg__Empty;
+    pub fn test_msgs__msg__Empty__destroy(msg: *mut test_msgs__msg__Empty);
+    pub fn test_msgs__msg__Empty__Sequence__init(
+        array: *mut test_msgs__msg__Empty__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Empty__Sequence__fini(array: *mut test_msgs__msg__Empty__Sequence);
+    pub fn test_msgs__msg__Empty__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Empty__Sequence;
+    pub fn test_msgs__msg__Empty__Sequence__destroy(array: *mut test_msgs__msg__Empty__Sequence);
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Empty(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__MultiNested__create() -> *mut test_msgs__msg__MultiNested;
+    pub fn test_msgs__msg__MultiNested__destroy(msg: *mut test_msgs__msg__MultiNested);
+    pub fn test_msgs__msg__MultiNested__Sequence__init(
+        array: *mut test_msgs__msg__MultiNested__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__MultiNested__Sequence__fini(
+        array: *mut test_msgs__msg__MultiNested__Sequence,
+    );
+    pub fn test_msgs__msg__MultiNested__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__MultiNested__Sequence;
+    pub fn test_msgs__msg__MultiNested__Sequence__destroy(
+        array: *mut test_msgs__msg__MultiNested__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__MultiNested(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Nested__create() -> *mut test_msgs__msg__Nested;
+    pub fn test_msgs__msg__Nested__destroy(msg: *mut test_msgs__msg__Nested);
+    pub fn test_msgs__msg__Nested__Sequence__init(
+        array: *mut test_msgs__msg__Nested__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Nested__Sequence__fini(array: *mut test_msgs__msg__Nested__Sequence);
+    pub fn test_msgs__msg__Nested__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Nested__Sequence;
+    pub fn test_msgs__msg__Nested__Sequence__destroy(array: *mut test_msgs__msg__Nested__Sequence);
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Nested(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__Strings__create() -> *mut test_msgs__msg__Strings;
+    pub fn test_msgs__msg__Strings__destroy(msg: *mut test_msgs__msg__Strings);
+    pub fn test_msgs__msg__Strings__Sequence__init(
+        array: *mut test_msgs__msg__Strings__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__Strings__Sequence__fini(array: *mut test_msgs__msg__Strings__Sequence);
+    pub fn test_msgs__msg__Strings__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__Strings__Sequence;
+    pub fn test_msgs__msg__Strings__Sequence__destroy(
+        array: *mut test_msgs__msg__Strings__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__Strings(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__UnboundedSequences__create() -> *mut test_msgs__msg__UnboundedSequences;
+    pub fn test_msgs__msg__UnboundedSequences__destroy(
+        msg: *mut test_msgs__msg__UnboundedSequences,
+    );
+    pub fn test_msgs__msg__UnboundedSequences__Sequence__init(
+        array: *mut test_msgs__msg__UnboundedSequences__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__UnboundedSequences__Sequence__fini(
+        array: *mut test_msgs__msg__UnboundedSequences__Sequence,
+    );
+    pub fn test_msgs__msg__UnboundedSequences__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__UnboundedSequences__Sequence;
+    pub fn test_msgs__msg__UnboundedSequences__Sequence__destroy(
+        array: *mut test_msgs__msg__UnboundedSequences__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__UnboundedSequences(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__msg__WStrings__create() -> *mut test_msgs__msg__WStrings;
+    pub fn test_msgs__msg__WStrings__destroy(msg: *mut test_msgs__msg__WStrings);
+    pub fn test_msgs__msg__WStrings__Sequence__init(
+        array: *mut test_msgs__msg__WStrings__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__msg__WStrings__Sequence__fini(array: *mut test_msgs__msg__WStrings__Sequence);
+    pub fn test_msgs__msg__WStrings__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__msg__WStrings__Sequence;
+    pub fn test_msgs__msg__WStrings__Sequence__destroy(
+        array: *mut test_msgs__msg__WStrings__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__msg__WStrings(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn test_msgs__srv__Arrays_Request__create() -> *mut test_msgs__srv__Arrays_Request;
+    pub fn test_msgs__srv__Arrays_Request__destroy(msg: *mut test_msgs__srv__Arrays_Request);
+    pub fn test_msgs__srv__Arrays_Request__Sequence__init(
+        array: *mut test_msgs__srv__Arrays_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__Arrays_Request__Sequence__fini(
+        array: *mut test_msgs__srv__Arrays_Request__Sequence,
+    );
+    pub fn test_msgs__srv__Arrays_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__Arrays_Request__Sequence;
+    pub fn test_msgs__srv__Arrays_Request__Sequence__destroy(
+        array: *mut test_msgs__srv__Arrays_Request__Sequence,
+    );
+    pub fn test_msgs__srv__Arrays_Response__create() -> *mut test_msgs__srv__Arrays_Response;
+    pub fn test_msgs__srv__Arrays_Response__destroy(msg: *mut test_msgs__srv__Arrays_Response);
+    pub fn test_msgs__srv__Arrays_Response__Sequence__init(
+        array: *mut test_msgs__srv__Arrays_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__Arrays_Response__Sequence__fini(
+        array: *mut test_msgs__srv__Arrays_Response__Sequence,
+    );
+    pub fn test_msgs__srv__Arrays_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__Arrays_Response__Sequence;
+    pub fn test_msgs__srv__Arrays_Response__Sequence__destroy(
+        array: *mut test_msgs__srv__Arrays_Response__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__Arrays_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__Arrays_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__srv__Arrays(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn test_msgs__srv__BasicTypes_Request__create() -> *mut test_msgs__srv__BasicTypes_Request;
+    pub fn test_msgs__srv__BasicTypes_Request__destroy(
+        msg: *mut test_msgs__srv__BasicTypes_Request,
+    );
+    pub fn test_msgs__srv__BasicTypes_Request__Sequence__init(
+        array: *mut test_msgs__srv__BasicTypes_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__BasicTypes_Request__Sequence__fini(
+        array: *mut test_msgs__srv__BasicTypes_Request__Sequence,
+    );
+    pub fn test_msgs__srv__BasicTypes_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__BasicTypes_Request__Sequence;
+    pub fn test_msgs__srv__BasicTypes_Request__Sequence__destroy(
+        array: *mut test_msgs__srv__BasicTypes_Request__Sequence,
+    );
+    pub fn test_msgs__srv__BasicTypes_Response__create() -> *mut test_msgs__srv__BasicTypes_Response;
+    pub fn test_msgs__srv__BasicTypes_Response__destroy(
+        msg: *mut test_msgs__srv__BasicTypes_Response,
+    );
+    pub fn test_msgs__srv__BasicTypes_Response__Sequence__init(
+        array: *mut test_msgs__srv__BasicTypes_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__BasicTypes_Response__Sequence__fini(
+        array: *mut test_msgs__srv__BasicTypes_Response__Sequence,
+    );
+    pub fn test_msgs__srv__BasicTypes_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__BasicTypes_Response__Sequence;
+    pub fn test_msgs__srv__BasicTypes_Response__Sequence__destroy(
+        array: *mut test_msgs__srv__BasicTypes_Response__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__BasicTypes_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__BasicTypes_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__srv__BasicTypes(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__Arrays_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__Arrays_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__srv__Arrays(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__BasicTypes_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__BasicTypes_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__srv__BasicTypes(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__Empty_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__test_msgs__srv__Empty_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_service_type_support_handle__test_msgs__srv__Empty(
+    ) -> *const rosidl_service_type_support_t;
+    pub fn test_msgs__srv__Empty_Request__create() -> *mut test_msgs__srv__Empty_Request;
+    pub fn test_msgs__srv__Empty_Request__destroy(msg: *mut test_msgs__srv__Empty_Request);
+    pub fn test_msgs__srv__Empty_Request__Sequence__init(
+        array: *mut test_msgs__srv__Empty_Request__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__Empty_Request__Sequence__fini(
+        array: *mut test_msgs__srv__Empty_Request__Sequence,
+    );
+    pub fn test_msgs__srv__Empty_Request__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__Empty_Request__Sequence;
+    pub fn test_msgs__srv__Empty_Request__Sequence__destroy(
+        array: *mut test_msgs__srv__Empty_Request__Sequence,
+    );
+    pub fn test_msgs__srv__Empty_Response__create() -> *mut test_msgs__srv__Empty_Response;
+    pub fn test_msgs__srv__Empty_Response__destroy(msg: *mut test_msgs__srv__Empty_Response);
+    pub fn test_msgs__srv__Empty_Response__Sequence__init(
+        array: *mut test_msgs__srv__Empty_Response__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn test_msgs__srv__Empty_Response__Sequence__fini(
+        array: *mut test_msgs__srv__Empty_Response__Sequence,
+    );
+    pub fn test_msgs__srv__Empty_Response__Sequence__create(
+        size: usize,
+    ) -> *mut test_msgs__srv__Empty_Response__Sequence;
+    pub fn test_msgs__srv__Empty_Response__Sequence__destroy(
+        array: *mut test_msgs__srv__Empty_Response__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__Empty_Request(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__test_msgs__srv__Empty_Response(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_c__get_service_type_support_handle__test_msgs__srv__Empty(
+    ) -> *const rosidl_service_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__tf2_msgs__action__LookupTransform_Goal(
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__tf2_msgs__action__LookupTransform_Result(
@@ -28510,6 +33775,10 @@ extern "C" {
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__visualization_msgs__msg__MenuEntry(
     ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__visualization_msgs__msg__MeshFile(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__visualization_msgs__msg__UVCoordinate(
+    ) -> *const rosidl_message_type_support_t;
     pub fn visualization_msgs__msg__ImageMarker__create(
     ) -> *mut visualization_msgs__msg__ImageMarker;
     pub fn visualization_msgs__msg__ImageMarker__destroy(
@@ -28705,6 +33974,43 @@ extern "C" {
         array: *mut visualization_msgs__msg__MenuEntry__Sequence,
     );
     pub fn rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__msg__MenuEntry(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn visualization_msgs__msg__MeshFile__create() -> *mut visualization_msgs__msg__MeshFile;
+    pub fn visualization_msgs__msg__MeshFile__destroy(msg: *mut visualization_msgs__msg__MeshFile);
+    pub fn visualization_msgs__msg__MeshFile__Sequence__init(
+        array: *mut visualization_msgs__msg__MeshFile__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn visualization_msgs__msg__MeshFile__Sequence__fini(
+        array: *mut visualization_msgs__msg__MeshFile__Sequence,
+    );
+    pub fn visualization_msgs__msg__MeshFile__Sequence__create(
+        size: usize,
+    ) -> *mut visualization_msgs__msg__MeshFile__Sequence;
+    pub fn visualization_msgs__msg__MeshFile__Sequence__destroy(
+        array: *mut visualization_msgs__msg__MeshFile__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__msg__MeshFile(
+    ) -> *const rosidl_message_type_support_t;
+    pub fn visualization_msgs__msg__UVCoordinate__create(
+    ) -> *mut visualization_msgs__msg__UVCoordinate;
+    pub fn visualization_msgs__msg__UVCoordinate__destroy(
+        msg: *mut visualization_msgs__msg__UVCoordinate,
+    );
+    pub fn visualization_msgs__msg__UVCoordinate__Sequence__init(
+        array: *mut visualization_msgs__msg__UVCoordinate__Sequence,
+        size: usize,
+    ) -> bool;
+    pub fn visualization_msgs__msg__UVCoordinate__Sequence__fini(
+        array: *mut visualization_msgs__msg__UVCoordinate__Sequence,
+    );
+    pub fn visualization_msgs__msg__UVCoordinate__Sequence__create(
+        size: usize,
+    ) -> *mut visualization_msgs__msg__UVCoordinate__Sequence;
+    pub fn visualization_msgs__msg__UVCoordinate__Sequence__destroy(
+        array: *mut visualization_msgs__msg__UVCoordinate__Sequence,
+    );
+    pub fn rosidl_typesupport_c__get_message_type_support_handle__visualization_msgs__msg__UVCoordinate(
     ) -> *const rosidl_message_type_support_t;
     pub fn rosidl_typesupport_introspection_c__get_message_type_support_handle__visualization_msgs__srv__GetInteractiveMarkers_Request(
     ) -> *const rosidl_message_type_support_t;
