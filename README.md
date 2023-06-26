@@ -44,6 +44,8 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Refactor code generation using syn and quote and improve build times <https://github.com/sequenceplanner/r2r/pull/58>
+- Replace (e)println with log <https://github.com/sequenceplanner/r2r/pull/51>
 
 #### [0.7.3] - 2023-06-20
 - Fix mistake in docs generation.
