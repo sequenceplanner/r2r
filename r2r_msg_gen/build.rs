@@ -90,11 +90,9 @@ fn generate_bindings(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     // Run codegen in parallel.
     rayon::scope(|scope| {
         scope.spawn(|_| {
+            generate_includes(bindgen_dir, msg_list);
             let bindings = generate_bindings_file(bindgen_dir);
             generate_constants(bindgen_dir, msg_list, &bindings);
-        });
-        scope.spawn(|_| {
-            generate_includes(bindgen_dir, msg_list);
         });
         scope.spawn(|_| {
             generate_introspecion_map(bindgen_dir, msg_list);
