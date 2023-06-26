@@ -207,10 +207,8 @@ impl Node {
     /// its new value.
     pub fn make_parameter_handler(
         &mut self,
-    ) -> Result<(
-        impl Future<Output = ()> + Send,
-        impl Stream<Item = (String, ParameterValue)>,
-    )> {
+    ) -> Result<(impl Future<Output = ()> + Send, impl Stream<Item = (String, ParameterValue)>)>
+    {
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
         let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
 
@@ -292,9 +290,7 @@ impl Node {
     ///
     /// This function returns a `Stream` of ros messages.
     pub fn subscribe<T: 'static>(
-        &mut self,
-        topic: &str,
-        qos_profile: QosProfile,
+        &mut self, topic: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = T> + Unpin>
     where
         T: WrappedTypesupport,
@@ -315,9 +311,7 @@ impl Node {
     ///
     /// This function returns a `Stream` of ros messages without the rust convenience types.
     pub fn subscribe_native<T: 'static>(
-        &mut self,
-        topic: &str,
-        qos_profile: QosProfile,
+        &mut self, topic: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = WrappedNativeMsg<T>> + Unpin>
     where
         T: WrappedTypesupport,
@@ -339,10 +333,7 @@ impl Node {
     /// This function returns a `Stream` of ros messages as `serde_json::Value`:s.
     /// Useful when you cannot know the type of the message at compile time.
     pub fn subscribe_untyped(
-        &mut self,
-        topic: &str,
-        topic_type: &str,
-        qos_profile: QosProfile,
+        &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let subscription_handle =
@@ -363,8 +354,7 @@ impl Node {
     /// This function returns a `Stream` of `ServiceRequest`:s. Call
     /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
-        &mut self,
-        service_name: &str,
+        &mut self, service_name: &str,
     ) -> Result<impl Stream<Item = ServiceRequest<T>> + Unpin>
     where
         T: WrappedServiceTypeSupport,
@@ -411,9 +401,7 @@ impl Node {
     /// with `serde_json::Value`s instead of concrete types.  Useful
     /// when you cannot know the type of the message at compile time.
     pub fn create_client_untyped(
-        &mut self,
-        service_name: &str,
-        service_type: &str,
+        &mut self, service_name: &str, service_type: &str,
     ) -> Result<ClientUntyped> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
         let client_handle =
@@ -439,8 +427,7 @@ impl Node {
     /// `spin_once` until available, so spin_once must be called
     /// repeatedly in order to get the wakeup.
     pub fn is_available(
-        &mut self,
-        client: &dyn IsAvailablePollable,
+        &mut self, client: &dyn IsAvailablePollable,
     ) -> Result<impl Future<Output = Result<()>>> {
         let (sender, receiver) = oneshot::channel();
         client.register_poll_available(sender)?;
@@ -480,9 +467,7 @@ impl Node {
     /// with `serde_json::Value`s instead of concrete types.  Useful
     /// when you cannot know the type of the message at compile time.
     pub fn create_action_client_untyped(
-        &mut self,
-        action_name: &str,
-        action_type: &str,
+        &mut self, action_name: &str, action_type: &str,
     ) -> Result<ActionClientUntyped> {
         let action_type_support = UntypedActionSupport::new_from(action_type)?;
         let client_handle = create_action_client_helper(
@@ -513,8 +498,7 @@ impl Node {
     /// This function returns a stream of `GoalRequest`s, which needs
     /// to be either accepted or rejected.
     pub fn create_action_server<T: 'static>(
-        &mut self,
-        action_name: &str,
+        &mut self, action_name: &str,
     ) -> Result<impl Stream<Item = ActionServerGoalRequest<T>> + Unpin>
     where
         T: WrappedActionTypeSupport,
@@ -522,10 +506,7 @@ impl Node {
         // for now automatically create a ros clock...
         let mut clock_handle = MaybeUninit::<rcl_clock_t>::uninit();
         let ret = unsafe {
-            rcl_ros_clock_init(
-                clock_handle.as_mut_ptr(),
-                &mut rcutils_get_default_allocator(),
-            )
+            rcl_ros_clock_init(clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
         };
         if ret != RCL_RET_OK as i32 {
             log::error!("could not create steady clock: {}", ret);
@@ -560,9 +541,7 @@ impl Node {
 
     /// Create a ROS publisher.
     pub fn create_publisher<T>(
-        &mut self,
-        topic: &str,
-        qos_profile: QosProfile,
+        &mut self, topic: &str, qos_profile: QosProfile,
     ) -> Result<Publisher<T>>
     where
         T: WrappedTypesupport,
@@ -577,10 +556,7 @@ impl Node {
 
     /// Create a ROS publisher with a type given at runtime.
     pub fn create_publisher_untyped(
-        &mut self,
-        topic: &str,
-        topic_type: &str,
-        qos_profile: QosProfile,
+        &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let publisher_handle =

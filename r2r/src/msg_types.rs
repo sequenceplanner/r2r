@@ -13,14 +13,8 @@ pub mod generated_msgs {
     #![allow(clippy::all)]
     use super::*;
     include!(concat!(env!("OUT_DIR"), "/_r2r_generated_msgs.rs"));
-    include!(concat!(
-        env!("OUT_DIR"),
-        "/_r2r_generated_untyped_helper.rs"
-    ));
-    include!(concat!(
-        env!("OUT_DIR"),
-        "/_r2r_generated_service_helper.rs"
-    ));
+    include!(concat!(env!("OUT_DIR"), "/_r2r_generated_untyped_helper.rs"));
+    include!(concat!(env!("OUT_DIR"), "/_r2r_generated_service_helper.rs"));
     include!(concat!(env!("OUT_DIR"), "/_r2r_generated_action_helper.rs"));
 }
 
@@ -70,23 +64,19 @@ pub trait WrappedActionTypeSupport: Debug + Clone {
     fn get_ts() -> &'static rosidl_action_type_support_t;
 
     fn make_goal_request_msg(
-        goal_id: unique_identifier_msgs::msg::UUID,
-        goal: Self::Goal,
+        goal_id: unique_identifier_msgs::msg::UUID, goal: Self::Goal,
     ) -> <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request;
     fn make_goal_response_msg(
-        accepted: bool,
-        stamp: builtin_interfaces::msg::Time,
+        accepted: bool, stamp: builtin_interfaces::msg::Time,
     ) -> <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Response;
     fn make_feedback_msg(
-        goal_id: unique_identifier_msgs::msg::UUID,
-        feedback: Self::Feedback,
+        goal_id: unique_identifier_msgs::msg::UUID, feedback: Self::Feedback,
     ) -> Self::FeedbackMessage;
     fn make_result_request_msg(
         goal_id: unique_identifier_msgs::msg::UUID,
     ) -> <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Request;
     fn make_result_response_msg(
-        status: i8,
-        result: Self::Result,
+        status: i8, result: Self::Result,
     ) -> <<Self as WrappedActionTypeSupport>::GetResult as WrappedServiceTypeSupport>::Response;
     fn destructure_goal_request_msg(
         msg: <<Self as WrappedActionTypeSupport>::SendGoal as WrappedServiceTypeSupport>::Request,
@@ -366,8 +356,7 @@ where
     }
 
     pub fn from_loaned(
-        msg: *mut T::CStruct,
-        deallocator: Box<dyn FnOnce(*mut <T as WrappedTypesupport>::CStruct)>,
+        msg: *mut T::CStruct, deallocator: Box<dyn FnOnce(*mut <T as WrappedTypesupport>::CStruct)>,
     ) -> Self {
         WrappedNativeMsg {
             msg,

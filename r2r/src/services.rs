@@ -68,9 +68,7 @@ where
     }
 
     fn send_response(
-        &mut self,
-        mut request_id: rmw_request_id_t,
-        mut msg: Box<dyn VoidPtr>,
+        &mut self, mut request_id: rmw_request_id_t, mut msg: Box<dyn VoidPtr>,
     ) -> Result<()> {
         let res =
             unsafe { rcl_send_response(&self.rcl_handle, &mut request_id, msg.void_ptr_mut()) };
@@ -86,11 +84,7 @@ where
         let mut request_msg = WrappedNativeMsg::<T::Request>::new();
 
         let ret = unsafe {
-            rcl_take_request(
-                &self.rcl_handle,
-                request_id.as_mut_ptr(),
-                request_msg.void_ptr_mut(),
-            )
+            rcl_take_request(&self.rcl_handle, request_id.as_mut_ptr(), request_msg.void_ptr_mut())
         };
         if ret == RCL_RET_OK as i32 {
             let request_id = unsafe { request_id.assume_init() };
@@ -118,9 +112,7 @@ where
 }
 
 pub fn create_service_helper(
-    node: &mut rcl_node_t,
-    service_name: &str,
-    service_ts: *const rosidl_service_type_support_t,
+    node: &mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t,
 ) -> Result<rcl_service_t> {
     let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
     let service_name_c_string =

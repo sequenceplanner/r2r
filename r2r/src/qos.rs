@@ -695,8 +695,7 @@ impl QosProfile {
     /// let qos = QosProfile::default().avoid_ros_namespace_conventions(true);
     /// ```
     pub const fn avoid_ros_namespace_conventions(
-        self,
-        avoid_ros_namespace_conventions: bool,
+        self, avoid_ros_namespace_conventions: bool,
     ) -> Self {
         Self {
             avoid_ros_namespace_conventions,

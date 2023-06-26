@@ -25,11 +25,7 @@ fn run_bindgen() {
 
     if cfg!(feature = "doc-only") {
         // If "doc-only" feature is present, copy from $crate/bindings/* to OUT_DIR
-        eprintln!(
-            "Copy from '{}' to '{}'",
-            saved_file.display(),
-            target_file.display()
-        );
+        eprintln!("Copy from '{}' to '{}'", saved_file.display(), target_file.display());
         fs::copy(&saved_file, &target_file).unwrap();
     } else {
         // If bindgen was done before, use cached files.

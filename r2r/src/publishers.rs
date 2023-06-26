@@ -77,9 +77,7 @@ pub fn make_publisher_untyped(handle: Weak<rcl_publisher_t>, type_: String) -> P
 }
 
 pub fn create_publisher_helper(
-    node: &mut rcl_node_t,
-    topic: &str,
-    typesupport: *const rosidl_message_type_support_t,
+    node: &mut rcl_node_t, topic: &str, typesupport: *const rosidl_message_type_support_t,
     qos_profile: QosProfile,
 ) -> Result<rcl_publisher_t> {
     let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
@@ -117,13 +115,8 @@ impl PublisherUntyped {
         let native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
 
-        let result = unsafe {
-            rcl_publish(
-                publisher.as_ref(),
-                native_msg.void_ptr(),
-                std::ptr::null_mut(),
-            )
-        };
+        let result =
+            unsafe { rcl_publish(publisher.as_ref(), native_msg.void_ptr(), std::ptr::null_mut()) };
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -149,13 +142,8 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
-        let result = unsafe {
-            rcl_publish(
-                publisher.as_ref(),
-                native_msg.void_ptr(),
-                std::ptr::null_mut(),
-            )
-        };
+        let result =
+            unsafe { rcl_publish(publisher.as_ref(), native_msg.void_ptr(), std::ptr::null_mut()) };
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -208,7 +196,9 @@ where
         } else {
             static LOG_LOANED_ERROR: Once = Once::new();
             LOG_LOANED_ERROR.call_once(|| {
-                log::error!("Currently used middleware can't loan messages. Local allocator will be used.");
+                log::error!(
+                    "Currently used middleware can't loan messages. Local allocator will be used."
+                );
             });
 
             Ok(WrappedNativeMsg::<T>::new())

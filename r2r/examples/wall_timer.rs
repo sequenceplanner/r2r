@@ -8,11 +8,7 @@ async fn timer_task(mut t: r2r::Timer) -> Result<(), Box<dyn std::error::Error>>
     let mut x: i32 = 0;
     loop {
         let elapsed = t.tick().await?;
-        println!(
-            "timer called ({}), {}us since last call",
-            x,
-            elapsed.as_micros()
-        );
+        println!("timer called ({}), {}us since last call", x, elapsed.as_micros());
 
         x += 1;
         if x == 10 {

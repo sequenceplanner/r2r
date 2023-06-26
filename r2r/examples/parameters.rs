@@ -37,10 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     println!("node name: {}", node.name()?);
-    println!(
-        "node fully qualified name: {}",
-        node.fully_qualified_name()?
-    );
+    println!("node fully qualified name: {}", node.fully_qualified_name()?);
     println!("node namespace: {}", node.namespace()?);
 
     // print all params every 5 seconds.

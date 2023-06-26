@@ -50,11 +50,7 @@ fn run_bindgen(msg_list: &[RosMsg]) {
 
     if cfg!(feature = "doc-only") {
         // If "doc-only" feature is present, copy from $crate/bindings/* to OUT_DIR
-        eprintln!(
-            "Copy files from '{}' to '{}'",
-            save_dir.display(),
-            out_dir.display()
-        );
+        eprintln!("Copy files from '{}' to '{}'", save_dir.display(), out_dir.display());
 
         for filename in GENERATED_FILES {
             let src = save_dir.join(filename);
@@ -549,14 +545,8 @@ fn run_dynlink(msg_list: &[RosMsg]) {
 
     let msg_map = r2r_common::as_map(msg_list);
     for module in msg_map.keys() {
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c",
-            module
-        );
-        println!(
-            "cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c",
-            module
-        );
+        println!("cargo:rustc-link-lib=dylib={}__rosidl_typesupport_c", module);
+        println!("cargo:rustc-link-lib=dylib={}__rosidl_typesupport_introspection_c", module);
         println!("cargo:rustc-link-lib=dylib={}__rosidl_generator_c", module);
     }
 }

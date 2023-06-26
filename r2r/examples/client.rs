@@ -7,8 +7,7 @@ use std::io::Write;
 use r2r::example_interfaces::srv::AddTwoInts;
 
 async fn requester_task(
-    node_available: impl Future<Output = r2r::Result<()>>,
-    c: r2r::Client<AddTwoInts::Service>,
+    node_available: impl Future<Output = r2r::Result<()>>, c: r2r::Client<AddTwoInts::Service>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i64 = 0;
     println!("waiting for service...");

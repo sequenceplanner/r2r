@@ -86,8 +86,7 @@ where
     /// - A new future for the eventual result.
     /// - A stream of feedback messages.
     pub fn send_goal_request(
-        &self,
-        goal: T::Goal,
+        &self, goal: T::Goal,
     ) -> Result<
         impl Future<
             Output = Result<(
@@ -219,8 +218,7 @@ where
     }
 
     pub fn send_cancel_request(
-        &mut self,
-        goal: &uuid::Uuid,
+        &mut self, goal: &uuid::Uuid,
     ) -> Result<impl Future<Output = Result<()>>>
     where
         T: WrappedActionTypeSupport,
@@ -326,7 +324,8 @@ where
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }
@@ -364,7 +363,8 @@ where
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }
@@ -453,7 +453,8 @@ where
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }
@@ -513,9 +514,7 @@ where
 }
 
 pub fn create_action_client_helper(
-    node: &mut rcl_node_t,
-    action_name: &str,
-    action_ts: *const rosidl_action_type_support_t,
+    node: &mut rcl_node_t, action_name: &str, action_ts: *const rosidl_action_type_support_t,
 ) -> Result<rcl_action_client_t> {
     let mut client_handle = unsafe { rcl_action_get_zero_initialized_client() };
     let action_name_c_string =
@@ -539,12 +538,8 @@ pub fn create_action_client_helper(
 }
 
 pub fn action_client_get_num_waits(
-    rcl_handle: &rcl_action_client_t,
-    num_subs: &mut usize,
-    num_gc: &mut usize,
-    num_timers: &mut usize,
-    num_clients: &mut usize,
-    num_services: &mut usize,
+    rcl_handle: &rcl_action_client_t, num_subs: &mut usize, num_gc: &mut usize,
+    num_timers: &mut usize, num_clients: &mut usize, num_services: &mut usize,
 ) -> Result<()> {
     unsafe {
         let result = rcl_action_client_wait_set_get_num_entities(
@@ -581,8 +576,7 @@ where
 }
 
 pub fn action_server_available_helper(
-    node: &rcl_node_t,
-    client: &rcl_action_client_t,
+    node: &rcl_node_t, client: &rcl_action_client_t,
 ) -> Result<bool> {
     let mut avail = false;
     let result = unsafe { rcl_action_server_is_available(node, client, &mut avail) };

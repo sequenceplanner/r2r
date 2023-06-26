@@ -165,10 +165,7 @@ pub fn make_action_client_untyped(
     ActionClientUntyped { client }
 }
 
-pub type ResultSender = (
-    uuid::Uuid,
-    oneshot::Sender<(GoalStatus, Result<serde_json::Value>)>,
-);
+pub type ResultSender = (uuid::Uuid, oneshot::Sender<(GoalStatus, Result<serde_json::Value>)>);
 pub struct WrappedActionClientUntyped {
     pub action_type_support: UntypedActionSupport,
     pub rcl_handle: rcl_action_client_t,
@@ -189,8 +186,7 @@ impl WrappedActionClientUntyped {
     }
 
     pub fn send_cancel_request(
-        &mut self,
-        goal: &uuid::Uuid,
+        &mut self, goal: &uuid::Uuid,
     ) -> Result<impl Future<Output = Result<()>>> {
         let msg = action_msgs::srv::CancelGoal::Request {
             goal_info: action_msgs::msg::GoalInfo {
@@ -288,7 +284,8 @@ impl ActionClient_ for WrappedActionClientUntyped {
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }
@@ -326,7 +323,8 @@ impl ActionClient_ for WrappedActionClientUntyped {
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }
@@ -412,7 +410,8 @@ impl ActionClient_ for WrappedActionClientUntyped {
                     .join(",");
                 log::error!(
                     "no such req id: {}, we have [{}], ignoring",
-                    request_id.sequence_number, we_have
+                    request_id.sequence_number,
+                    we_have
                 );
             }
         }

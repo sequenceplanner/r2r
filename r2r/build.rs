@@ -1,11 +1,10 @@
-
 #[cfg(not(feature = "doc-only"))]
 use {
     quote::{format_ident, quote},
     rayon::prelude::*,
+    std::fmt,
     std::fs::{File, OpenOptions},
     std::io::{self, prelude::*, BufWriter},
-    std::fmt,
 };
 
 use std::path::{Path, PathBuf};
@@ -283,11 +282,7 @@ fn generate_bindings(bindgen_dir: &Path) {
 }
 
 fn copy_files(src_dir: &Path, tgt_dir: &Path) {
-    eprintln!(
-        "Copy files from '{}' to '{}'",
-        src_dir.display(),
-        tgt_dir.display()
-    );
+    eprintln!("Copy files from '{}' to '{}'", src_dir.display(), tgt_dir.display());
 
     let src_list_file = src_dir.join(LIST_FILENAME);
     let tgt_list_file = tgt_dir.join(LIST_FILENAME);

@@ -409,9 +409,6 @@ std_msgs/msg/String
         let map = as_map(&parsed);
 
         assert_eq!(map.get("std_msgs").unwrap().get("msg").unwrap()[0], "Bool");
-        assert_eq!(
-            map.get("std_msgs").unwrap().get("msg").unwrap()[1],
-            "String"
-        );
+        assert_eq!(map.get("std_msgs").unwrap().get("msg").unwrap()[1], "String");
     }
 }

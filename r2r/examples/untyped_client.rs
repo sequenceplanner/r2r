@@ -3,8 +3,7 @@ use futures::task::LocalSpawnExt;
 use futures::Future;
 
 async fn requester_task(
-    node_available: impl Future<Output = r2r::Result<()>>,
-    c: r2r::ClientUntyped,
+    node_available: impl Future<Output = r2r::Result<()>>, c: r2r::ClientUntyped,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i64 = 0;
     println!("waiting for service...");

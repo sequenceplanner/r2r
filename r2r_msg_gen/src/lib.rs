@@ -149,20 +149,12 @@ unsafe fn introspection<'a>(
         msgname = name
     );
     let memberslice = slice::from_raw_parts((*members).members_, (*members).member_count_ as usize);
-    (
-        module.to_owned(),
-        prefix.to_owned(),
-        name.to_owned(),
-        c_struct,
-        memberslice,
-    )
+    (module.to_owned(), prefix.to_owned(), name.to_owned(), c_struct, memberslice)
 }
 
 #[cfg(not(feature = "doc-only"))]
 pub fn generate_rust_service(
-    module_: &str,
-    prefix_: &str,
-    name_: &str,
+    module_: &str, prefix_: &str, name_: &str,
 ) -> proc_macro2::TokenStream {
     let ident = format_ident!(
         "rosidl_typesupport_c__\

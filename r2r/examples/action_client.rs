@@ -44,11 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let nested_task_done = nested_task_done.clone();
                 let nested_goal = nested_goal.clone();
                 async move {
-                    println!(
-                        "new feedback msg {:?} -- {:?}",
-                        msg,
-                        nested_goal.get_status()
-                    );
+                    println!("new feedback msg {:?} -- {:?}", msg, nested_goal.get_status());
 
                     // 50/50 that cancel the goal before it finishes.
                     if msg.sequence.len() == 4 && rand::random::<bool>() {

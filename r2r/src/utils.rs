@@ -77,13 +77,7 @@ impl LogSeverity {
 #[macro_export]
 macro_rules! __impl_log {
     ($logger_name:expr, $msg:expr, $file:expr, $line:expr, $severity:expr) => {{
-        $crate::log(
-            &std::fmt::format($msg),
-            $logger_name,
-            $file,
-            $line,
-            $severity,
-        );
+        $crate::log(&std::fmt::format($msg), $logger_name, $file, $line, $severity);
     }};
 }
 

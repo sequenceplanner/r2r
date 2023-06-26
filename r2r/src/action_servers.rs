@@ -23,9 +23,7 @@ pub trait ActionServer_ {
     fn handle_goal_expired(&mut self);
     fn publish_status(&self);
     fn set_goal_state(
-        &mut self,
-        uuid: &uuid::Uuid,
-        new_state: rcl_action_goal_event_t,
+        &mut self, uuid: &uuid::Uuid, new_state: rcl_action_goal_event_t,
     ) -> Result<()>;
     fn add_result(&mut self, uuid: uuid::Uuid, msg: Box<dyn VoidPtr>);
     fn cancel_goal(&mut self, uuid: &uuid::Uuid);
@@ -77,10 +75,7 @@ where
     /// Returns a handle to the goal and a stream on which cancel requests can be received.
     pub fn accept(
         mut self,
-    ) -> Result<(
-        ActionServerGoal<T>,
-        impl Stream<Item = ActionServerCancelRequest> + Unpin,
-    )> {
+    ) -> Result<(ActionServerGoal<T>, impl Stream<Item = ActionServerCancelRequest> + Unpin)> {
         let uuid_msg = unique_identifier_msgs::msg::UUID {
             uuid: self.uuid.as_bytes().to_vec(),
         };
@@ -213,18 +208,13 @@ where
             };
 
             if ret != RCL_RET_OK as i32 {
-                log::debug!(
-                    "action server: could not cancel goal: {}",
-                    Error::from_rcl_error(ret)
-                );
+                log::debug!("action server: could not cancel goal: {}", Error::from_rcl_error(ret));
             }
         }
     }
 
     fn set_goal_state(
-        &mut self,
-        uuid: &uuid::Uuid,
-        new_state: rcl_action_goal_event_t,
+        &mut self, uuid: &uuid::Uuid, new_state: rcl_action_goal_event_t,
     ) -> Result<()> {
         let goal_info = action_msgs::msg::GoalInfo {
             goal_id: unique_identifier_msgs::msg::UUID {
@@ -725,9 +715,7 @@ where
 }
 
 pub fn create_action_server_helper(
-    node: &mut rcl_node_t,
-    action_name: &str,
-    clock_handle: *mut rcl_clock_t,
+    node: &mut rcl_node_t, action_name: &str, clock_handle: *mut rcl_clock_t,
     action_ts: *const rosidl_action_type_support_t,
 ) -> Result<rcl_action_server_t> {
     let mut server_handle = unsafe { rcl_action_get_zero_initialized_server() };
@@ -754,12 +742,8 @@ pub fn create_action_server_helper(
 }
 
 pub fn action_server_get_num_waits(
-    rcl_handle: &rcl_action_server_t,
-    num_subs: &mut usize,
-    num_gc: &mut usize,
-    num_timers: &mut usize,
-    num_clients: &mut usize,
-    num_services: &mut usize,
+    rcl_handle: &rcl_action_server_t, num_subs: &mut usize, num_gc: &mut usize,
+    num_timers: &mut usize, num_clients: &mut usize, num_services: &mut usize,
 ) -> Result<()> {
     unsafe {
         let result = rcl_action_server_wait_set_get_num_entities(

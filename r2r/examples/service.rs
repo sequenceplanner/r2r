@@ -78,10 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     spawner.spawn_local(async move {
         loop {
             let elapsed = timer.tick().await.expect("could not tick");
-            println!(
-                "doing other async work, {}ms since last call",
-                elapsed.as_millis()
-            );
+            println!("doing other async work, {}ms since last call", elapsed.as_millis());
         }
     })?;
 

@@ -49,12 +49,7 @@ where
         let mut msg_info = rmw_message_info_t::default(); // we dont care for now
         let mut msg = WrappedNativeMsg::<T>::new();
         let ret = unsafe {
-            rcl_take(
-                &self.rcl_handle,
-                msg.void_ptr_mut(),
-                &mut msg_info,
-                std::ptr::null_mut(),
-            )
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
         };
         if ret == RCL_RET_OK as i32 {
             let msg = T::from_native(&msg);
@@ -162,12 +157,7 @@ impl Subscriber_ for UntypedSubscriber {
         let mut msg = WrappedNativeMsgUntyped::new_from(&self.topic_type)
             .unwrap_or_else(|_| panic!("no typesupport for {}", self.topic_type));
         let ret = unsafe {
-            rcl_take(
-                &self.rcl_handle,
-                msg.void_ptr_mut(),
-                &mut msg_info,
-                std::ptr::null_mut(),
-            )
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
         };
         if ret == RCL_RET_OK as i32 {
             let json = msg.to_json();
@@ -190,9 +180,7 @@ impl Subscriber_ for UntypedSubscriber {
 }
 
 pub fn create_subscription_helper(
-    node: &mut rcl_node_t,
-    topic: &str,
-    ts: *const rosidl_message_type_support_t,
+    node: &mut rcl_node_t, topic: &str, ts: *const rosidl_message_type_support_t,
     qos_profile: QosProfile,
 ) -> Result<rcl_subscription_t> {
     let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };

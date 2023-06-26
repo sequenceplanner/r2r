@@ -48,11 +48,7 @@ fn run_bindgen() {
     };
 
     fs::copy(src_file, &target_file).unwrap_or_else(|_| {
-        panic!(
-            "Unable to copy from '{}' to '{}'",
-            src_file.display(),
-            target_file.display()
-        )
+        panic!("Unable to copy from '{}' to '{}'", src_file.display(), target_file.display())
     });
 }
 

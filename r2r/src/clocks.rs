@@ -36,11 +36,7 @@ impl Clock {
 
         let rcl_ct = clock_type_to_rcl(&ct);
         let ret = unsafe {
-            rcl_clock_init(
-                rcl_ct,
-                clock_handle.as_mut_ptr(),
-                &mut rcutils_get_default_allocator(),
-            )
+            rcl_clock_init(rcl_ct, clock_handle.as_mut_ptr(), &mut rcutils_get_default_allocator())
         };
         if ret != RCL_RET_OK as i32 {
             log::error!("could not create {:?} clock: {}", ct, ret);
