@@ -1,6 +1,6 @@
 [package]
 name = "r2r_msg_gen"
-version = "0.3.11"
+version = "0.3.12"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
@@ -11,8 +11,8 @@ repository = "https://github.com/sequenceplanner/r2r"
 documentation = "https://docs.rs/r2r/latest/r2r"
 
 [dependencies]
-r2r_rcl = { path = "../r2r_rcl", version = "0.3.7" }
-r2r_common = { path = "../r2r_common", version = "0.3.6" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.3.8" }
+r2r_common = { path = "../r2r_common", version = "0.3.7" }
 phf = { version = "0.11.1", features = ["macros"] }
 quote = "1.0.28"
 proc-macro2 = "1.0.60"
@@ -22,8 +22,8 @@ rayon = "1.7.0"
 
 [build-dependencies]
 bindgen = "0.63.0"
-r2r_rcl = { path = "../r2r_rcl", version = "0.3.7" }
-r2r_common = { path = "../r2r_common", version = "0.3.6" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.3.8" }
+r2r_common = { path = "../r2r_common", version = "0.3.7" }
 heck = "0.4.0"
 quote = "1.0.28"
 syn = { version = "2.0.18", features = ["full"] }
