@@ -377,15 +377,17 @@ pub fn as_map(included_msgs: &[RosMsg]) -> HashMap<&str, HashMap<&str, Vec<&str>
     msgs
 }
 
-/// camel case to to snake case adapted from from ros_idl_cmake
-/// note that this is not a general camel to snake converter.
+thread_local! {
+    static UPPERCASE_BEFORE: Regex = Regex::new(r"(.)([A-Z][a-z]+)").unwrap();
+    static UPPERCASE_AFTER: Regex = Regex::new(r"([a-z0-9])([A-Z])").unwrap();
+}
+
+/// camel case to to snake case adapted from from ros_idl_cmake. This
+/// is not a general "to snake case" converter, it only handles the
+/// specific case of CamelCase to snake_case that we need.
 pub fn camel_to_snake(s: &str) -> String {
-    let re1 = Regex::new(r"(.)([A-Z][a-z]+)").unwrap();
-    let re2 = Regex::new(r"([a-z0-9])([A-Z])").unwrap();
-
-    let s = re1.replace_all(s, "${1}_${2}");
-    let s = re2.replace_all(&s, "${1}_${2}");
-
+    let s = UPPERCASE_BEFORE.with(|ub| ub.replace_all(s, "${1}_${2}"));
+    let s = UPPERCASE_AFTER.with(|ua| ua.replace_all(&s, "${1}_${2}"));
     s.to_lowercase()
 }
 
@@ -426,9 +428,10 @@ std_msgs/msg/String
     }
 
     #[test]
-    fn test_snake_case() {
+    fn test_camel_to_snake_case() {
         assert_eq!(camel_to_snake("AB01CD02"), "ab01_cd02");
         assert_eq!(camel_to_snake("UnboundedSequences"), "unbounded_sequences");
+        assert_eq!(camel_to_snake("BoundedPlainUnboundedSequences"), "bounded_plain_unbounded_sequences");
         assert_eq!(camel_to_snake("WStrings"), "w_strings");
     }
 }
