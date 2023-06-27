@@ -1,6 +1,6 @@
 [package]
 name = "r2r_common"
-version = "0.3.7"
+version = "0.3.8"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Minimal ros2 bindings."
 license = "MIT"
