@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "r2r",
     "r2r_actions",
