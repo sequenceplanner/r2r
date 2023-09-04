@@ -282,8 +282,65 @@ impl Node {
 
         handlers.push(Box::pin(get_params_future));
 
+        // rcl_interfaces/srv/ListParameters
+        use rcl_interfaces::srv::ListParameters;
+        let list_params_request_stream = self
+            .create_service::<ListParameters::Service>(&format!("{}/list_parameters", node_name))?;
+
+        let params = self.params.clone();
+        let list_params_future = list_params_request_stream.for_each(
+            move |req: ServiceRequest<ListParameters::Service>| {
+                Self::handle_list_parameters(req, &params)
+            },
+        );
+
+        handlers.push(Box::pin(list_params_future));
+
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
+    }
+
+    fn handle_list_parameters(
+        req: ServiceRequest<rcl_interfaces::srv::ListParameters::Service>,
+        params: &Arc<Mutex<HashMap<String, ParameterValue>>>,
+    ) -> future::Ready<()> {
+        use rcl_interfaces::srv::ListParameters;
+
+        let depth = req.message.depth;
+        let prefixes = &req.message.prefixes;
+        let separator = '.';
+        let params = params.lock().unwrap();
+        let mut result = rcl_interfaces::msg::ListParametersResult {
+            names: vec![],
+            prefixes: vec![],
+        };
+        for (name, _) in params.iter().filter(|(name, _)| {
+            let get_all = prefixes.is_empty()
+                && ((depth == ListParameters::Request::DEPTH_RECURSIVE as u64)
+                    || name.matches(separator).count() < depth as usize);
+            let prefix_matches = prefixes.iter().any(|prefix| {
+                if *name == prefix {
+                    return true;
+                } else if name.starts_with(&format!("{prefix}{separator}")) {
+                    let substr = &name[prefix.len()..];
+                    return (depth == ListParameters::Request::DEPTH_RECURSIVE as u64)
+                        || substr.matches(separator).count() < depth as usize;
+                }
+                return false;
+            });
+            get_all || prefix_matches
+        }) {
+            result.names.push(name.clone());
+            if let Some(last_separator) = name.rfind(separator) {
+                let prefix = &name[0..last_separator];
+                if result.prefixes.iter().find(|&p| p == prefix) == None {
+                    result.prefixes.push(prefix.to_string());
+                }
+            }
+        }
+        req.respond(ListParameters::Response { result })
+            .expect("could not send reply to list parameter request");
+        future::ready(())
     }
 
     /// Subscribe to a ROS topic.
