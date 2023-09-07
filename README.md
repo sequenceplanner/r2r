@@ -44,6 +44,8 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Implement rcl_interfaces::srv::ListParameters service. <https://github.com/sequenceplanner/r2r/pull/64>
+- Eliminate compiler warnings about virtual workspace's resolver. <https://github.com/sequenceplanner/r2r/pull/63>
 
 #### [0.7.5] - 2023-06-27
 - Fix issue with snake case conversion for idl header files. <https://github.com/sequenceplanner/r2r/pull/61>
