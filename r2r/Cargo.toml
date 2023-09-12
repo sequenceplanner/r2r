@@ -31,6 +31,7 @@ phf = "0.11.1"
 serde_json = "1.0.89"
 futures = "0.3.25"
 tokio = { version = "1.22.0", features = ["rt-multi-thread", "macros"] }
+r2r_macros = { path = "../r2r_macros", version = "0.1.0" }
 rand = "0.8.5"
 
 [build-dependencies]

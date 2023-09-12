@@ -1,4 +1,5 @@
-use std::ffi::CStr;
+use crate::{Error, Result};
+use std::{collections::HashMap, ffi::CStr};
 
 use crate::msg_types::generated_msgs::rcl_interfaces;
 use r2r_rcl::*;
@@ -142,4 +143,108 @@ impl ParameterValue {
         }
         ret
     }
+}
+
+/// Trait for use it with
+/// [`Node::make_derived_parameter_handler()`](crate::Node::make_derived_parameter_handler()).
+///
+/// The trait is usually derived with `r2r_macros::RosParams`. See
+/// `parameters_derive.rs` example.
+pub trait RosParams {
+    fn register_parameters(
+        &mut self, prefix: &str, params: &mut HashMap<String, ParameterValue>,
+    ) -> Result<()>;
+    fn get_parameter(&mut self, param_name: &str) -> Result<ParameterValue>;
+    fn set_parameter(&mut self, param_name: &str, param_val: &ParameterValue) -> Result<()>;
+}
+
+// Implementation of RosParams for primitive types, i.e. leaf parameters
+macro_rules! impl_ros_params {
+    ($type:path, $param_value_type:path, $to_param_conv:path, $from_param_conv:path) => {
+        impl RosParams for $type {
+            fn register_parameters(
+                &mut self, prefix: &str, params: &mut HashMap<String, ParameterValue>,
+            ) -> Result<()> {
+                if let Some(param_val) = params.get(prefix) {
+                    // Apply parameter value if set from command line or launch file
+                    self.set_parameter("", param_val)
+                        .map_err(|e| e.update_param_name(prefix))?;
+                } else {
+                    // Insert missing parameter with its default value
+                    params.insert(prefix.to_owned(), $param_value_type($to_param_conv(self)?));
+                }
+                Ok(())
+            }
+
+            fn get_parameter(&mut self, param_name: &str) -> Result<ParameterValue> {
+                match param_name {
+                    "" => Ok($param_value_type($to_param_conv(self)?)),
+                    _ => Err(Error::InvalidParameterName {
+                        name: param_name.to_owned(),
+                    }),
+                }
+            }
+
+            fn set_parameter(
+                &mut self, param_name: &str, param_val: &ParameterValue,
+            ) -> Result<()> {
+                if param_name != "" {
+                    return Err(Error::InvalidParameterName {
+                        name: param_name.to_owned(),
+                    });
+                }
+                match param_val {
+                    $param_value_type(val) => {
+                        *self = $from_param_conv(val)?;
+                        Ok(())
+                    }
+                    _ => Err(Error::InvalidParameterType {
+                        name: "".to_string(), // will be completed by callers who know the name
+                        ty: std::stringify!($param_value_type),
+                    }),
+                }
+            }
+        }
+    };
+}
+
+impl_ros_params!(bool, ParameterValue::Bool, noop, noop);
+impl_ros_params!(i8, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(i16, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(i32, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(i64, ParameterValue::Integer, noop, noop);
+impl_ros_params!(u8, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(u16, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(u32, ParameterValue::Integer, try_conv, try_conv);
+impl_ros_params!(f64, ParameterValue::Double, noop, noop);
+impl_ros_params!(f32, ParameterValue::Double, to_f64, to_f32);
+impl_ros_params!(String, ParameterValue::String, to_string, to_string);
+// TODO: Implement array parameters
+
+// Helper conversion functions
+fn noop<T: Copy>(x: &T) -> Result<T> {
+    Ok(*x)
+}
+
+fn to_f32(x: &f64) -> Result<f32> {
+    Ok(*x as f32)
+}
+fn to_f64(x: &f32) -> Result<f64> {
+    Ok(*x as f64)
+}
+
+fn try_conv<T, U>(x: &T) -> Result<U>
+where
+    T: Copy,
+    U: TryFrom<T>,
+    <U as TryFrom<T>>::Error: std::error::Error,
+{
+    U::try_from(*x).map_err(|e| Error::ParameterValueConv {
+        name: "".into(),
+        msg: e.to_string(),
+    })
+}
+
+fn to_string(x: &str) -> Result<String> {
+    Ok(x.to_string())
 }

@@ -116,6 +116,15 @@ pub enum Error {
 
     #[error("Goal already in a terminal state.")]
     GoalCancelAlreadyTerminated,
+
+    #[error("Invalid parameter name: {name}")]
+    InvalidParameterName { name: String },
+
+    #[error("Invalid type for parameter {name} (should be {ty})")]
+    InvalidParameterType { name: String, ty: &'static str },
+
+    #[error("Parameter {name} conversion failed: {msg}")]
+    ParameterValueConv { name: String, msg: String },
 }
 
 impl Error {
@@ -168,6 +177,24 @@ impl Error {
             }
             _ if e == RCL_RET_ACTION_GOAL_EVENT_INVALID => Error::RCL_RET_ACTION_GOAL_EVENT_INVALID,
             _ => panic!("TODO: add error code {}", e),
+        }
+    }
+
+    /// Internal function used by code derived for the RosParams trait.
+    pub fn update_param_name(self, param_name: &str) -> Error {
+        match self {
+            Error::InvalidParameterName { name: _ } => Error::InvalidParameterName {
+                name: param_name.to_string(),
+            },
+            Error::InvalidParameterType { name: _, ty } => Error::InvalidParameterType {
+                name: param_name.to_string(),
+                ty,
+            },
+            Error::ParameterValueConv { name: _, msg } => Error::ParameterValueConv {
+                name: param_name.to_string(),
+                msg,
+            },
+            _ => self,
         }
     }
 }

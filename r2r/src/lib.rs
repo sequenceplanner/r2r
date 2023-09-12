@@ -112,7 +112,7 @@ mod context;
 pub use context::Context;
 
 mod parameters;
-pub use parameters::ParameterValue;
+pub use parameters::{ParameterValue, RosParams};
 
 mod clocks;
 pub use clocks::{Clock, ClockType};

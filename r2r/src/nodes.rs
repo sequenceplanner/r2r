@@ -209,6 +209,42 @@ impl Node {
         &mut self,
     ) -> Result<(impl Future<Output = ()> + Send, impl Stream<Item = (String, ParameterValue)>)>
     {
+        self.make_parameter_handler_internal(None)
+    }
+
+    /// Creates parameter service handlers for the Node based on the
+    /// [`RosParams`] trait.
+    ///
+    /// Supported parameter names and types are given by the
+    /// `params_struct` parameter (usually referring to a structure).
+    /// Fields of the structure will be updated based on the command
+    /// line parameters (if any) and later whenever a parameter gets
+    /// changed from external sources. Updated fields will be visible
+    /// outside of the node via the GetParameters service.
+    ///
+    /// This function returns a tuple (`Future`, `Stream`), where the
+    /// future should be spawned on onto the executor of choice. The
+    /// `Stream` produces events whenever parameters change from
+    /// external sources. The event elements of the event stream
+    /// include the name of the parameter which was updated as well as
+    /// its new value.
+    pub fn make_derived_parameter_handler(
+        &mut self, params_struct: Arc<Mutex<dyn RosParams + Send>>,
+    ) -> Result<(impl Future<Output = ()> + Send, impl Stream<Item = (String, ParameterValue)>)>
+    {
+        self.make_parameter_handler_internal(Some(params_struct))
+    }
+
+    fn make_parameter_handler_internal(
+        &mut self, params_struct: Option<Arc<Mutex<dyn RosParams + Send>>>,
+    ) -> Result<(impl Future<Output = ()> + Send, impl Stream<Item = (String, ParameterValue)>)>
+    {
+        if let Some(ps) = &params_struct {
+            // register all parameters
+            ps.lock()
+                .unwrap()
+                .register_parameters("", &mut self.params.lock().unwrap())?;
+        }
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
         let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
 
@@ -220,6 +256,7 @@ impl Node {
             ))?;
 
         let params = self.params.clone();
+        let params_struct_clone = params_struct.as_ref().map(|p| p.clone());
         let set_params_future = set_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
                 let mut result = rcl_interfaces::srv::SetParameters::Response::default();
@@ -231,18 +268,29 @@ impl Node {
                         .get(&p.name)
                         .map(|v| v != &val)
                         .unwrap_or(true); // changed=true if new
-                    params.lock().unwrap().insert(p.name.clone(), val.clone());
-                    let r = rcl_interfaces::msg::SetParametersResult {
-                        successful: true,
-                        reason: "".into(),
+                    let r = if let Some(ps) = &params_struct_clone {
+                        let result = ps.lock().unwrap().set_parameter(&p.name, &val);
+                        if result.is_ok() {
+                            params.lock().unwrap().insert(p.name.clone(), val.clone());
+                        }
+                        rcl_interfaces::msg::SetParametersResult {
+                            successful: result.is_ok(),
+                            reason: result.err().map_or("".into(), |e| e.to_string()),
+                        }
+                    } else {
+                        params.lock().unwrap().insert(p.name.clone(), val.clone());
+                        rcl_interfaces::msg::SetParametersResult {
+                            successful: true,
+                            reason: "".into(),
+                        }
                     };
-                    result.results.push(r);
                     // if the value changed, send out new value on parameter event stream
-                    if changed {
+                    if changed && r.successful {
                         if let Err(e) = event_tx.try_send((p.name.clone(), val)) {
                             log::debug!("Warning: could not send parameter event ({}).", e);
                         }
                     }
+                    result.results.push(r);
                 }
                 req.respond(result)
                     .expect("could not send reply to set parameter request");
@@ -259,6 +307,7 @@ impl Node {
             ))?;
 
         let params = self.params.clone();
+        let params_struct_clone = params_struct.as_ref().map(|p| p.clone());
         let get_params_future = get_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
                 let params = params.lock().unwrap();
@@ -266,9 +315,18 @@ impl Node {
                     .message
                     .names
                     .iter()
-                    .map(|n| match params.get(n) {
-                        Some(v) => v.clone(),
-                        None => ParameterValue::NotSet,
+                    .map(|n| {
+                        if let Some(ps) = &params_struct_clone {
+                            ps.lock()
+                                .unwrap()
+                                .get_parameter(&n)
+                                .unwrap_or(ParameterValue::NotSet)
+                        } else {
+                            match params.get(n) {
+                                Some(v) => v.clone(),
+                                None => ParameterValue::NotSet,
+                            }
+                        }
                     })
                     .map(|v| v.into_parameter_value_msg())
                     .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
