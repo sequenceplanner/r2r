@@ -1,5 +1,6 @@
 use r2r_rcl::*;
 use std::ffi::CString;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};
 
 use lazy_static::lazy_static;
@@ -12,12 +13,24 @@ pub(crate) fn log_guard() -> MutexGuard<'static, ()> {
     LOG_GUARD.lock().unwrap()
 }
 
+// for some hidden reason g_rcutils_logging_initialized
+// is not found on windows even when rcutils.lib is linked
+// as a work around using onwned is_init
+static IS_INIT: AtomicBool = AtomicBool::new(false);
+
 /// Don't call this directly, use the logging macros instead.
 #[doc(hidden)]
 pub fn log(msg: &str, logger_name: &str, file: &str, line: u32, severity: LogSeverity) {
     let _guard = log_guard();
-    let is_init = unsafe { g_rcutils_logging_initialized };
+    let is_init = if cfg!(target_os = "windows") {
+        IS_INIT.load(Ordering::Relaxed)
+    } else {
+        unsafe { g_rcutils_logging_initialized }
+    };
     if !is_init {
+        if cfg!(target_os = "windows") {
+            IS_INIT.store(true, Ordering::Relaxed);
+        }
         let ret = unsafe { rcutils_logging_initialize() };
         if ret != RCL_RET_OK as i32 {
             log::error!("could not create logging system (Err: {})", ret);

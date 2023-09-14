@@ -5,7 +5,7 @@ use itertools::Either;
 use itertools::Itertools;
 use quote::format_ident;
 use quote::quote;
-use r2r_common::{RosMsg, camel_to_snake};
+use r2r_common::{camel_to_snake, RosMsg};
 use rayon::prelude::*;
 use std::fs::File;
 use std::fs::OpenOptions;

@@ -1,18 +1,19 @@
 use itertools::Itertools;
 use os_str_bytes::RawOsString;
+use regex::*;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::Read;
 use std::path::Path;
-use regex::*;
 
 #[cfg(not(feature = "doc-only"))]
 const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "rolling"];
 
 const WATCHED_ENV_VARS: &[&str] = &[
     "AMENT_PREFIX_PATH",
+    "CMAKE_PREFIX_PATH",
     "CMAKE_INCLUDE_DIRS",
     "CMAKE_LIBRARIES",
     "CMAKE_IDL_PACKAGES",
@@ -49,10 +50,14 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
-
+    let split_char = if cfg!(target_os = "windows") {
+        ';'
+    } else {
+        ':'
+    };
     if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         // we are running from cmake, do special thing.
-        let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
+        let mut includes = cmake_includes.split(split_char).collect::<Vec<_>>();
         includes.sort_unstable();
         includes.dedup();
 
@@ -63,10 +68,17 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
         }
     } else if !cfg!(feature = "doc-only") {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
-        let ament_prefix_var =
-            RawOsString::new(env::var_os(ament_prefix_var_name).expect("Source your ROS!"));
-
-        for p in ament_prefix_var.split(":") {
+        let ament_prefix_var = if !cfg!(target_os = "windows") {
+            RawOsString::new(env::var_os(ament_prefix_var_name).expect("Source your ROS!"))
+        } else {
+            let mut ament_str = env::var_os(ament_prefix_var_name).expect("Source your ROS!");
+            if let Some(cmake_prefix_var) = env::var_os("CMAKE_PREFIX_PATH") {
+                ament_str.push(";");
+                ament_str.push(cmake_prefix_var);
+            }
+            RawOsString::new(ament_str)
+        };
+        for p in ament_prefix_var.split(split_char) {
             let path = Path::new(&p.to_os_str()).join("include");
 
             let entries = std::fs::read_dir(path.clone());
@@ -138,13 +150,22 @@ pub fn print_cargo_ros_distro() {
 }
 
 pub fn print_cargo_link_search() {
+    let split_char = if cfg!(target_os = "windows") {
+        ';'
+    } else {
+        ':'
+    };
     if env::var_os("CMAKE_INCLUDE_DIRS").is_some() {
         if let Some(paths) = env::var_os("CMAKE_LIBRARIES") {
             let paths = RawOsString::new(paths);
-
             paths
-                .split(":")
-                .filter(|s| s.contains(".so") || s.contains(".dylib"))
+                .split(split_char)
+                .filter(|s| {
+                    s.contains(".so")
+                        || s.contains(".dylib")
+                        || s.contains(".dll")
+                        || s.contains(".lib")
+                })
                 .filter_map(|l| {
                     let l = l.to_os_str();
                     let parent = Path::new(&l).parent()?;
@@ -157,11 +178,30 @@ pub fn print_cargo_link_search() {
     } else {
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         if let Some(paths) = env::var_os(ament_prefix_var_name) {
-            let paths = RawOsString::new(paths);
-            for path in paths.split(":") {
-                let lib_path = Path::new(&path.to_os_str()).join("lib");
-                if let Some(s) = lib_path.to_str() {
-                    println!("cargo:rustc-link-search=native={}", s)
+            let paths = if !cfg!(target_os = "windows") {
+                RawOsString::new(paths)
+            } else if let Some(cmake_prefix_var) = env::var_os("CMAKE_PREFIX_PATH") {
+                let mut cmake_paths = paths;
+                cmake_paths.push(";");
+                cmake_paths.push(cmake_prefix_var);
+                RawOsString::new(cmake_paths)
+            } else {
+                RawOsString::new(paths)
+            };
+            for path in paths.split(split_char) {
+                if cfg!(target_os = "windows") {
+                    let lib_path = Path::new(&path.to_os_str()).join("Lib");
+                    if !lib_path.exists() {
+                        continue;
+                    }
+                    if let Some(s) = lib_path.to_str() {
+                        println!("cargo:rustc-link-search={}", s);
+                    }
+                } else {
+                    let lib_path = Path::new(&path.to_os_str()).join("lib");
+                    if let Some(s) = lib_path.to_str() {
+                        println!("cargo:rustc-link-search=native={}", s)
+                    }
                 }
             }
         }
@@ -169,27 +209,60 @@ pub fn print_cargo_link_search() {
 }
 
 pub fn get_wanted_messages() -> Vec<RosMsg> {
+    let split_char = if cfg!(target_os = "windows") {
+        ';'
+    } else {
+        ':'
+    };
     let msgs = if let Ok(cmake_package_dirs) = env::var("CMAKE_IDL_PACKAGES") {
         // CMAKE_PACKAGE_DIRS should be a (cmake) list of "cmake" dirs
         // e.g. For each dir install/r2r_minimal_node_msgs/share/r2r_minimal_node_msgs/cmake
         // we can traverse back and then look for .msg files in msg/ srv/ action/
         let dirs = cmake_package_dirs
-            .split(':')
+            .split(split_char)
             .flat_map(|i| Path::new(i).parent())
             .collect::<Vec<_>>();
 
         get_ros_msgs_files(&dirs)
     } else {
         // Else we look for all msgs we can find using the ament prefix path.
-        if let Ok(ament_prefix_var) = env::var("AMENT_PREFIX_PATH") {
-            let paths = ament_prefix_var
-                .split(':')
-                .map(Path::new)
-                .collect::<Vec<_>>();
+        if !cfg!(target_os = "windows") {
+            if let Ok(ament_prefix_var) = env::var("AMENT_PREFIX_PATH") {
+                let paths = ament_prefix_var
+                    .split(split_char)
+                    .map(Path::new)
+                    .collect::<Vec<_>>();
 
-            get_ros_msgs(&paths)
+                get_ros_msgs(&paths)
+            } else {
+                vec![]
+            }
         } else {
-            vec![]
+            match (env::var("AMENT_PREFIX_PATH"), env::var("CMAKE_PREFIX_PATH")) {
+                (Ok(ament_prefix_var), Ok(cmake_prefix_var)) => {
+                    let mut paths = ament_prefix_var
+                        .split(split_char)
+                        .map(Path::new)
+                        .collect::<Vec<_>>();
+                    paths.extend(cmake_prefix_var.split(split_char).map(Path::new));
+                    get_ros_msgs(&paths)
+                }
+                (Ok(ament_prefix_var), _) => {
+                    let paths = ament_prefix_var
+                        .split(split_char)
+                        .map(Path::new)
+                        .collect::<Vec<_>>();
+                    get_ros_msgs(&paths)
+                }
+                (_, Ok(cmake_prefix_var)) => {
+                    let paths = cmake_prefix_var
+                        .split(split_char)
+                        .map(Path::new)
+                        .collect::<Vec<_>>();
+                    get_ros_msgs(&paths)
+                }
+                _ => vec![],
+            }
         }
     };
 
@@ -346,7 +419,7 @@ pub fn get_ros_msgs_files(paths: &[&Path]) -> Vec<String> {
 pub fn parse_msgs(msgs: &[String]) -> Vec<RosMsg> {
     let v: Vec<Vec<&str>> = msgs
         .iter()
-        .map(|l| l.split('/').into_iter().take(3).collect())
+        .map(|l| l.split('/').take(3).collect())
         .collect();
 
     // hack because I don't have time to find out the root cause of this at the moment.
@@ -431,7 +504,10 @@ std_msgs/msg/String
     fn test_camel_to_snake_case() {
         assert_eq!(camel_to_snake("AB01CD02"), "ab01_cd02");
         assert_eq!(camel_to_snake("UnboundedSequences"), "unbounded_sequences");
-        assert_eq!(camel_to_snake("BoundedPlainUnboundedSequences"), "bounded_plain_unbounded_sequences");
+        assert_eq!(
+            camel_to_snake("BoundedPlainUnboundedSequences"),
+            "bounded_plain_unbounded_sequences"
+        );
         assert_eq!(camel_to_snake("WStrings"), "w_strings");
     }
 }
