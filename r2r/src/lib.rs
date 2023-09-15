@@ -16,7 +16,7 @@
 //!- Publish/subscribe
 //!- Services
 //!- Actions
-//!- Rudimentary parameter handling
+//!- Parameter handling
 //!
 //! ---
 //!
