@@ -143,6 +143,21 @@ impl ParameterValue {
         }
         ret
     }
+
+    pub(crate) fn into_parameter_type(&self) -> u8 {
+        match self {
+            ParameterValue::NotSet => 0,          // uint8 PARAMETER_NOT_SET=0
+            ParameterValue::Bool(_) => 1,         // uint8 PARAMETER_BOOL=1
+            ParameterValue::Integer(_) => 2,      // uint8 PARAMETER_INTEGER=2
+            ParameterValue::Double(_) => 3,       // uint8 PARAMETER_DOUBLE=3
+            ParameterValue::String(_) => 4,       // uint8 PARAMETER_STRING=4
+            ParameterValue::ByteArray(_) => 5,    // uint8 PARAMETER_BYTE_ARRAY=5
+            ParameterValue::BoolArray(_) => 6,    // uint8 PARAMETER_BOOL_ARRAY=6
+            ParameterValue::IntegerArray(_) => 7, // uint8 PARAMETER_INTEGER_ARRAY=7
+            ParameterValue::DoubleArray(_) => 8,  // uint8 PARAMETER_DOUBLE_ARRAY=8
+            ParameterValue::StringArray(_) => 9,  // int PARAMETER_STRING_ARRAY=9
+        }
+    }
 }
 
 /// Trait for use it with
