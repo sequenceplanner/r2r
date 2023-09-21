@@ -354,6 +354,48 @@ impl Node {
 
         handlers.push(Box::pin(list_params_future));
 
+        // rcl_interfaces/srv/DescribeParameters
+        use rcl_interfaces::srv::DescribeParameters;
+        let desc_params_request_stream = self.create_service::<DescribeParameters::Service>(
+            &format!("{node_name}/describe_parameters"),
+        )?;
+
+        let params = self.params.clone();
+        let desc_params_future = desc_params_request_stream.for_each(
+            move |req: ServiceRequest<DescribeParameters::Service>| {
+                Self::handle_desc_parameters(req, &params)
+            },
+        );
+
+        handlers.push(Box::pin(desc_params_future));
+
+        // rcl_interfaces/srv/GetParameterTypes
+        use rcl_interfaces::srv::GetParameterTypes;
+        let get_param_types_request_stream = self.create_service::<GetParameterTypes::Service>(
+            &format!("{node_name}/get_parameter_types"),
+        )?;
+
+        let params = self.params.clone();
+        let get_param_types_future = get_param_types_request_stream.for_each(
+            move |req: ServiceRequest<GetParameterTypes::Service>| {
+                let params = params.lock().unwrap();
+                let types = req
+                    .message
+                    .names
+                    .iter()
+                    .map(|name| match params.get(name) {
+                        Some(pv) => pv.into_parameter_type(),
+                        None => rcl_interfaces::msg::ParameterType::PARAMETER_NOT_SET as u8,
+                    })
+                    .collect();
+                req.respond(GetParameterTypes::Response { types })
+                    .expect("could not send reply to get parameter types request");
+                future::ready(())
+            },
+        );
+
+        handlers.push(Box::pin(get_param_types_future));
+
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
     }
@@ -398,6 +440,34 @@ impl Node {
         }
         req.respond(ListParameters::Response { result })
             .expect("could not send reply to list parameter request");
+        future::ready(())
+    }
+
+    fn handle_desc_parameters(
+        req: ServiceRequest<rcl_interfaces::srv::DescribeParameters::Service>,
+        params: &Arc<Mutex<HashMap<String, ParameterValue>>>,
+    ) -> future::Ready<()> {
+        use rcl_interfaces::msg::ParameterDescriptor;
+        use rcl_interfaces::srv::DescribeParameters;
+        let mut descriptors = Vec::<ParameterDescriptor>::new();
+        let params = params.lock().unwrap();
+        for name in &req.message.names {
+            if let Some(pv) = params.get(name) {
+                descriptors.push(ParameterDescriptor {
+                    name: name.clone(),
+                    type_: pv.into_parameter_type(),
+                    ..Default::default()
+                });
+            } else {
+                // parameter not found, but undeclared allowed, so return empty
+                descriptors.push(ParameterDescriptor {
+                    name: name.clone(),
+                    ..Default::default()
+                });
+            }
+        }
+        req.respond(DescribeParameters::Response { descriptors })
+            .expect("could not send reply to describe parameters request");
         future::ready(())
     }
 
