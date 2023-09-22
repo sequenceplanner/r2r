@@ -44,6 +44,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Derive macro for ros parameters. <https://github.com/sequenceplanner/r2r/pull/65>
 - Implement rcl_interfaces::srv::ListParameters service. <https://github.com/sequenceplanner/r2r/pull/64>
 - Eliminate compiler warnings about virtual workspace's resolver. <https://github.com/sequenceplanner/r2r/pull/63>
 
