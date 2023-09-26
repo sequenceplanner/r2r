@@ -1,3 +1,10 @@
+// Workaround for _Check_return_ annotation
+#ifdef _WIN32
+#ifndef _Check_return_
+#define _Check_return_
+#endif
+#endif
+
 // ros client library
 #include <rcl/rcl.h>
 
