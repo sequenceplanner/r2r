@@ -50,14 +50,9 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: false,
         });
-    let split_char = if cfg!(target_os = "windows") {
-        ';'
-    } else {
-        ':'
-    };
     if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
         // we are running from cmake, do special thing.
-        let mut includes = cmake_includes.split(split_char).collect::<Vec<_>>();
+        let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
         includes.sort_unstable();
         includes.dedup();
 
@@ -77,6 +72,11 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
                 ament_str.push(cmake_prefix_var);
             }
             RawOsString::new(ament_str)
+        };
+        let split_char = if cfg!(target_os = "windows") {
+            ';'
+        } else {
+            ':'
         };
         for p in ament_prefix_var.split(split_char) {
             let path = Path::new(&p.to_os_str()).join("include");
@@ -150,16 +150,11 @@ pub fn print_cargo_ros_distro() {
 }
 
 pub fn print_cargo_link_search() {
-    let split_char = if cfg!(target_os = "windows") {
-        ';'
-    } else {
-        ':'
-    };
     if env::var_os("CMAKE_INCLUDE_DIRS").is_some() {
         if let Some(paths) = env::var_os("CMAKE_LIBRARIES") {
             let paths = RawOsString::new(paths);
             paths
-                .split(split_char)
+                .split(':')
                 .filter(|s| {
                     s.contains(".so")
                         || s.contains(".dylib")
@@ -167,10 +162,19 @@ pub fn print_cargo_link_search() {
                         || s.contains(".lib")
                 })
                 .filter_map(|l| {
+                    let is_dll = l.contains(".dll");
                     let l = l.to_os_str();
-                    let parent = Path::new(&l).parent()?;
-                    let parent = parent.to_str()?;
-                    Some(parent.to_string())
+                    let parent = if is_dll {
+                        // Hack to replace /bin with /lib on windows
+                        // (may not work in all cases)
+                        // Should really be fixed in cmake integration
+                        // but annoying to replace that file in all
+                        // repos that use it.
+                        Path::new(&l).parent()?.parent()?.join("lib").to_str()?.to_string()
+                    } else {
+                        Path::new(&l).parent()?.to_str()?.to_string()
+                    };
+                    Some(parent)
                 })
                 .unique()
                 .for_each(|pp| println!("cargo:rustc-link-search=native={}", pp));
@@ -187,6 +191,11 @@ pub fn print_cargo_link_search() {
                 RawOsString::new(cmake_paths)
             } else {
                 RawOsString::new(paths)
+            };
+            let split_char = if cfg!(target_os = "windows") {
+                ';'
+            } else {
+                ':'
             };
             for path in paths.split(split_char) {
                 if cfg!(target_os = "windows") {
@@ -209,23 +218,23 @@ pub fn print_cargo_link_search() {
 }
 
 pub fn get_wanted_messages() -> Vec<RosMsg> {
-    let split_char = if cfg!(target_os = "windows") {
-        ';'
-    } else {
-        ':'
-    };
     let msgs = if let Ok(cmake_package_dirs) = env::var("CMAKE_IDL_PACKAGES") {
         // CMAKE_PACKAGE_DIRS should be a (cmake) list of "cmake" dirs
         // e.g. For each dir install/r2r_minimal_node_msgs/share/r2r_minimal_node_msgs/cmake
         // we can traverse back and then look for .msg files in msg/ srv/ action/
         let dirs = cmake_package_dirs
-            .split(split_char)
+            .split(':')
             .flat_map(|i| Path::new(i).parent())
             .collect::<Vec<_>>();
 
         get_ros_msgs_files(&dirs)
     } else {
         // Else we look for all msgs we can find using the ament prefix path.
+        let split_char = if cfg!(target_os = "windows") {
+            ';'
+        } else {
+            ':'
+        };
         if !cfg!(target_os = "windows") {
             if let Ok(ament_prefix_var) = env::var("AMENT_PREFIX_PATH") {
                 let paths = ament_prefix_var
