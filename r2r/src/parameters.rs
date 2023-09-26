@@ -160,6 +160,29 @@ impl ParameterValue {
     }
 }
 
+/// ROS parameter.
+pub struct Parameter {
+    pub value: ParameterValue,
+    pub description: &'static str,
+    // TODO: Add other fields like min, max, step. Use field
+    // attributes for defining them.
+}
+
+impl Parameter {
+    pub fn new(value: ParameterValue) -> Self {
+        Self {
+            value,
+            description: "",
+        }
+    }
+    pub fn empty() -> Self {
+        Self {
+            value: ParameterValue::NotSet,
+            description: "",
+        }
+    }
+}
+
 /// Trait for use it with
 /// [`Node::make_derived_parameter_handler()`](crate::Node::make_derived_parameter_handler()).
 ///
@@ -167,7 +190,7 @@ impl ParameterValue {
 /// `parameters_derive.rs` example.
 pub trait RosParams {
     fn register_parameters(
-        &mut self, prefix: &str, params: &mut HashMap<String, ParameterValue>,
+        &mut self, prefix: &str, param: Option<Parameter>, params: &mut HashMap<String, Parameter>,
     ) -> Result<()>;
     fn get_parameter(&mut self, param_name: &str) -> Result<ParameterValue>;
     fn set_parameter(&mut self, param_name: &str, param_val: &ParameterValue) -> Result<()>;
@@ -178,16 +201,18 @@ macro_rules! impl_ros_params {
     ($type:path, $param_value_type:path, $to_param_conv:path, $from_param_conv:path) => {
         impl RosParams for $type {
             fn register_parameters(
-                &mut self, prefix: &str, params: &mut HashMap<String, ParameterValue>,
+                &mut self, prefix: &str, param: Option<Parameter>,
+                params: &mut HashMap<String, Parameter>,
             ) -> Result<()> {
-                if let Some(param_val) = params.get(prefix) {
+                if let Some(cli_param) = params.get(prefix) {
                     // Apply parameter value if set from command line or launch file
-                    self.set_parameter("", param_val)
+                    self.set_parameter("", &cli_param.value)
                         .map_err(|e| e.update_param_name(prefix))?;
-                } else {
-                    // Insert missing parameter with its default value
-                    params.insert(prefix.to_owned(), $param_value_type($to_param_conv(self)?));
                 }
+                // Insert (or replace) the parameter with filled-in description etc.
+                let mut param = param.unwrap();
+                param.value = $param_value_type($to_param_conv(self)?);
+                params.insert(prefix.to_owned(), param);
                 Ok(())
             }
 

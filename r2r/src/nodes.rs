@@ -35,8 +35,8 @@ use crate::subscribers::*;
 /// be called continously.
 pub struct Node {
     context: Context,
-    /// ROS parameter values.
-    pub params: Arc<Mutex<HashMap<String, ParameterValue>>>,
+    /// ROS parameters.
+    pub params: Arc<Mutex<HashMap<String, Parameter>>>,
     node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     subscribers: Vec<Box<dyn Subscriber_>>,
@@ -146,7 +146,7 @@ impl Node {
                 let s = unsafe { CStr::from_ptr(*s) };
                 let key = s.to_str().unwrap_or("");
                 let val = ParameterValue::from_rcl(v);
-                params.insert(key.to_owned(), val);
+                params.insert(key.to_owned(), Parameter::new(val));
             }
         }
 
@@ -243,7 +243,7 @@ impl Node {
             // register all parameters
             ps.lock()
                 .unwrap()
-                .register_parameters("", &mut self.params.lock().unwrap())?;
+                .register_parameters("", None, &mut self.params.lock().unwrap())?;
         }
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
         let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
@@ -266,19 +266,31 @@ impl Node {
                         .lock()
                         .unwrap()
                         .get(&p.name)
-                        .map(|v| v != &val)
+                        .map(|v| v.value != val)
                         .unwrap_or(true); // changed=true if new
                     let r = if let Some(ps) = &params_struct_clone {
+                        // Update parameter structure
                         let result = ps.lock().unwrap().set_parameter(&p.name, &val);
                         if result.is_ok() {
-                            params.lock().unwrap().insert(p.name.clone(), val.clone());
+                            // Also update Node::params
+                            params
+                                .lock()
+                                .unwrap()
+                                .entry(p.name.clone())
+                                .and_modify(|p| p.value = val.clone());
                         }
                         rcl_interfaces::msg::SetParametersResult {
                             successful: result.is_ok(),
                             reason: result.err().map_or("".into(), |e| e.to_string()),
                         }
                     } else {
-                        params.lock().unwrap().insert(p.name.clone(), val.clone());
+                        // No parameter structure - update only Node::params
+                        params
+                            .lock()
+                            .unwrap()
+                            .entry(p.name.clone())
+                            .and_modify(|p| p.value = val.clone())
+                            .or_insert(Parameter::new(val.clone()));
                         rcl_interfaces::msg::SetParametersResult {
                             successful: true,
                             reason: "".into(),
@@ -316,16 +328,16 @@ impl Node {
                     .names
                     .iter()
                     .map(|n| {
+                        // First try to get the parameter from the param structure
                         if let Some(ps) = &params_struct_clone {
-                            ps.lock()
-                                .unwrap()
-                                .get_parameter(&n)
-                                .unwrap_or(ParameterValue::NotSet)
-                        } else {
-                            match params.get(n) {
-                                Some(v) => v.clone(),
-                                None => ParameterValue::NotSet,
+                            if let Ok(value) = ps.lock().unwrap().get_parameter(&n) {
+                                return value;
                             }
+                        }
+                        // Otherwise get it from node HashMap
+                        match params.get(n) {
+                            Some(v) => v.value.clone(),
+                            None => ParameterValue::NotSet,
                         }
                     })
                     .map(|v| v.into_parameter_value_msg())
@@ -384,7 +396,7 @@ impl Node {
                     .names
                     .iter()
                     .map(|name| match params.get(name) {
-                        Some(pv) => pv.into_parameter_type(),
+                        Some(param) => param.value.into_parameter_type(),
                         None => rcl_interfaces::msg::ParameterType::PARAMETER_NOT_SET as u8,
                     })
                     .collect();
@@ -402,7 +414,7 @@ impl Node {
 
     fn handle_list_parameters(
         req: ServiceRequest<rcl_interfaces::srv::ListParameters::Service>,
-        params: &Arc<Mutex<HashMap<String, ParameterValue>>>,
+        params: &Arc<Mutex<HashMap<String, Parameter>>>,
     ) -> future::Ready<()> {
         use rcl_interfaces::srv::ListParameters;
 
@@ -445,26 +457,21 @@ impl Node {
 
     fn handle_desc_parameters(
         req: ServiceRequest<rcl_interfaces::srv::DescribeParameters::Service>,
-        params: &Arc<Mutex<HashMap<String, ParameterValue>>>,
+        params: &Arc<Mutex<HashMap<String, Parameter>>>,
     ) -> future::Ready<()> {
         use rcl_interfaces::msg::ParameterDescriptor;
         use rcl_interfaces::srv::DescribeParameters;
         let mut descriptors = Vec::<ParameterDescriptor>::new();
         let params = params.lock().unwrap();
         for name in &req.message.names {
-            if let Some(pv) = params.get(name) {
-                descriptors.push(ParameterDescriptor {
-                    name: name.clone(),
-                    type_: pv.into_parameter_type(),
-                    ..Default::default()
-                });
-            } else {
-                // parameter not found, but undeclared allowed, so return empty
-                descriptors.push(ParameterDescriptor {
-                    name: name.clone(),
-                    ..Default::default()
-                });
-            }
+            let default = Parameter::empty();
+            let param = params.get(name).unwrap_or(&default);
+            descriptors.push(ParameterDescriptor {
+                name: name.clone(),
+                type_: param.value.into_parameter_type(),
+                description: param.description.to_string(),
+                ..Default::default()
+            });
         }
         req.respond(DescribeParameters::Response { descriptors })
             .expect("could not send reply to describe parameters request");
