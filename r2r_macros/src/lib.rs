@@ -26,7 +26,8 @@ pub fn derive_r2r_params(input: proc_macro::TokenStream) -> proc_macro::TokenStr
             fn register_parameters(
                 &mut self,
                 prefix: &str,
-                params: &mut ::std::collections::hash_map::HashMap<String, ::r2r::ParameterValue>,
+                desc: ::std::option::Option<::r2r::Parameter>,
+                params: &mut ::std::collections::hash_map::HashMap<String, ::r2r::Parameter>,
             ) -> ::r2r::Result<()> {
                 let prefix = if prefix.is_empty() {
                     String::from("")
@@ -79,9 +80,14 @@ fn get_register_calls(data: &Data) -> TokenStream {
                 let field_matches = fields.named.iter().map(|f| {
                     let name = &f.ident;
                     let format_str = format!("{{prefix}}{}", name.as_ref().unwrap());
+                    let desc = get_field_doc(f);
                     quote_spanned! {
                         f.span() =>
-                            self.#name.register_parameters(&format!(#format_str), params)?;
+                            let param = ::r2r::Parameter {
+                                value: ::r2r::ParameterValue::NotSet, // will be set for leaf params by register_parameters() below
+                                description: #desc,
+                            };
+                            self.#name.register_parameters(&format!(#format_str), Some(param), params)?;
                     }
                 });
                 quote! {
@@ -91,6 +97,24 @@ fn get_register_calls(data: &Data) -> TokenStream {
             _ => unimplemented!(),
         },
         Data::Enum(_) | Data::Union(_) => unimplemented!(),
+    }
+}
+
+fn get_field_doc(f: &syn::Field) -> String {
+    if let Some(doc) = f
+        .attrs
+        .iter()
+        .find(|&attr| attr.path().get_ident().is_some_and(|id| id == "doc"))
+    {
+        match &doc.meta.require_name_value().unwrap().value {
+            ::syn::Expr::Lit(exprlit) => match &exprlit.lit {
+                ::syn::Lit::Str(s) => s.value().trim().to_owned(),
+                _ => unimplemented!(),
+            },
+            _ => unimplemented!(),
+        }
+    } else {
+        "".to_string()
     }
 }
 

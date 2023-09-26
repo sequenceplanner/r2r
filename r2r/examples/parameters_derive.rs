@@ -23,6 +23,17 @@ use std::sync::{Arc, Mutex};
 //       par1: 5.1
 //       par2: 0
 //
+// ros2 param describe /demo/my_node par1 nested.nested2.par5
+// Prints:
+//   Parameter name: par1
+//     Type: double
+//     Description: Parameter description
+//     Constraints:
+//   Parameter name: nested.nested2.par5
+//     Type: integer
+//     Description: Small parameter
+//     Constraints:
+
 // Error handling:
 // cargo run --example parameters_derive -- --ros-args -p nested.par4:=xxx
 
@@ -31,7 +42,9 @@ use std::sync::{Arc, Mutex};
 
 #[derive(RosParams, Default, Debug)]
 struct Params {
+    /// Parameter description
     par1: f64,
+    /// Dummy parameter [m/s]
     par2: i32,
     nested: NestedParams,
 }
@@ -45,6 +58,7 @@ struct NestedParams {
 
 #[derive(RosParams, Default, Debug)]
 struct NestedParams2 {
+    /// Small parameter
     par5: i8,
 }
 
