@@ -5,7 +5,6 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 extern crate proc_macro;
 
-// TODO: Should this be called R2RParams? Or R2rParams?
 /// Derives RosParams trait for a structure to use it with
 /// `r2r::Node::make_derived_parameter_handler()`.
 #[proc_macro_derive(RosParams)]
