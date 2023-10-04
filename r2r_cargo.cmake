@@ -50,58 +50,46 @@ function(r2r_cargo)
     list(APPEND CMAKE_IDL_PACKAGES "${REC_PKG_DIRS}")
   endforeach()
 
-  # On OSX  colcon eats the DYLD_LIBRARY_PATH... so we need to add the rpaths
+  list(REMOVE_DUPLICATES CMAKE_IDL_PACKAGES)
+  string (REPLACE ";" ":" CMAKE_IDL_PACKAGES_STR "${CMAKE_IDL_PACKAGES}")
+  set(ENV{CMAKE_IDL_PACKAGES} ${CMAKE_IDL_PACKAGES_STR})
+
+  # On OSX colcon eats the DYLD_LIBRARY_PATH... so we need to add the rpaths
   # manually...
   set(RUSTFLAGS "")
 
   # get imported libs
   get_property(importTargets DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
-  # get include paths
-  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
 
-  set(CMAKE_LIBRARIES "")
   foreach(p ${importTargets})
-    get_property(fancy_lib_location TARGET "${p}" PROPERTY LOCATION)
-    if(DEFINED fancy_lib_location)
-      list(APPEND CMAKE_LIBRARIES "${fancy_lib_location}")
-      get_filename_component(_parent "${fancy_lib_location}" DIRECTORY)
-      if(IS_DIRECTORY ${_parent})
-          list(APPEND RUSTFLAGS "-C link-arg=-Wl,-rpath,${_parent}")
+    get_property(_LIBLOC TARGET "${p}" PROPERTY LOCATION)
+    if(DEFINED _LIBLOC)
+      list(APPEND CMAKE_LIBRARIES "${_LIBLOC}")
+      get_filename_component(_PARENT "${_LIBLOC}" DIRECTORY)
+      if(IS_DIRECTORY ${_PARENT})
+          list(APPEND RUSTFLAGS "-C link-arg=-Wl,-rpath,${_PARENT}")
       endif()
     endif()
   endforeach()
-  list(REMOVE_DUPLICATES RUSTFLAGS)
-  list(REMOVE_DUPLICATES CMAKE_LIBRARIES)
 
+  list(REMOVE_DUPLICATES RUSTFLAGS)
   string (REPLACE ";" " " RUSTFLAGS_STR "${RUSTFLAGS}")
   set(ENV{RUSTFLAGS} ${RUSTFLAGS_STR})
-
-  string (REPLACE ";" ":" CMAKE_LIBRARIES_STR "${CMAKE_LIBRARIES}")
-  set(ENV{CMAKE_LIBRARIES} "${CMAKE_LIBRARIES_STR}")
-
-  list(REMOVE_DUPLICATES includeDirs)
-  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${includeDirs}")
-  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
-  list(REMOVE_DUPLICATES CMAKE_LIBRARIES)
-
-  list(REMOVE_DUPLICATES CMAKE_IDL_PACKAGES)
-  string (REPLACE ";" ":" CMAKE_IDL_PACKAGES_STR "${CMAKE_IDL_PACKAGES}")
-  set(ENV{CMAKE_IDL_PACKAGES} ${CMAKE_IDL_PACKAGES_STR})
 
   # custom target for building using cargo
   option(CARGO_CLEAN "Invoke cargo clean before building" OFF)
   if(CARGO_CLEAN)
         add_custom_target(cargo_target ALL
               COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "clean" "--profile" "colcon"
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   else()
           add_custom_target(cargo_target ALL
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "CMAKE_LIBRARIES=$ENV{CMAKE_LIBRARIES}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
-  endif(CARGO_CLEAN)
+  endif()
   unset(CARGO_CLEAN CACHE)
 
 endfunction()
