@@ -40,11 +40,13 @@ What works?
 - Services
 - Actions
 - Parameter handling
+- Runs on Linux, OSX, and Windows.
 
 Changelog
 --------------------
 #### [Unreleased]
-- Derive macro for ros parameters. <https://github.com/sequenceplanner/r2r/pull/65>
+- Windows support! <https://github.com/sequenceplanner/r2r/pull/66>
+- Derive macro for ros parameters. <https://github.com/sequenceplanner/r2r/pull/65> and <https://github.com/sequenceplanner/r2r/pull/68>. NOTE: Breaks old parameters API, see commit message for details <https://github.com/sequenceplanner/r2r/commit/00d7a3db0b48c27a61ce153b084eadeef799765a>.
 - Implement rcl_interfaces::srv::ListParameters service. <https://github.com/sequenceplanner/r2r/pull/64>
 - Eliminate compiler warnings about virtual workspace's resolver. <https://github.com/sequenceplanner/r2r/pull/63>
 
