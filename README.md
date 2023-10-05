@@ -14,7 +14,7 @@ These bindings are being written organically when things are needed by me and ot
 How to use
 --------------------
 1. Make sure you have libclang installed. (e.g. libclang-dev on ubuntu)
-2. Depend on this package in Cargo.toml: `r2r = "0.7.5"`
+2. Depend on this package in Cargo.toml: `r2r = "0.8.0"`
 3. You need to source your ROS2 installation before building/running.
 4. The bindings will rebuild automatically if/when you source your workspace(s).
 5. If you make changes to existing message types, run `cargo clean -p r2r_msg_gen` to force recompilation of the rust message types on the next build.
@@ -45,6 +45,8 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+
+#### [0.8.0] - 2023-10-05
 - Windows support! <https://github.com/sequenceplanner/r2r/pull/66>
 - Derive macro for ros parameters. <https://github.com/sequenceplanner/r2r/pull/65> and <https://github.com/sequenceplanner/r2r/pull/68>. NOTE: Breaks old parameters API, see commit message for details <https://github.com/sequenceplanner/r2r/commit/00d7a3db0b48c27a61ce153b084eadeef799765a>.
 - Implement rcl_interfaces::srv::ListParameters service. <https://github.com/sequenceplanner/r2r/pull/64>

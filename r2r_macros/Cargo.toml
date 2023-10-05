@@ -1,7 +1,14 @@
 [package]
 name = "r2r_macros"
 version = "0.1.0"
+authors = ["Martin Dahl <martin.dahl@gmail.com>"]
+description = "Minimal ros2 bindings."
+license = "MIT"
 edition = "2021"
+readme = "README.md"
+homepage = "https://github.com/sequenceplanner/r2r"
+repository = "https://github.com/sequenceplanner/r2r"
+documentation = "https://docs.rs/r2r/latest/r2r"
 
 [lib]
 proc-macro = true
