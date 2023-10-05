@@ -42,6 +42,7 @@ pub fn print_cargo_watches() {
 
 pub fn setup_bindgen_builder() -> bindgen::Builder {
     let mut builder = bindgen::Builder::default()
+        .layout_tests(false)
         .derive_copy(false)
         .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::Rust {
