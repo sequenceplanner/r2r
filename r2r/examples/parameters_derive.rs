@@ -1,7 +1,7 @@
 use futures::executor::LocalPool;
 use futures::prelude::*;
 use futures::task::LocalSpawnExt;
-use r2r_macros::RosParams;
+use r2r::RosParams;
 use std::sync::{Arc, Mutex};
 
 // try to run like this

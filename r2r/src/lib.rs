@@ -114,6 +114,8 @@ pub use context::Context;
 mod parameters;
 pub use parameters::{Parameter, ParameterValue, RosParams};
 
+pub use r2r_macros::RosParams;
+
 mod clocks;
 pub use clocks::{Clock, ClockType};
 
