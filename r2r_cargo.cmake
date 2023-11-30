@@ -76,17 +76,23 @@ function(r2r_cargo)
   string (REPLACE ";" " " RUSTFLAGS_STR "${RUSTFLAGS}")
   set(ENV{RUSTFLAGS} ${RUSTFLAGS_STR})
 
+  # get include paths
+  get_property(includeDirs DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY INCLUDE_DIRECTORIES)
+  list(REMOVE_DUPLICATES includeDirs)
+  string (REPLACE ";" ":" CMAKE_INCLUDE_DIRS_STR "${includeDirs}")
+  set(ENV{CMAKE_INCLUDE_DIRS} ${CMAKE_INCLUDE_DIRS_STR})
+
   # custom target for building using cargo
   option(CARGO_CLEAN "Invoke cargo clean before building" OFF)
   if(CARGO_CLEAN)
         add_custom_target(cargo_target ALL
               COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "clean" "--profile" "colcon"
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS_PACKAGES}" "cargo" "build" "--profile" "colcon"
               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   else()
           add_custom_target(cargo_target ALL
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "cargo" "build" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "cargo" "build" "--profile" "colcon"
              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   endif()

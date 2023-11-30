@@ -49,6 +49,19 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
             non_exhaustive: false,
         });
     if !cfg!(feature = "doc-only") {
+        if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
+            // we are running from cmake, do special thing.
+            let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
+            includes.sort_unstable();
+            includes.dedup();
+
+            for x in &includes {
+                let clang_arg = format!("-I{}", x);
+                println!("adding clang arg: {}", clang_arg);
+                builder = builder.clang_arg(clang_arg);
+            }
+        }
+
         let ament_prefix_var_name = "AMENT_PREFIX_PATH";
         let ament_prefix_var = {
             let mut ament_str = env::var_os(ament_prefix_var_name).expect("Source your ROS!");
