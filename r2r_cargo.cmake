@@ -87,7 +87,7 @@ function(r2r_cargo)
   if(CARGO_CLEAN)
         add_custom_target(cargo_target ALL
               COMMAND ${CMAKE_COMMAND} "-E" "env" "cargo" "clean" "--profile" "colcon"
-              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS_PACKAGES}" "cargo" "build" "--profile" "colcon"
+              COMMAND ${CMAKE_COMMAND} "-E" "env" "RUSTFLAGS=$ENV{RUSTFLAGS}" "CMAKE_IDL_PACKAGES=$ENV{CMAKE_IDL_PACKAGES}" "CMAKE_INCLUDE_DIRS=$ENV{CMAKE_INCLUDE_DIRS}" "cargo" "build" "--profile" "colcon"
               WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
               )
   else()
