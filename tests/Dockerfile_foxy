@@ -1,6 +1,9 @@
 # syntax=docker/dockerfile:1
 FROM ros:foxy
 
+# Update ROS expired key
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA
+
 # Update default packages
 RUN apt-get update
 
