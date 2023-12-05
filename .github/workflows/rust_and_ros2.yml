@@ -13,27 +13,39 @@ jobs:
   docs_no_ros:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: docker build . --file ./tests/Dockerfile_no_ros --tag r2r_no_ros
     - run: docker run r2r_no_ros cargo build --features doc-only
+
+  minimal_workspace_humble:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Checkout tools repo
+      uses: actions/checkout@v4
+      with:
+        repository: m-dahl/r2r_minimal_node
+        path: r2r_minimal_node
+    - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_humble
+    - run: docker run r2r_humble /r2r/tests/build_minimal_node.bash
 
   tests_humble:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: docker build . --file ./tests/Dockerfile_humble --tag r2r_humble
     - run: docker run r2r_humble cargo test
 
   tests_galactic:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: docker build . --file ./tests/Dockerfile_galactic --tag r2r_galactic
     - run: docker run r2r_galactic cargo test
 
   tests_foxy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: docker build . --file ./tests/Dockerfile_foxy --tag r2r_foxy
     - run: docker run r2r_foxy cargo test
