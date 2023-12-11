@@ -50,7 +50,8 @@ pub fn setup_bindgen_builder() -> bindgen::Builder {
         });
     if !cfg!(feature = "doc-only") {
         if let Ok(cmake_includes) = env::var("CMAKE_INCLUDE_DIRS") {
-            // we are running from cmake, do special thing.
+            // note, this is a colon on both windows and linux, it is set
+            // in r2r_cargo.cmake
             let mut includes = cmake_includes.split(':').collect::<Vec<_>>();
             includes.sort_unstable();
             includes.dedup();
