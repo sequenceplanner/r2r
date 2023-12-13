@@ -73,26 +73,10 @@ pub trait WrappedTypesupport:
     fn to_serialized_bytes(&self) -> Result<Vec<u8>> {
         use r2r_rcl::*;
 
-        let msg = Self::create_msg();
-
-        self.copy_to_native(unsafe { msg.as_mut().expect("not null") });
-
-        // let mut msg_buf: rcl_serialized_message_t =
-        //     unsafe { rcutils_get_zero_initialized_uint8_array() };
-
-        // let ret = unsafe {
-        //     rcutils_uint8_array_init(
-        //         &mut msg_buf as *mut rcl_serialized_message_t,
-        //         0,
-        //         &rcutils_get_default_allocator(),
-        //     )
-        // };
-
-        // if ret != RCL_RET_OK as i32 {
-        //     return Err(Error::from_rcl_error(ret));
-        // }
-        
         SERIALIZED_MESSAGE_CACHE.with(|msg_buf| {
+            let msg = Self::create_msg();
+
+            self.copy_to_native(unsafe { msg.as_mut().expect("not null") });
 
             let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf.as_ref().map_err(|err| Error::from_rcl_error(*err))?.borrow_mut();
 
@@ -107,6 +91,8 @@ pub trait WrappedTypesupport:
             let data_bytes = unsafe {
                 std::slice::from_raw_parts(msg_buf.buffer, msg_buf.buffer_length).to_vec()
             };
+
+            Self::destroy_msg(msg);
 
             if result == RCL_RET_OK as i32 {
                 Ok(data_bytes)
@@ -142,11 +128,16 @@ pub trait WrappedTypesupport:
             )
         };
         
-        if result == RCL_RET_OK as i32 {
+        let ret_val = if result == RCL_RET_OK as i32 {
             Ok(Self::from_native(unsafe{ msg.as_ref().expect("not null") }))
         } else {
             Err(Error::from_rcl_error(result))
-        }
+        };
+
+        Self::destroy_msg(msg);
+
+        ret_val
+
     }
 }
 
