@@ -36,7 +36,7 @@ pub(crate) fn uuid_msg_to_uuid(msg: &unique_identifier_msgs::msg::UUID) -> uuid:
 
 // TODO where is the best place for this?
 thread_local! {
-    pub static SERIALIZED_MESSAGE_CACHE: Result<RefCell<rcl_serialized_message_t>> = {
+    pub static SERIALIZED_MESSAGE_CACHE: std::result::Result<RefCell<rcl_serialized_message_t>, i32> = {
         use r2r_rcl::*;
 
         let mut msg_buf: rcl_serialized_message_t  = unsafe { rcutils_get_zero_initialized_uint8_array() };
@@ -50,7 +50,7 @@ thread_local! {
         };
 
         if ret != RCL_RET_OK as i32 {
-            Err(Error::from_rcl_error(ret))
+            Err(ret)
         } else {
             Ok(RefCell::new(msg_buf))
         }
@@ -94,7 +94,7 @@ pub trait WrappedTypesupport:
         
         SERIALIZED_MESSAGE_CACHE.with(|msg_buf| {
 
-            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf.as_ref().map_err(|err| err.clone())?.borrow_mut();
+            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf.as_ref().map_err(|err| Error::from_rcl_error(*err))?.borrow_mut();
 
             let result = unsafe { 
                 rmw_serialize(
