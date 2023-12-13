@@ -45,6 +45,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Raw message subscribers. <https://github.com/sequenceplanner/r2r/pull/73>
 
 #### [0.8.2] - 2023-12-11
 - Fix include path regression on linux. <https://github.com/sequenceplanner/r2r/pull/71>
