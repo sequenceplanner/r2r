@@ -69,6 +69,7 @@ pub trait WrappedTypesupport:
     fn from_native(msg: &Self::CStruct) -> Self;
     fn copy_to_native(&self, msg: &mut Self::CStruct);
 
+    /// This serializes the message using ROS2 methods.
     fn to_serialized_bytes(&self) -> Result<Vec<u8>> {
         use r2r_rcl::*;
 
@@ -115,6 +116,7 @@ pub trait WrappedTypesupport:
         })
     }
 
+    /// This deserializes the message using ROS2 methods.
     fn from_serialized_bytes(data: &[u8]) -> Result<Self> {
         use r2r_rcl::*;
 
