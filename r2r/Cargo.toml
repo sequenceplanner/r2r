@@ -34,6 +34,7 @@ futures = "0.3.25"
 tokio = { version = "1.22.0", features = ["rt-multi-thread", "time", "macros"] }
 rand = "0.8.5"
 cdr = "0.2.4"
+criterion = "0.5.1"
 
 [build-dependencies]
 r2r_common = { path = "../r2r_common", version = "0.8.2" }
@@ -51,3 +52,7 @@ doc-only = ["r2r_common/doc-only", "r2r_rcl/doc-only", "r2r_msg_gen/doc-only", "
 
 [package.metadata.docs.rs]
 features = ["doc-only"]
+
+[[bench]]
+name = "deserialization"
+harness = false
