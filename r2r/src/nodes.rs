@@ -551,7 +551,27 @@ impl Node {
         // TODO is it possible to handle the raw message without type support?
         //
         // Passing null ts to rcl_subscription_init throws an error ..
+        //
+        // It does not seem possible to not have a type support, which is a shame
+        // because it means we always have to build the message types even if we
+        // are just after the raw bytes.
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
+
+        // Keep a buffer to reduce number of allocations. The rmw will
+        // resize it if the message size exceeds the buffer size.
+        let mut msg_buf: rcl_serialized_message_t =
+            unsafe { rcutils_get_zero_initialized_uint8_array() };
+        let ret = unsafe {
+            rcutils_uint8_array_init(
+                &mut msg_buf as *mut rcl_serialized_message_t,
+                0,
+                &rcutils_get_default_allocator(),
+            )
+        };
+
+        if ret != RCL_RET_OK as i32 {
+            return Err(Error::from_rcl_error(ret));
+        }
 
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
@@ -559,6 +579,7 @@ impl Node {
 
         let ws = RawSubscriber {
             rcl_handle: subscription_handle,
+            msg_buf,
             sender,
         };
         self.subscribers.push(Box::new(ws));
