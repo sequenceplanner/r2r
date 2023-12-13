@@ -37,6 +37,12 @@ pub struct UntypedSubscriber {
     pub sender: mpsc::Sender<Result<serde_json::Value>>,
 }
 
+pub struct RawSubscriber {
+    pub rcl_handle: rcl_subscription_t,
+    pub sender: mpsc::Sender<Vec<u8>>,
+}
+
+
 impl<T: 'static> Subscriber_ for TypedSubscriber<T>
 where
     T: WrappedTypesupport,
@@ -179,6 +185,105 @@ impl Subscriber_ for UntypedSubscriber {
     }
 }
 
+impl Subscriber_ for RawSubscriber {
+    fn handle(&self) -> &rcl_subscription_t {
+        &self.rcl_handle
+    }
+
+    fn handle_incoming(&mut self) -> bool {
+
+        // This code is based on:
+        //
+        // https://github.com/josephduchesne/rclpy/blob/502e2135498460dd4c74cf3a6fa543590364a1fe/rclpy/src/rclpy/_rclpy.c#L2612-L2649
+
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+
+        let mut msg: rcl_serialized_message_t = unsafe { rcutils_get_zero_initialized_uint8_array() };
+        let allocator: rcutils_allocator_t = unsafe { rcutils_get_default_allocator() };
+        let ret: rcl_ret_t = unsafe {
+            rcutils_uint8_array_init(&mut msg as *mut rcl_serialized_message_t, 0, &allocator)
+        };
+
+        if ret != RCL_RET_OK as i32 {
+            log::error!("Failed to initialize message: {:?}", unsafe { rcutils_get_error_string().str_ });
+            unsafe { rcutils_reset_error() };
+
+            let r_fini: rmw_ret_t = unsafe { 
+                rcutils_uint8_array_fini(&mut msg as *mut rcl_serialized_message_t)
+            };
+
+            if r_fini != RMW_RET_OK as i32 {
+                log::error!("Failed to deallocate message buffer: {r_fini}");
+            }
+            return false;
+          }
+
+        let ret = unsafe {
+            rcl_take_serialized_message(
+                &self.rcl_handle,
+                &mut msg as *mut rcl_serialized_message_t,
+                &mut msg_info, 
+                std::ptr::null_mut())
+        };
+        if ret != RCL_RET_OK as i32 {
+            log::error!(
+                "Failed to take_serialized from a subscription: {:?}", 
+                unsafe { rcutils_get_error_string().str_ });
+
+            //   rcl_reset_error();
+            unsafe { rcutils_reset_error() };
+
+            let r_fini: rmw_ret_t = unsafe {
+                rcutils_uint8_array_fini(&mut msg as *mut rcl_serialized_message_t)
+            };
+
+            if r_fini != RMW_RET_OK as i32 {
+                log::error!("Failed to deallocate message buffer: {r_fini}");
+            }
+
+            return false;
+    }
+
+        // TODO put rcutils_uint8_array_fini in a message drop guard?
+        //
+        // Or is is safe to deallocate with Vec::drop instead of rcutils_uint8_array_fini?
+
+        // let data_bytes = unsafe {
+        //     Vec::from_raw_parts(msg.buffer, msg.buffer_length, msg.buffer_capacity)
+        // };
+
+        let data_bytes =  unsafe {
+            std::slice::from_raw_parts(msg.buffer, msg.buffer_length).to_vec()
+        };
+
+        let r_fini: rmw_ret_t  = unsafe {
+            rcutils_uint8_array_fini(&mut msg as *mut rcl_serialized_message_t)
+        };
+
+        if r_fini != RMW_RET_OK as i32 {
+            log::error!("Failed to deallocate message buffer: {r_fini}");
+
+            return false;
+        }
+
+        if let Err(e) = self.sender.try_send(data_bytes) {
+            if e.is_disconnected() {
+                // user dropped the handle to the stream, signal removal.
+                return true;
+            }
+            log::debug!("error {:?}", e)
+        }
+        
+        false
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_subscription_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
 pub fn create_subscription_helper(
     node: &mut rcl_node_t, topic: &str, ts: *const rosidl_message_type_support_t,
     qos_profile: QosProfile,
@@ -203,3 +308,4 @@ pub fn create_subscription_helper(
         Err(Error::from_rcl_error(result))
     }
 }
+
