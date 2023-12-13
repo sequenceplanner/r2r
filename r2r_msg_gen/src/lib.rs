@@ -700,10 +700,21 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
         .into_iter()
         .flatten()
         .map(|(const_name, typ)| {
-            let typ: Box<syn::Type> = syn::parse_str(typ).unwrap();
             let const_name = format_ident!("{const_name}");
             let value = format_ident!("{key}__{const_name}");
-            quote! { pub const #const_name: #typ = #value; }
+            if let Ok(mut typ) = syn::parse_str::<Box<syn::TypeReference>>(typ) {
+                // If the constant is a reference, rustc needs it to be static.
+                // (see https://github.com/rust-lang/rust/issues/115010)
+                typ.lifetime = Some(syn::Lifetime::new("'static", proc_macro2::Span::call_site()));
+                quote! { pub const #const_name: #typ = #value; }
+            }
+            else if let Ok(typ) = syn::parse_str::<Box<syn::Type>>(typ) {
+                // Value
+                quote! { pub const #const_name: #typ = #value; }
+            } else {
+                // Something else, hope for the best but will most likely fail to compile.
+                quote! { pub const #const_name: #typ = #value; }
+            }
         })
         .collect();
 

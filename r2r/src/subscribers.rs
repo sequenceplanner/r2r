@@ -37,6 +37,12 @@ pub struct UntypedSubscriber {
     pub sender: mpsc::Sender<Result<serde_json::Value>>,
 }
 
+pub struct RawSubscriber {
+    pub rcl_handle: rcl_subscription_t,
+    pub msg_buf: rcl_serialized_message_t,
+    pub sender: mpsc::Sender<Vec<u8>>,
+}
+
 impl<T: 'static> Subscriber_ for TypedSubscriber<T>
 where
     T: WrappedTypesupport,
@@ -175,6 +181,49 @@ impl Subscriber_ for UntypedSubscriber {
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
+        }
+    }
+}
+
+impl Subscriber_ for RawSubscriber {
+    fn handle(&self) -> &rcl_subscription_t {
+        &self.rcl_handle
+    }
+
+    fn handle_incoming(&mut self) -> bool {
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+        let ret = unsafe {
+            rcl_take_serialized_message(
+                &self.rcl_handle,
+                &mut self.msg_buf as *mut rcl_serialized_message_t,
+                &mut msg_info,
+                std::ptr::null_mut(),
+            )
+        };
+        if ret != RCL_RET_OK as i32 {
+            log::error!("failed to take serialized message");
+            return false;
+        }
+
+        let data_bytes = unsafe {
+            std::slice::from_raw_parts(self.msg_buf.buffer, self.msg_buf.buffer_length).to_vec()
+        };
+
+        if let Err(e) = self.sender.try_send(data_bytes) {
+            if e.is_disconnected() {
+                // user dropped the handle to the stream, signal removal.
+                return true;
+            }
+            log::debug!("error {:?}", e)
+        }
+
+        false
+    }
+
+    fn destroy(&mut self, node: &mut rcl_node_t) {
+        unsafe {
+            rcl_subscription_fini(&mut self.rcl_handle, node);
+            rcutils_uint8_array_fini(&mut self.msg_buf as *mut rcl_serialized_message_t);
         }
     }
 }
