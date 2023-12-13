@@ -2,12 +2,14 @@ use crate::error::*;
 use r2r_msg_gen::*;
 use r2r_rcl::{
     rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_service_type_support_t,
+    rcl_serialized_message_t,
 };
 use serde::{Deserialize, Serialize};
 use std::boxed::Box;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
+use std::cell::RefCell;
 
 pub mod generated_msgs {
     #![allow(clippy::all)]
@@ -32,6 +34,30 @@ pub(crate) fn uuid_msg_to_uuid(msg: &unique_identifier_msgs::msg::UUID) -> uuid:
     uuid::Uuid::from_bytes(bytes)
 }
 
+// TODO where is the best place for this?
+thread_local! {
+    pub static SERIALIZED_MESSAGE_CACHE: Result<RefCell<rcl_serialized_message_t>> = {
+        use r2r_rcl::*;
+
+        let mut msg_buf: rcl_serialized_message_t  = unsafe { rcutils_get_zero_initialized_uint8_array() };
+
+        let ret = unsafe {
+            rcutils_uint8_array_init(
+                &mut msg_buf as *mut rcl_serialized_message_t,
+                0,
+                &rcutils_get_default_allocator(),
+            )
+        };
+
+        if ret != RCL_RET_OK as i32 {
+            Err(Error::from_rcl_error(ret))
+        } else {
+            Ok(RefCell::new(msg_buf))
+        }
+
+    };
+}
+
 pub trait WrappedTypesupport:
     Serialize + for<'de> Deserialize<'de> + Default + Debug + Clone
 {
@@ -42,6 +68,84 @@ pub trait WrappedTypesupport:
     fn destroy_msg(msg: *mut Self::CStruct);
     fn from_native(msg: &Self::CStruct) -> Self;
     fn copy_to_native(&self, msg: &mut Self::CStruct);
+
+    fn to_serialized_bytes(&self) -> Result<Vec<u8>> {
+        use r2r_rcl::*;
+
+        let msg = Self::create_msg();
+
+        self.copy_to_native(unsafe { msg.as_mut().expect("not null") });
+
+        // let mut msg_buf: rcl_serialized_message_t =
+        //     unsafe { rcutils_get_zero_initialized_uint8_array() };
+
+        // let ret = unsafe {
+        //     rcutils_uint8_array_init(
+        //         &mut msg_buf as *mut rcl_serialized_message_t,
+        //         0,
+        //         &rcutils_get_default_allocator(),
+        //     )
+        // };
+
+        // if ret != RCL_RET_OK as i32 {
+        //     return Err(Error::from_rcl_error(ret));
+        // }
+        
+        SERIALIZED_MESSAGE_CACHE.with(|msg_buf| {
+
+            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf.as_ref().map_err(|err| err.clone())?.borrow_mut();
+
+            let result = unsafe { 
+                rmw_serialize(
+                    msg as *const ::std::os::raw::c_void,
+                    Self::get_ts(),
+                    msg_buf as *mut rcl_serialized_message_t,
+                )
+            };
+
+            let data_bytes = unsafe {
+                std::slice::from_raw_parts(msg_buf.buffer, msg_buf.buffer_length).to_vec()
+            };
+
+            if result == RCL_RET_OK as i32 {
+                Ok(data_bytes)
+            } else {
+                Err(Error::from_rcl_error(result))
+            }
+        })
+    }
+
+    fn from_serialized_bytes(data: &[u8]) -> Result<Self> {
+        use r2r_rcl::*;
+
+        let msg = Self::create_msg();
+
+        let msg_buf = rcl_serialized_message_t {
+            buffer: data.as_ptr() as *mut u8,
+            buffer_length: data.len(),
+            buffer_capacity: data.len(),
+            
+            // Since its read only, this should never be used ..
+            allocator: unsafe { rcutils_get_default_allocator() }
+        };
+
+        // Note From the docs of rmw_deserialize, its not clear whether this reuses
+        // any part of msg_buf. However it shouldn't matter since from_native
+        // clones everything again anyway ..
+        let result = unsafe { 
+            rmw_deserialize(
+                &msg_buf as *const rcl_serialized_message_t,
+                Self::get_ts(),
+                msg as *mut std::os::raw::c_void,
+            )
+        };
+        
+        if result == RCL_RET_OK as i32 {
+            Ok(Self::from_native(unsafe{ msg.as_ref().expect("not null") }))
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
 }
 
 pub trait WrappedServiceTypeSupport: Debug + Clone {
@@ -603,6 +707,45 @@ mod tests {
         );
 
         assert!(native.void_ptr() == borrowed_msg as *mut core::ffi::c_void);
+    }
+
+    #[test]
+    fn test_serialization_fixed_size() {
+        let message = std_msgs::msg::Int32 { data: 10};
+        
+        let bytes = message.to_serialized_bytes().unwrap();
+
+        let message_2 = std_msgs::msg::Int32::from_serialized_bytes(&bytes).unwrap();
+
+        assert_eq!(message.data, message_2.data);
+
+        let bytes_2 = message_2.to_serialized_bytes().unwrap();
+        let bytes_3 = message_2.to_serialized_bytes().unwrap();
+
+        assert_eq!(bytes, bytes_2);
+        assert_eq!(bytes, bytes_3);
+
+    }
+
+    #[test]
+    fn test_serialization_dynamic_size() {
+        let message = std_msgs::msg::Int32MultiArray {                     
+            layout: std_msgs::msg::MultiArrayLayout::default(),
+            data: vec![10, 20, 30]
+        };
+        
+        let bytes = message.to_serialized_bytes().unwrap();
+
+        let message_2 = std_msgs::msg::Int32MultiArray::from_serialized_bytes(&bytes).unwrap();
+
+        assert_eq!(message.data, message_2.data);
+
+        let bytes_2 = message_2.to_serialized_bytes().unwrap();
+        let bytes_3 = message_2.to_serialized_bytes().unwrap();
+        
+        assert_eq!(bytes, bytes_2);
+        assert_eq!(bytes, bytes_3);
+
     }
 
     #[cfg(r2r__test_msgs__msg__Defaults)]
