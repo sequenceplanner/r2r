@@ -98,10 +98,12 @@ async fn tokio_publish_raw_testing() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap();
 
             pub_array
-                .publish(&r2r::std_msgs::msg::Int32MultiArray {
-                    layout: r2r::std_msgs::msg::MultiArrayLayout::default(),
-                    data: vec![i],
-                }.to_serialized_bytes().unwrap())
+                .publish(
+                    &r2r::std_msgs::msg::Int32MultiArray {
+                        layout: r2r::std_msgs::msg::MultiArrayLayout::default(),
+                        data: vec![i],
+                    }.to_serialized_bytes().unwrap()
+                )
                 .unwrap();
         });
     });
