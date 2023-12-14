@@ -62,6 +62,18 @@ pub struct PublisherUntyped {
     type_: String,
 }
 
+unsafe impl Send for PublisherRaw {}
+
+/// A ROS (raw) publisher.
+///
+/// This contains a `Weak Arc` to an "untyped" publisher. As such it is safe to
+/// move between threads.
+#[derive(Debug, Clone)]
+pub struct PublisherRaw {
+    handle: Weak<rcl_publisher_t>,
+    type_: String,
+}
+
 pub fn make_publisher<T>(handle: Weak<rcl_publisher_t>) -> Publisher<T>
 where
     T: WrappedTypesupport,
@@ -74,6 +86,10 @@ where
 
 pub fn make_publisher_untyped(handle: Weak<rcl_publisher_t>, type_: String) -> PublisherUntyped {
     PublisherUntyped { handle, type_ }
+}
+
+pub fn make_publisher_raw(handle: Weak<rcl_publisher_t>, type_: String) -> PublisherRaw {
+    PublisherRaw { handle, type_ }
 }
 
 pub fn create_publisher_helper(
@@ -117,6 +133,46 @@ impl PublisherUntyped {
 
         let result =
             unsafe { rcl_publish(publisher.as_ref(), native_msg.void_ptr(), std::ptr::null_mut()) };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            log::error!("could not publish {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+}
+
+
+impl PublisherRaw {
+    /// Publish an pre-serialized ROS message represented by a `&[u8]`.
+    ///
+    /// It is up to the user to make sure data is a valid ROS serialized message
+    pub fn publish(&self, data: &[u8]) -> Result<()> {
+        // TODO should this be an unsafe function? I'm not sure what happens if the data is malformed ..
+
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        // Safety: Not retained beyond this function
+        let msg_buf = rcl_serialized_message_t {
+            buffer: data.as_ptr() as *mut u8,
+            buffer_length: data.len(),
+            buffer_capacity: data.len(),
+
+            // Since its read only, this should never be used ..
+            allocator: unsafe { rcutils_get_default_allocator() }
+        };
+
+        let result =
+            unsafe { rcl_publish_serialized_message(
+                publisher.as_ref(), 
+                &msg_buf as *const rcl_serialized_message_t, 
+                std::ptr::null_mut()
+            ) };
 
         if result == RCL_RET_OK as i32 {
             Ok(())

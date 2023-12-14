@@ -791,7 +791,7 @@ impl Node {
         Ok(p)
     }
 
-    /// Create a ROS publisher with a type given at runtime.
+    /// Create a ROS publisher with a type given at runtime, where the data is supplied as JSON.
     pub fn create_publisher_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
@@ -800,6 +800,20 @@ impl Node {
             create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
         let arc = Arc::new(publisher_handle);
         let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
+        self.pubs.push(arc);
+        Ok(p)
+    }
+
+    /// Create a ROS publisher with a type given at runtime, where the data is supplied as 
+    /// a pre-serialized ROS message (i.e. &[u8])
+    pub fn create_publisher_raw(
+        &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
+    ) -> Result<PublisherRaw> {
+        let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
+        let publisher_handle =
+            create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
+        let arc = Arc::new(publisher_handle);
+        let p = make_publisher_raw(Arc::downgrade(&arc), topic_type.to_owned());
         self.pubs.push(arc);
         Ok(p)
     }

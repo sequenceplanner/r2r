@@ -88,7 +88,7 @@ pub use utils::*;
 mod subscribers;
 
 mod publishers;
-pub use publishers::{Publisher, PublisherUntyped};
+pub use publishers::{Publisher, PublisherUntyped, PublisherRaw};
 
 mod services;
 pub use services::ServiceRequest;
