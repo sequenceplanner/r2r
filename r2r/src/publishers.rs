@@ -245,30 +245,39 @@ where
 
     /// Gets the number of external subscribers (i.e. it doesn't 
     /// count subscribers from the same process).
-    pub fn get_inter_process_subscription_count(&self) -> usize {
+    pub fn get_inter_process_subscription_count(&self) -> Result<usize> {
         // See https://github.com/ros2/rclcpp/issues/623
 
         let mut inter_process_subscription_count = 0;
 
-        unsafe {
+        let publisher = self
+                .handle
+                .upgrade()
+                .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        let result = unsafe {
             rcl_publisher_get_subscription_count(
-                self.handle.as_ptr(),
+                publisher.as_ref(),
                 &mut inter_process_subscription_count as *mut usize,
             )
         };
 
-        inter_process_subscription_count
+        if result == RCL_RET_OK as i32 {
+            Ok(inter_process_subscription_count)
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
     }
 
     /// Waits for at least one external subscriber to begin subscribing to the
     /// topic. It doesn't count subscribers from the same process.
-    pub async fn wait_for_inter_process_subscribers(&self) {
+    pub async fn wait_for_inter_process_subscribers(&self) -> Result<()> {
         // According to this there is no event available:
         //
         // https://github.com/ros2/rclcpp/issues/623
         loop {
-            if self.get_inter_process_subscription_count() > 0 {
-                break;
+            if self.get_inter_process_subscription_count()? > 0 {
+                return Ok(());
             }
 
             futures_timer::Delay::new(std::time::Duration::from_millis(100)).await
