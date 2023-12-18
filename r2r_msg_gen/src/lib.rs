@@ -707,8 +707,7 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
                 // (see https://github.com/rust-lang/rust/issues/115010)
                 typ.lifetime = Some(syn::Lifetime::new("'static", proc_macro2::Span::call_site()));
                 quote! { pub const #const_name: #typ = #value; }
-            }
-            else if let Ok(typ) = syn::parse_str::<Box<syn::Type>>(typ) {
+            } else if let Ok(typ) = syn::parse_str::<Box<syn::Type>>(typ) {
                 // Value
                 quote! { pub const #const_name: #typ = #value; }
             } else {

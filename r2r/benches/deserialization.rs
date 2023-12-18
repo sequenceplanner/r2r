@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use r2r::*;
-use rand::Rng;
 use rand::thread_rng;
+use rand::Rng;
 
 const NUM_ELEMENTS: usize = 10_000;
 const NUM_TIMES: usize = 1_000;
@@ -15,7 +15,7 @@ fn bench_ros_deserialization() {
     }
     let message = std_msgs::msg::Int32MultiArray {
         layout: std_msgs::msg::MultiArrayLayout::default(),
-        data: numbers
+        data: numbers,
     };
 
     let bytes = message.to_serialized_bytes().unwrap();
@@ -34,7 +34,7 @@ fn bench_cdr_deserialization() {
     }
     let message = std_msgs::msg::Int32MultiArray {
         layout: std_msgs::msg::MultiArrayLayout::default(),
-        data: numbers
+        data: numbers,
     };
 
     let bytes = message.to_serialized_bytes().unwrap();
