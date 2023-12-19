@@ -406,6 +406,37 @@ impl WrappedNativeMsgUntyped {
         }
     }
 
+    pub fn from_serialized_bytes(&mut self, data: &[u8]) -> Result<()> {
+        // TODO: Copy paste from above, should refactor later.
+        use r2r_rcl::*;
+
+        let msg_buf = rcl_serialized_message_t {
+            buffer: data.as_ptr() as *mut u8,
+            buffer_length: data.len(),
+            buffer_capacity: data.len(),
+
+            // Since its read only, this should never be used ..
+            allocator: unsafe { rcutils_get_default_allocator() },
+        };
+
+        // Note From the docs of rmw_deserialize, its not clear whether this reuses
+        // any part of msg_buf. However it shouldn't matter since from_native
+        // clones everything again anyway ..
+        let result = unsafe {
+            rmw_deserialize(
+                &msg_buf as *const rcl_serialized_message_t,
+                self.ts,
+                self.msg,
+            )
+        };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
     pub fn to_json(&self) -> Result<serde_json::Value> {
         let json = (self.msg_to_json)(self.msg);
         json.map_err(|serde_err| Error::SerdeError {

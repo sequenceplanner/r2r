@@ -81,6 +81,7 @@ pub use msg_types::WrappedActionTypeSupport;
 pub use msg_types::WrappedNativeMsg as NativeMsg;
 pub use msg_types::WrappedServiceTypeSupport;
 pub use msg_types::WrappedTypesupport;
+pub use msg_types::WrappedNativeMsgUntyped;
 
 mod utils;
 pub use utils::*;
