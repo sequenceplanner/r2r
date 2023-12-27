@@ -51,7 +51,7 @@ pub struct Node {
     // timers,
     timers: Vec<Timer_>,
     // and the publishers, whom we allow to be shared.. hmm.
-    pubs: Vec<Arc<rcl_publisher_t>>,
+    pubs: Vec<Arc<Publisher_>>,
 }
 
 unsafe impl Send for Node {}
@@ -828,6 +828,10 @@ impl Node {
             c.lock().unwrap().poll_available(self.node_handle.as_mut());
         }
 
+        for p in &self.pubs {
+            p.poll_has_inter_process_subscribers();
+        }
+
         let timeout = timeout.as_nanos() as i64;
         let mut ws = unsafe { rcl_get_zero_initialized_wait_set() };
 
@@ -1305,9 +1309,9 @@ impl Drop for Node {
             s.lock().unwrap().destroy(&mut self.node_handle);
         }
         while let Some(p) = self.pubs.pop() {
-            let mut p = wait_until_unwrapped(p);
-            let _ret = unsafe { rcl_publisher_fini(&mut p as *mut _, self.node_handle.as_mut()) };
-            // TODO: check ret
+            let p = wait_until_unwrapped(p);
+
+            p.destroy(self.node_handle.as_mut());
         }
         unsafe {
             rcl_node_fini(self.node_handle.as_mut());
