@@ -57,7 +57,7 @@ impl Publisher_
 
         let result = unsafe {
             rcl_publisher_get_subscription_count(
-                &self.handle as *const rcl_publisher_s,
+                &self.handle as *const rcl_publisher_t,
                 &mut inter_process_subscription_count as *mut usize,
             )
         };
@@ -189,7 +189,7 @@ impl PublisherUntyped {
 
         let result =
             unsafe { rcl_publish(
-                &publisher.handle as *const rcl_publisher_s,
+                &publisher.handle as *const rcl_publisher_t,
                 native_msg.void_ptr(),
                 std::ptr::null_mut())
             };
@@ -246,7 +246,7 @@ where
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
         let result =
             unsafe { rcl_publish(
-                &publisher.handle as *const rcl_publisher_s,
+                &publisher.handle as *const rcl_publisher_t,
                 native_msg.void_ptr(),
                 std::ptr::null_mut())
             };
@@ -269,11 +269,11 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
 
-        if unsafe { rcl_publisher_can_loan_messages(&publisher.handle as *const rcl_publisher_s) } {
+        if unsafe { rcl_publisher_can_loan_messages(&publisher.handle as *const rcl_publisher_t) } {
             let mut loaned_msg: *mut c_void = std::ptr::null_mut();
             let ret = unsafe {
                 rcl_borrow_loaned_message(
-                    &publisher.handle as *const rcl_publisher_s,
+                    &publisher.handle as *const rcl_publisher_t,
                     T::get_ts(),
                     &mut loaned_msg
                 )
@@ -336,14 +336,14 @@ where
 
                 // publish and return loaned message to middleware
                 rcl_publish_loaned_message(
-                    &publisher.handle as *const rcl_publisher_s,
+                    &publisher.handle as *const rcl_publisher_t,
                     msg.void_ptr_mut(),
                     std::ptr::null_mut(),
                 )
             }
         } else {
             unsafe { rcl_publish(
-                &publisher.handle as *const rcl_publisher_s,
+                &publisher.handle as *const rcl_publisher_t,
                 msg.void_ptr(),
                 std::ptr::null_mut()
             ) }
