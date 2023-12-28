@@ -77,14 +77,14 @@ async fn tokio_publish_raw_testing() -> Result<(), Box<dyn std::error::Error>> {
     let mut sub_array =
         node.subscribe::<r2r::std_msgs::msg::Int32MultiArray>("/int_array", QosProfile::default())?;
 
-    let pub_int = node.create_publisher_raw(
+    let pub_int = node.create_publisher_untyped(
             "/int",         
             "std_msgs/msg/Int32",
             QosProfile::default()
         )?;
 
     // Use an array as well since its a variable sized type
-    let pub_array = node.create_publisher_raw(
+    let pub_array = node.create_publisher_untyped(
         "/int_array", 
         "std_msgs/msg/Int32MultiArray",
         QosProfile::default(),
@@ -94,11 +94,11 @@ async fn tokio_publish_raw_testing() -> Result<(), Box<dyn std::error::Error>> {
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
         (0..10).for_each(|i| {
             pub_int
-                .publish(&r2r::std_msgs::msg::Int32 { data: i }.to_serialized_bytes().unwrap())
+                .publish_raw(&r2r::std_msgs::msg::Int32 { data: i }.to_serialized_bytes().unwrap())
                 .unwrap();
 
             pub_array
-                .publish(
+                .publish_raw(
                     &r2r::std_msgs::msg::Int32MultiArray {
                         layout: r2r::std_msgs::msg::MultiArrayLayout::default(),
                         data: vec![i],
@@ -110,19 +110,25 @@ async fn tokio_publish_raw_testing() -> Result<(), Box<dyn std::error::Error>> {
 
     let sub_int_handle = task::spawn(async move {
         while let Some(msg) = sub_int.next().await {
-            let len = msg.to_serialized_bytes().unwrap().len();
+            // Try to check for any possible corruption 
+            msg.to_serialized_bytes().unwrap();
 
-            println!("Got int msg of len {len}");
-            assert_eq!(len, 8);
+            println!("Got int msg with value {}", msg.data);
+            assert!(msg.data >= 0);
+            assert!(msg.data < 10);
+
         }
     });
 
     let sub_array_handle = task::spawn(async move {
         while let Some(msg) = sub_array.next().await {
-            let len = msg.to_serialized_bytes().unwrap().len();
+            // Try to check for any possible corruption
+            msg.to_serialized_bytes().unwrap();
 
-            println!("Got array msg of len {len}");
-            assert_eq!(len, 20);
+            println!("Got array msg with value {:?}", msg.data);
+            assert_eq!(msg.data.len(), 1);
+            assert!(msg.data[0] >= 0);
+            assert!(msg.data[0] < 10);
         }
     });
 

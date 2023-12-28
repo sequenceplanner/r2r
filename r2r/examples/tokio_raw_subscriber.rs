@@ -1,6 +1,7 @@
 use futures::future;
 use futures::stream::StreamExt;
 use r2r::QosProfile;
+use r2r::WrappedTypesupport;
 use serde::{Deserialize, Serialize};
 
 #[tokio::main]
@@ -27,21 +28,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    // Demonstrate that we can deserialize the raw bytes into this
-    // rust struct using the cdr crate.
-    #[derive(Deserialize, Serialize, PartialEq, Debug)]
-    struct OurOwnStdString {
-        data: String, // the field name can be anything...
-    }
     sub.for_each(|msg| {
-        println!("got raw bytes of length {}.", msg.len());
+        println!("got raw bytes with size: {}. deserialize...", msg.len());
 
-        if let Ok(data) = cdr::deserialize::<OurOwnStdString>(&msg) {
-            println!("contents: {:?}", data);
-        } else {
-            println!("Warning: cannot deserialize data.");
+        // We can use the ROS typesupport to perform deserialization.
+        let ros_str = r2r::std_msgs::msg::String::from_serialized_bytes(&msg);
+
+        // Demonstrate that it is possible to also deserialize the raw
+        // bytes into a rust struct using the `cdr` crate.
+        #[derive(Deserialize, Serialize, PartialEq, Debug)]
+        struct OurOwnStdString {
+            data: String, // the field name can be anything...
         }
+        let cdr_str = cdr::deserialize::<OurOwnStdString>(&msg);
 
+        match (ros_str, cdr_str) {
+            (Ok(s1), Ok(s2)) => {
+                assert!(s1.data == s2.data);
+                println!("... using ros: {:?}", s1);
+                println!("... using cdr: {:?}", s2);
+            }
+            _ => println!("Error: cannot deserialize data."),
+        }
         future::ready(())
     })
     .await;

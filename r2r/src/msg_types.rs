@@ -1,15 +1,15 @@
 use crate::error::*;
 use r2r_msg_gen::*;
 use r2r_rcl::{
-    rosidl_action_type_support_t, rosidl_message_type_support_t, rosidl_service_type_support_t,
-    rcl_serialized_message_t,
+    rcl_serialized_message_t, rosidl_action_type_support_t, rosidl_message_type_support_t,
+    rosidl_service_type_support_t,
 };
 use serde::{Deserialize, Serialize};
 use std::boxed::Box;
+use std::cell::RefCell;
 use std::convert::TryInto;
 use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
-use std::cell::RefCell;
 
 pub mod generated_msgs {
     #![allow(clippy::all)]
@@ -78,9 +78,12 @@ pub trait WrappedTypesupport:
 
             self.copy_to_native(unsafe { msg.as_mut().expect("not null") });
 
-            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf.as_ref().map_err(|err| Error::from_rcl_error(*err))?.borrow_mut();
+            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf
+                .as_ref()
+                .map_err(|err| Error::from_rcl_error(*err))?
+                .borrow_mut();
 
-            let result = unsafe { 
+            let result = unsafe {
                 rmw_serialize(
                     msg as *const ::std::os::raw::c_void,
                     Self::get_ts(),
@@ -112,24 +115,24 @@ pub trait WrappedTypesupport:
             buffer: data.as_ptr() as *mut u8,
             buffer_length: data.len(),
             buffer_capacity: data.len(),
-            
+
             // Since its read only, this should never be used ..
-            allocator: unsafe { rcutils_get_default_allocator() }
+            allocator: unsafe { rcutils_get_default_allocator() },
         };
 
         // Note From the docs of rmw_deserialize, its not clear whether this reuses
         // any part of msg_buf. However it shouldn't matter since from_native
         // clones everything again anyway ..
-        let result = unsafe { 
+        let result = unsafe {
             rmw_deserialize(
                 &msg_buf as *const rcl_serialized_message_t,
                 Self::get_ts(),
                 msg as *mut std::os::raw::c_void,
             )
         };
-        
+
         let ret_val = if result == RCL_RET_OK as i32 {
-            Ok(Self::from_native(unsafe{ msg.as_ref().expect("not null") }))
+            Ok(Self::from_native(unsafe { msg.as_ref().expect("not null") }))
         } else {
             Err(Error::from_rcl_error(result))
         };
@@ -137,7 +140,6 @@ pub trait WrappedTypesupport:
         Self::destroy_msg(msg);
 
         ret_val
-
     }
 }
 
@@ -401,6 +403,37 @@ impl WrappedNativeMsgUntyped {
             destroy,
             msg_to_json,
             msg_from_json,
+        }
+    }
+
+    pub fn from_serialized_bytes(&mut self, data: &[u8]) -> Result<()> {
+        // TODO: Copy paste from above, should refactor later.
+        use r2r_rcl::*;
+
+        let msg_buf = rcl_serialized_message_t {
+            buffer: data.as_ptr() as *mut u8,
+            buffer_length: data.len(),
+            buffer_capacity: data.len(),
+
+            // Since its read only, this should never be used ..
+            allocator: unsafe { rcutils_get_default_allocator() },
+        };
+
+        // Note From the docs of rmw_deserialize, its not clear whether this reuses
+        // any part of msg_buf. However it shouldn't matter since from_native
+        // clones everything again anyway ..
+        let result = unsafe {
+            rmw_deserialize(
+                &msg_buf as *const rcl_serialized_message_t,
+                self.ts,
+                self.msg,
+            )
+        };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            Err(Error::from_rcl_error(result))
         }
     }
 
@@ -704,8 +737,8 @@ mod tests {
 
     #[test]
     fn test_serialization_fixed_size() {
-        let message = std_msgs::msg::Int32 { data: 10};
-        
+        let message = std_msgs::msg::Int32 { data: 10 };
+
         let bytes = message.to_serialized_bytes().unwrap();
 
         let message_2 = std_msgs::msg::Int32::from_serialized_bytes(&bytes).unwrap();
@@ -717,16 +750,15 @@ mod tests {
 
         assert_eq!(bytes, bytes_2);
         assert_eq!(bytes, bytes_3);
-
     }
 
     #[test]
     fn test_serialization_dynamic_size() {
-        let message = std_msgs::msg::Int32MultiArray {                     
+        let message = std_msgs::msg::Int32MultiArray {
             layout: std_msgs::msg::MultiArrayLayout::default(),
-            data: vec![10, 20, 30]
+            data: vec![10, 20, 30],
         };
-        
+
         let bytes = message.to_serialized_bytes().unwrap();
 
         let message_2 = std_msgs::msg::Int32MultiArray::from_serialized_bytes(&bytes).unwrap();
@@ -735,10 +767,9 @@ mod tests {
 
         let bytes_2 = message_2.to_serialized_bytes().unwrap();
         let bytes_3 = message_2.to_serialized_bytes().unwrap();
-        
+
         assert_eq!(bytes, bytes_2);
         assert_eq!(bytes, bytes_3);
-
     }
 
     #[cfg(r2r__test_msgs__msg__Defaults)]

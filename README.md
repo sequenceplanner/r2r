@@ -45,6 +45,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Message (de-)serialization helpers <https://github.com/sequenceplanner/r2r/pull/74>.
 - Raw message subscribers. <https://github.com/sequenceplanner/r2r/pull/73>
 
 #### [0.8.2] - 2023-12-11

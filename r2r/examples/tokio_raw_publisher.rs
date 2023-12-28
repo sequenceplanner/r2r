@@ -1,4 +1,5 @@
 use r2r::QosProfile;
+use r2r::WrappedTypesupport;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -8,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut timer = node.create_wall_timer(duration)?;
     let publisher =
-        node.create_publisher_raw("/topic", "std_msgs/msg/String", QosProfile::default())?;
+        node.create_publisher_untyped("/topic", "std_msgs/msg/String", QosProfile::default())?;
 
     let handle = tokio::task::spawn_blocking(move || loop {
         node.spin_once(std::time::Duration::from_millis(100));
@@ -19,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let msg = r2r::std_msgs::msg::String {
             data: "hello from r2r".to_string(),
         };
-        publisher.publish(&msg.to_serialized_bytes()?)?;
+        publisher.publish_raw(&msg.to_serialized_bytes()?)?;
     }
 
     handle.await?;

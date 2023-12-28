@@ -51,7 +51,7 @@ pub struct Node {
     // timers,
     timers: Vec<Timer_>,
     // and the publishers, whom we allow to be shared.. hmm.
-    pubs: Vec<Arc<rcl_publisher_t>>,
+    pubs: Vec<Arc<Publisher_>>,
 }
 
 unsafe impl Send for Node {}
@@ -791,7 +791,9 @@ impl Node {
         Ok(p)
     }
 
-    /// Create a ROS publisher with a type given at runtime, where the data is supplied as JSON.
+    /// Create a ROS publisher with a type given at runtime, where the data may either be
+    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message 
+    /// (i.e. &[u8], using the `publish_raw` method).
     pub fn create_publisher_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
@@ -800,20 +802,6 @@ impl Node {
             create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
         let arc = Arc::new(publisher_handle);
         let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
-        self.pubs.push(arc);
-        Ok(p)
-    }
-
-    /// Create a ROS publisher with a type given at runtime, where the data is supplied as 
-    /// a pre-serialized ROS message (i.e. &[u8])
-    pub fn create_publisher_raw(
-        &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
-    ) -> Result<PublisherRaw> {
-        let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let publisher_handle =
-            create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
-        let arc = Arc::new(publisher_handle);
-        let p = make_publisher_raw(Arc::downgrade(&arc), topic_type.to_owned());
         self.pubs.push(arc);
         Ok(p)
     }
@@ -840,6 +828,10 @@ impl Node {
 
         for c in &mut self.action_clients {
             c.lock().unwrap().poll_available(self.node_handle.as_mut());
+        }
+
+        for p in &self.pubs {
+            p.poll_has_inter_process_subscribers();
         }
 
         let timeout = timeout.as_nanos() as i64;
@@ -1319,9 +1311,9 @@ impl Drop for Node {
             s.lock().unwrap().destroy(&mut self.node_handle);
         }
         while let Some(p) = self.pubs.pop() {
-            let mut p = wait_until_unwrapped(p);
-            let _ret = unsafe { rcl_publisher_fini(&mut p as *mut _, self.node_handle.as_mut()) };
-            // TODO: check ret
+            let p = wait_until_unwrapped(p);
+
+            p.destroy(self.node_handle.as_mut());
         }
         unsafe {
             rcl_node_fini(self.node_handle.as_mut());
