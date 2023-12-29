@@ -128,7 +128,6 @@ pub struct PublisherUntyped {
     type_: String,
 }
 
-
 pub fn make_publisher<T>(handle: Weak<Publisher_>) -> Publisher<T>
 where
     T: WrappedTypesupport,
@@ -145,7 +144,6 @@ pub fn make_publisher_untyped(handle: Weak<Publisher_>, type_: String) -> Publis
         type_,    
     }
 }
-
 
 pub fn create_publisher_helper(
     node: &mut rcl_node_t, topic: &str, typesupport: *const rosidl_message_type_support_t,
@@ -266,7 +264,6 @@ impl PublisherUntyped {
         Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
     }
 }
-
 
 
 impl<T: 'static> Publisher<T>
