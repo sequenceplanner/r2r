@@ -202,6 +202,43 @@ impl PublisherUntyped {
         }
     }
 
+    /// Publish an pre-serialized ROS message represented by a `&[u8]`.
+    ///
+    /// It is up to the user to make sure data is a valid ROS serialized message.
+    pub fn publish_raw(&self, data: &[u8]) -> Result<()> {
+        // TODO should this be an unsafe function? I'm not sure what happens if the data is malformed ..
+
+        // upgrade to actual ref. if still alive
+        let publisher = self
+            .handle
+            .upgrade()
+            .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        // Safety: Not retained beyond this function
+        let msg_buf = rcl_serialized_message_t {
+            buffer: data.as_ptr() as *mut u8,
+            buffer_length: data.len(),
+            buffer_capacity: data.len(),
+
+            // Since its read only, this should never be used ..
+            allocator: unsafe { rcutils_get_default_allocator() }
+        };
+
+        let result =
+            unsafe { rcl_publish_serialized_message(
+                &publisher.handle, 
+                &msg_buf as *const rcl_serialized_message_t, 
+                std::ptr::null_mut()
+            ) };
+
+        if result == RCL_RET_OK as i32 {
+            Ok(())
+        } else {
+            log::error!("could not publish {}", result);
+            Err(Error::from_rcl_error(result))
+        }
+    }
+
     /// Gets the number of external subscribers (i.e. it doesn't
     /// count subscribers from the same process).
     pub fn get_inter_process_subscription_count(&self) -> Result<usize> {

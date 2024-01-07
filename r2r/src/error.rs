@@ -11,7 +11,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// These values are mostly copied straight from the RCL headers, but
 /// some are specific to r2r, such as `GoalCancelRejected` which does
 /// not have an analogue in the rcl.
-#[derive(Error, Debug)]
+#[derive(Error, Clone, Debug)]
 pub enum Error {
     #[error("RCL_RET_OK")]
     RCL_RET_OK,

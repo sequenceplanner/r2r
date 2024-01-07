@@ -791,7 +791,9 @@ impl Node {
         Ok(p)
     }
 
-    /// Create a ROS publisher with a type given at runtime.
+    /// Create a ROS publisher with a type given at runtime, where the data may either be
+    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message 
+    /// (i.e. &[u8], using the `publish_raw` method).
     pub fn create_publisher_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
