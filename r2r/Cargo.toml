@@ -57,3 +57,7 @@ features = ["doc-only"]
 [[bench]]
 name = "deserialization"
 harness = false
+
+[[example]]
+name = "timer_sim_time"
+required-features = ["sim-time"]

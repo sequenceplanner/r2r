@@ -86,6 +86,8 @@ impl TimeSource {
     /// Enables usage of simulated time
     ///
     /// Simulated time is provided on topic `"/clock"` in the message [rosgraph_msgs::msg::Clock].
+    ///
+    /// See example: sim_time_publisher.rs
     pub fn enable_sim_time(&self, node: &mut Node) -> Result<()> {
         let mut inner = self.inner.lock().unwrap();
         if inner.simulated_time_enabled {
