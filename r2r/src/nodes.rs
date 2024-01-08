@@ -1333,6 +1333,21 @@ impl Node {
         let s = unsafe { CStr::from_ptr(ptr) };
         s.to_str().unwrap_or("")
     }
+
+    /// Get TimeSource of the node
+    ///
+    /// See: [`TimeSource`]
+    #[cfg(feature = "sim-time")]
+    pub fn get_time_source(&self) -> TimeSource {
+        self.time_source.clone()
+    }
+
+    /// Get ROS clock of the node
+    ///
+    /// This is the same clock that is used by ROS timers created in [`Node::create_timer`].
+    pub fn get_ros_clock(&self) -> Arc<Mutex<Clock>> {
+        self.ros_clock.clone()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
