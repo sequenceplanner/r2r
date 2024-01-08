@@ -54,6 +54,8 @@ pub struct Node {
     timers: Vec<Timer_>,
     // and the publishers, whom we allow to be shared.. hmm.
     pubs: Vec<Arc<Publisher_>>,
+    // RosTime clock used by all timers created by create_timer()
+    ros_clock: Arc<Mutex<Clock>>,
 }
 
 unsafe impl Send for Node {}
@@ -179,6 +181,8 @@ impl Node {
         };
 
         if res == RCL_RET_OK as i32 {
+            let clock = Clock::create(ClockType::RosTime)?;
+
             let mut node = Node {
                 params: Arc::new(Mutex::new(HashMap::new())),
                 context: ctx,
@@ -190,6 +194,7 @@ impl Node {
                 action_servers: Vec::new(),
                 timers: Vec::new(),
                 pubs: Vec::new(),
+                ros_clock: Arc::new(Mutex::new(clock)),
             };
             node.load_params()?;
             Ok(node)
@@ -1214,9 +1219,52 @@ impl Node {
     /// Create a ROS wall timer.
     ///
     /// Create a ROS timer that is woken up by spin every `period`.
+    ///
+    /// This timer uses [`ClockType::SteadyTime`] clock.
     pub fn create_wall_timer(&mut self, period: Duration) -> Result<Timer> {
         let mut clock = Clock::create(ClockType::SteadyTime)?;
+        let timer_handle = self.create_timer_helper(&mut clock, period)?;
 
+        let (tx, rx) = mpsc::channel::<Duration>(1);
+
+        let timer = Timer_ {
+            timer_handle,
+            _clock: Some(clock), // The timer owns the clock.
+            sender: tx,
+        };
+        self.timers.push(timer);
+
+        let out_timer = Timer { receiver: rx };
+
+        Ok(out_timer)
+    }
+
+    /// Create a ROS timer
+    ///
+    /// Create a ROS timer that is woken up by spin every `period`.
+    ///
+    /// This timer uses node's [`ClockType::RosTime`] clock.
+    pub fn create_timer(&mut self, period: Duration) -> Result<Timer> {
+        let mut clock = self.ros_clock.lock().unwrap();
+        let timer_handle = self.create_timer_helper(&mut clock, period)?;
+
+        let (tx, rx) = mpsc::channel::<Duration>(1);
+
+        let timer = Timer_ {
+            timer_handle,
+            _clock: None, // The timer does not own the clock (the node owns it).
+            sender: tx,
+        };
+        self.timers.push(timer);
+
+        let out_timer = Timer { receiver: rx };
+
+        Ok(out_timer)
+    }
+
+    fn create_timer_helper(
+        &self, clock: &mut Clock, period: Duration,
+    ) -> Result<Pin<Box<RclTimer>>> {
         // rcl expects that the address of the rcl_timer_t does not change.
         let mut timer_handle = unsafe { Box::pin(RclTimer::new()) };
 
@@ -1237,18 +1285,7 @@ impl Node {
             return Err(Error::from_rcl_error(ret));
         }
 
-        let (tx, rx) = mpsc::channel::<Duration>(1);
-
-        let timer = Timer_ {
-            timer_handle,
-            _clock: Some(clock),
-            sender: tx,
-        };
-        self.timers.push(timer);
-
-        let out_timer = Timer { receiver: rx };
-
-        Ok(out_timer)
+        Ok(timer_handle)
     }
 
     /// Get the ros logger name for this node.
