@@ -428,6 +428,29 @@ impl Node {
 
         handlers.push(Box::pin(get_param_types_future));
 
+        #[cfg(feature = "sim-time")]
+        {
+            // create TimeSource based on value of use_sim_time parameter
+            let use_sim_time = {
+                let params = self.params.lock().unwrap();
+                params
+                    .get("use_sim_time")
+                    .and_then(|param| {
+                        if let ParameterValue::Bool(val) = param.value {
+                            Some(val)
+                        } else {
+                            log::error!("Parameter use_sim_time is not bool. Assuming false");
+                            None
+                        }
+                    })
+                    .unwrap_or(false)
+            };
+            if use_sim_time {
+                let ts = self.time_source.clone();
+                ts.enable_sim_time(self)?;
+            }
+        }
+
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
     }
