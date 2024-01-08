@@ -1241,7 +1241,7 @@ impl Node {
 
         let timer = Timer_ {
             timer_handle,
-            _clock: clock,
+            _clock: Some(clock),
             sender: tx,
         };
         self.timers.push(timer);
@@ -1279,7 +1279,7 @@ impl RclTimer {
 
 struct Timer_ {
     timer_handle: Pin<Box<RclTimer>>,
-    _clock: Clock, // just here to be dropped properly later.
+    _clock: Option<Clock>, // Some(clock) if the timer owns the clock, just here to be dropped properly later.
     sender: mpsc::Sender<Duration>,
 }
 
