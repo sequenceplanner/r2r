@@ -46,13 +46,16 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .unwrap();
 
-                    let p_float_no = node.create_publisher::<r2r::std_msgs::msg::Float32>(
-                        &format!("/float_no_{i_context}"),
-                        QosProfile::default().best_effort(),
-                    )?;
+                    let p_float_no = node
+                        .create_publisher::<r2r::std_msgs::msg::Float32>(
+                            &format!("/float_no_{i_context}"),
+                            QosProfile::default().best_effort(),
+                        )
+                        .unwrap();
 
                     let pub_info = node
-                        .get_publishers_info_by_topic(&format!("/float_no_{i_context}"), false)?;
+                        .get_publishers_info_by_topic(&format!("/float_no_{i_context}"), false)
+                        .unwrap();
                     assert_eq!(pub_info.len(), 1);
                     assert_eq!(pub_info[0].topic_type, "std_msgs/msg/Float32".to_owned());
                     assert_eq!(
@@ -64,8 +67,9 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
                         QosProfile::default().durability
                     );
 
-                    let pub_info =
-                        node.get_publishers_info_by_topic(&format!("/new_no_{i_context}"), false)?;
+                    let pub_info = node
+                        .get_publishers_info_by_topic(&format!("/new_no_{i_context}"), false)
+                        .unwrap();
                     assert_eq!(pub_info.len(), 1);
                     assert_eq!(pub_info[0].topic_type, "std_msgs/msg/Int32".to_owned());
                     assert_eq!(
@@ -110,14 +114,6 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
 
                             *s.lock().unwrap() = i;
                         }
-                    });
-
-                    task::spawn(async move {
-                        (0..10).for_each(|i| {
-                            p_the_no
-                                .publish(&r2r::std_msgs::msg::Int32 { data: i })
-                                .unwrap();
-                        });
                     });
 
                     task::spawn(async move {

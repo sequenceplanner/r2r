@@ -792,7 +792,7 @@ impl Node {
     }
 
     /// Create a ROS publisher with a type given at runtime, where the data may either be
-    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message 
+    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message
     /// (i.e. &[u8], using the `publish_raw` method).
     pub fn create_publisher_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
@@ -1373,8 +1373,8 @@ pub struct TopicEndpointInfo {
     pub qos_profile: QosProfile,
 }
 
-impl From<rmw_topic_endpoint_info_s> for TopicEndpointInfo {
-    fn from(info: rmw_topic_endpoint_info_s) -> Self {
+impl From<rmw_topic_endpoint_info_t> for TopicEndpointInfo {
+    fn from(info: rmw_topic_endpoint_info_t) -> Self {
         // Convert C strings to Rust String
         let node_name = unsafe { CStr::from_ptr(info.node_name) }
             .to_string_lossy()
