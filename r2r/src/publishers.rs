@@ -1,13 +1,13 @@
+use futures::channel::oneshot;
+use futures::Future;
+use futures::TryFutureExt;
 use std::ffi::c_void;
 use std::ffi::CString;
 use std::fmt::Debug;
 use std::marker::PhantomData;
+use std::sync::Mutex;
 use std::sync::Once;
 use std::sync::Weak;
-use std::sync::Mutex;
-use futures::Future;
-use futures::channel::oneshot;
-use futures::TryFutureExt;
 
 use crate::error::*;
 use crate::msg_types::*;
@@ -45,11 +45,10 @@ pub(crate) struct Publisher_ {
     handle: rcl_publisher_t,
 
     // TODO use a mpsc to avoid the mutex?
-    poll_inter_process_subscriber_channels: Mutex<Vec<oneshot::Sender<()>>>
+    poll_inter_process_subscriber_channels: Mutex<Vec<oneshot::Sender<()>>>,
 }
 
-impl Publisher_
-{
+impl Publisher_ {
     fn get_inter_process_subscription_count(&self) -> Result<usize> {
         // See https://github.com/ros2/rclcpp/issues/623
 
@@ -70,8 +69,7 @@ impl Publisher_
     }
 
     pub(crate) fn poll_has_inter_process_subscribers(&self) {
-
-        let mut poll_inter_process_subscriber_channels = 
+        let mut poll_inter_process_subscriber_channels =
             self.poll_inter_process_subscriber_channels.lock().unwrap();
 
         if poll_inter_process_subscriber_channels.is_empty() {
@@ -101,7 +99,6 @@ impl Publisher_
         // TODO: check ret
     }
 }
-
 
 /// A ROS (typed) publisher.
 ///
@@ -139,10 +136,7 @@ where
 }
 
 pub fn make_publisher_untyped(handle: Weak<Publisher_>, type_: String) -> PublisherUntyped {
-    PublisherUntyped {
-        handle,
-        type_,    
-    }
+    PublisherUntyped { handle, type_ }
 }
 
 pub fn create_publisher_helper(
@@ -166,7 +160,7 @@ pub fn create_publisher_helper(
     if result == RCL_RET_OK as i32 {
         Ok(Publisher_ {
             handle: publisher_handle,
-            poll_inter_process_subscriber_channels: Mutex::new(Vec::new())
+            poll_inter_process_subscriber_channels: Mutex::new(Vec::new()),
         })
     } else {
         Err(Error::from_rcl_error(result))
@@ -187,12 +181,13 @@ impl PublisherUntyped {
         let native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
 
-        let result =
-            unsafe { rcl_publish(
+        let result = unsafe {
+            rcl_publish(
                 &publisher.handle as *const rcl_publisher_t,
                 native_msg.void_ptr(),
-                std::ptr::null_mut())
-            };
+                std::ptr::null_mut(),
+            )
+        };
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -221,15 +216,16 @@ impl PublisherUntyped {
             buffer_capacity: data.len(),
 
             // Since its read only, this should never be used ..
-            allocator: unsafe { rcutils_get_default_allocator() }
+            allocator: unsafe { rcutils_get_default_allocator() },
         };
 
-        let result =
-            unsafe { rcl_publish_serialized_message(
-                &publisher.handle, 
-                &msg_buf as *const rcl_serialized_message_t, 
-                std::ptr::null_mut()
-            ) };
+        let result = unsafe {
+            rcl_publish_serialized_message(
+                &publisher.handle,
+                &msg_buf as *const rcl_serialized_message_t,
+                std::ptr::null_mut(),
+            )
+        };
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -265,7 +261,6 @@ impl PublisherUntyped {
     }
 }
 
-
 impl<T: 'static> Publisher<T>
 where
     T: WrappedTypesupport,
@@ -281,12 +276,13 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
-        let result =
-            unsafe { rcl_publish(
+        let result = unsafe {
+            rcl_publish(
                 &publisher.handle as *const rcl_publisher_t,
                 native_msg.void_ptr(),
-                std::ptr::null_mut())
-            };
+                std::ptr::null_mut(),
+            )
+        };
 
         if result == RCL_RET_OK as i32 {
             Ok(())
@@ -312,7 +308,7 @@ where
                 rcl_borrow_loaned_message(
                     &publisher.handle as *const rcl_publisher_t,
                     T::get_ts(),
-                    &mut loaned_msg
+                    &mut loaned_msg,
                 )
             };
             if ret != RCL_RET_OK as i32 {
@@ -379,11 +375,13 @@ where
                 )
             }
         } else {
-            unsafe { rcl_publish(
-                &publisher.handle as *const rcl_publisher_t,
-                msg.void_ptr(),
-                std::ptr::null_mut()
-            ) }
+            unsafe {
+                rcl_publish(
+                    &publisher.handle as *const rcl_publisher_t,
+                    msg.void_ptr(),
+                    std::ptr::null_mut(),
+                )
+            }
         };
 
         if result == RCL_RET_OK as i32 {
@@ -394,7 +392,7 @@ where
         }
     }
 
-    /// Gets the number of external subscribers (i.e. it doesn't 
+    /// Gets the number of external subscribers (i.e. it doesn't
     /// count subscribers from the same process).
     pub fn get_inter_process_subscription_count(&self) -> Result<usize> {
         self.handle
@@ -418,5 +416,4 @@ where
 
         Ok(receiver.map_err(|_| Error::RCL_RET_CLIENT_INVALID))
     }
-
 }

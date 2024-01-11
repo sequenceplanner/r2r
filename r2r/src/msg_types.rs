@@ -423,11 +423,7 @@ impl WrappedNativeMsgUntyped {
         // any part of msg_buf. However it shouldn't matter since from_native
         // clones everything again anyway ..
         let result = unsafe {
-            rmw_deserialize(
-                &msg_buf as *const rcl_serialized_message_t,
-                self.ts,
-                self.msg,
-            )
+            rmw_deserialize(&msg_buf as *const rcl_serialized_message_t, self.ts, self.msg)
         };
 
         if result == RCL_RET_OK as i32 {
