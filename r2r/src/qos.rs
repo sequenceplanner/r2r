@@ -825,10 +825,25 @@ impl RclDurationT for Duration {
     }
 
     fn from_rmw_time_t(rmw_time: &rmw_time_t) -> Self {
-        assert!(
-            rmw_time.nsec < 1_000_000_000,
-            "nsec part of rmw_time_t should be less than 1 billion"
-        );
+        #[cfg(not(r2r__ros__distro__foxy))]
+        {
+            assert!(
+                rmw_time.nsec < 1_000_000_000,
+                "nsec part of rmw_time_t should be less than 1 billion"
+            );
+        }
+
+        #[cfg(r2r__ros__distro__foxy)]
+        {
+            // FIXME: In foxy, duration data obtained from publisher with default qos profile is
+            // sec: 7FFFFFFF (2147483647), nsec: FFFFFFFF (4294967295)
+            if rmw_time.nsec == 4294967295 {
+                // 0s indicates deadline policies are not tracked or enforced in foxy
+                return Duration::new(0, 0);
+            } else if rmw_time.nsec > 1_000_000_000 {
+                panic!("nsec part of rmw_time_t should be less than 1 billion");
+            }
+        }
 
         Duration::new(rmw_time.sec, rmw_time.nsec as u32)
     }
