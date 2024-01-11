@@ -45,6 +45,10 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Add `get_publishers_info_by_topic` <https://github.com/sequenceplanner/r2r/pull/80>
+- Raw publishers <https://github.com/sequenceplanner/r2r/pull/76>
+- Add `rcl_publisher_get_subscription_count` related methods <https://github.com/sequenceplanner/r2r/pull/75>
+- From serialized bytes for `WrappedNativeMsgUntyped` <https://github.com/sequenceplanner/r2r/commit/d5f2ef0eac7072c66fe8866a3dbbfc2326b13804>
 - Message (de-)serialization helpers <https://github.com/sequenceplanner/r2r/pull/74>.
 - Raw message subscribers. <https://github.com/sequenceplanner/r2r/pull/73>
 
