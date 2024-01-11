@@ -792,7 +792,7 @@ impl Node {
     }
 
     /// Create a ROS publisher with a type given at runtime, where the data may either be
-    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message 
+    /// supplied as JSON (using the `publish` method) or a pre-serialized ROS message
     /// (i.e. &[u8], using the `publish_raw` method).
     pub fn create_publisher_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
@@ -1169,6 +1169,46 @@ impl Node {
         Ok(res)
     }
 
+    pub fn get_publishers_info_by_topic(
+        &self, topic_name: &str, no_mangle: bool,
+    ) -> Result<Vec<TopicEndpointInfo>> {
+        let node = self.node_handle.as_ref();
+
+        let topic_c_string =
+            CString::new(topic_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+        let mut allocator = unsafe { rcutils_get_default_allocator() };
+
+        let mut info_array: rcl_topic_endpoint_info_array_t =
+            unsafe { rmw_get_zero_initialized_topic_endpoint_info_array() };
+
+        let result = unsafe {
+            rcl_get_publishers_info_by_topic(
+                node,
+                &mut allocator,
+                topic_c_string.as_ptr(),
+                no_mangle,
+                &mut info_array,
+            )
+        };
+
+        if result != RCL_RET_OK as i32 {
+            unsafe { rmw_topic_endpoint_info_array_fini(&mut info_array, &mut allocator) };
+            return Err(Error::from_rcl_error(result));
+        }
+
+        // Convert info_array to Vec<TopicEndpointInfo>
+        let topic_info_list = convert_info_array_to_vec(&info_array);
+
+        let result = unsafe { rmw_topic_endpoint_info_array_fini(&mut info_array, &mut allocator) };
+
+        if result != RCL_RET_OK as i32 {
+            return Err(Error::from_rcl_error(result));
+        }
+
+        Ok(topic_info_list)
+    }
+
     /// Create a ROS wall timer.
     ///
     /// Create a ROS timer that is woken up by spin every `period`.
@@ -1323,4 +1363,57 @@ impl Drop for Node {
 
 pub trait IsAvailablePollable {
     fn register_poll_available(&self, sender: oneshot::Sender<()>) -> Result<()>;
+}
+
+pub struct TopicEndpointInfo {
+    pub node_name: String,
+    pub node_namespace: String,
+    pub topic_type: String,
+    pub endpoint_gid: [u8; RMW_GID_STORAGE_SIZE as usize],
+    pub qos_profile: QosProfile,
+}
+
+impl From<rmw_topic_endpoint_info_t> for TopicEndpointInfo {
+    fn from(info: rmw_topic_endpoint_info_t) -> Self {
+        // Convert C strings to Rust String
+        let node_name = unsafe { CStr::from_ptr(info.node_name) }
+            .to_string_lossy()
+            .into_owned();
+        let node_namespace = unsafe { CStr::from_ptr(info.node_namespace) }
+            .to_string_lossy()
+            .into_owned();
+        let topic_type = unsafe { CStr::from_ptr(info.topic_type) }
+            .to_string_lossy()
+            .into_owned();
+
+        // Copy the endpoint_gid array
+        let endpoint_gid: [u8; RMW_GID_STORAGE_SIZE as usize] = info.endpoint_gid;
+
+        // Convert qos_profile
+        let qos_profile = QosProfile::from(info.qos_profile); // Adjust this line based on how QosProfile is defined
+
+        TopicEndpointInfo {
+            node_name,
+            node_namespace,
+            topic_type,
+            endpoint_gid,
+            qos_profile,
+        }
+    }
+}
+
+fn convert_info_array_to_vec(
+    info_array: &rcl_topic_endpoint_info_array_t,
+) -> Vec<TopicEndpointInfo> {
+    let mut topic_info_list = Vec::with_capacity(info_array.size);
+
+    unsafe {
+        let infos = std::slice::from_raw_parts(info_array.info_array, info_array.size);
+        for &info in infos {
+            let endpoint_info = TopicEndpointInfo::from(info);
+            topic_info_list.push(endpoint_info);
+        }
+    }
+
+    topic_info_list
 }
