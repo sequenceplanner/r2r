@@ -34,7 +34,7 @@ Since the default behavior is to build all sourced message types, build time can
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron
 - Building Rust types
 - Publish/subscribe
 - Services
@@ -45,6 +45,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Update for ros2 iron <https://github.com/sequenceplanner/r2r/pull/84>
 
 #### [0.8.3] - 2024-01-14
 - Add `get_publishers_info_by_topic` <https://github.com/sequenceplanner/r2r/pull/80>
