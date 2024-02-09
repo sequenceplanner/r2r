@@ -251,6 +251,8 @@ pub enum ReliabilityPolicy {
     BestEffort,
     Reliable,
     SystemDefault,
+    #[cfg(r2r__ros__distro__iron)]
+    BestAvailable,
     Unknown,
 }
 impl From<ReliabilityPolicy> for rmw_qos_reliability_policy_t {
@@ -264,6 +266,10 @@ impl From<ReliabilityPolicy> for rmw_qos_reliability_policy_t {
             }
             ReliabilityPolicy::SystemDefault => {
                 rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT
+            }
+            #[cfg(r2r__ros__distro__iron)]
+            ReliabilityPolicy::BestAvailable => {
+                rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_BEST_AVAILABLE
             }
             ReliabilityPolicy::Unknown => {
                 rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_UNKNOWN
@@ -284,6 +290,10 @@ impl From<rmw_qos_reliability_policy_t> for ReliabilityPolicy {
             rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT => {
                 ReliabilityPolicy::SystemDefault
             }
+            #[cfg(r2r__ros__distro__iron)]
+            rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_BEST_AVAILABLE => {
+                ReliabilityPolicy::BestAvailable
+            }
             rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_UNKNOWN => {
                 ReliabilityPolicy::Unknown
             }
@@ -296,6 +306,8 @@ pub enum DurabilityPolicy {
     TransientLocal,
     Volatile,
     SystemDefault,
+    #[cfg(r2r__ros__distro__iron)]
+    BestAvailable,
     Unknown,
 }
 
@@ -310,6 +322,10 @@ impl From<DurabilityPolicy> for rmw_qos_durability_policy_t {
             }
             DurabilityPolicy::SystemDefault => {
                 rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT
+            }
+            #[cfg(r2r__ros__distro__iron)]
+            DurabilityPolicy::BestAvailable => {
+                rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_BEST_AVAILABLE
             }
             DurabilityPolicy::Unknown => {
                 rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_UNKNOWN
@@ -330,6 +346,10 @@ impl From<rmw_qos_durability_policy_t> for DurabilityPolicy {
             rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT => {
                 DurabilityPolicy::SystemDefault
             }
+            #[cfg(r2r__ros__distro__iron)]
+            rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_BEST_AVAILABLE => {
+                DurabilityPolicy::BestAvailable
+            }
             rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_UNKNOWN => {
                 DurabilityPolicy::Unknown
             }
@@ -343,6 +363,8 @@ pub enum LivelinessPolicy {
     ManualByNode,
     ManualByTopic,
     SystemDefault,
+    #[cfg(r2r__ros__distro__iron)]
+    BestAvailable,
     Unknown,
 }
 
@@ -360,6 +382,10 @@ impl From<LivelinessPolicy> for rmw_qos_liveliness_policy_t {
             }
             LivelinessPolicy::SystemDefault => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT
+            }
+            #[cfg(r2r__ros__distro__iron)]
+            LivelinessPolicy::BestAvailable => {
+                rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_BEST_AVAILABLE
             }
             LivelinessPolicy::Unknown => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_UNKNOWN
@@ -382,6 +408,10 @@ impl From<rmw_qos_liveliness_policy_t> for LivelinessPolicy {
             }
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT => {
                 LivelinessPolicy::SystemDefault
+            }
+            #[cfg(r2r__ros__distro__iron)]
+            rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_BEST_AVAILABLE => {
+                LivelinessPolicy::BestAvailable
             }
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_UNKNOWN => {
                 LivelinessPolicy::Unknown

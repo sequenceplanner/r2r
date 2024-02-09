@@ -8,7 +8,7 @@ use std::io::Read;
 use std::path::Path;
 
 #[cfg(not(feature = "doc-only"))]
-const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "rolling"];
+const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "iron", "rolling"];
 
 const WATCHED_ENV_VARS: &[&str] = &[
     "AMENT_PREFIX_PATH",
