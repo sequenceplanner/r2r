@@ -53,6 +53,9 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .unwrap();
 
+                    // wait a little for publisher info to populate(?). hack to avoid CI failures.
+                    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
                     let pub_info = node
                         .get_publishers_info_by_topic(&format!("/float_no_{i_context}"), false)
                         .unwrap();
