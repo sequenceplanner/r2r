@@ -104,7 +104,6 @@ where
                     let handle_ptr = Box::into_raw(handle_box);
                     let ret =
                         rcl_return_loaned_message_from_subscription(handle_ptr, msg as *mut c_void);
-                    drop(Box::from_raw(handle_ptr));
                     if ret != RCL_RET_OK as i32 {
                         let err_str = rcutils_get_error_string();
                         let err_str_ptr = &(err_str.str_) as *const std::os::raw::c_char;
@@ -113,13 +112,15 @@ where
                         let topic_str = rcl_subscription_get_topic_name(handle_ptr);
                         let topic = CStr::from_ptr(topic_str);
 
-                        panic!(
+                        crate::log_error!(
+                            "r2r",
                             "rcl_return_loaned_message_from_subscription() \
                             failed for subscription on topic {}: {}",
                             topic.to_str().expect("to_str() call failed"),
                             error_msg.to_str().expect("to_str() call failed")
                         );
                     }
+                    // drop(Box::from_raw(handle_ptr));
                 });
                 WrappedNativeMsg::<T>::from_loaned(loaned_msg as *mut T::CStruct, deallocator)
             } else {
