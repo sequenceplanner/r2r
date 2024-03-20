@@ -7,7 +7,7 @@ use crate::msg_types::generated_msgs::builtin_interfaces;
 use r2r_rcl::*;
 
 /// Different ROS clock types.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum ClockType {
     RosTime,
     SystemTime,
@@ -19,6 +19,7 @@ unsafe impl Send for Clock {}
 /// A ROS clock.
 pub struct Clock {
     pub(crate) clock_handle: Box<rcl_clock_t>,
+    clock_type: ClockType,
 }
 
 pub fn clock_type_to_rcl(ct: &ClockType) -> rcl_clock_type_t {
@@ -44,7 +45,10 @@ impl Clock {
         }
 
         let clock_handle = Box::new(unsafe { clock_handle.assume_init() });
-        Ok(Clock { clock_handle })
+        Ok(Clock {
+            clock_handle,
+            clock_type: ct,
+        })
     }
 
     pub fn get_now(&mut self) -> Result<Duration> {
@@ -65,11 +69,91 @@ impl Clock {
         Ok(dur)
     }
 
+    pub fn get_clock_type(&self) -> ClockType {
+        self.clock_type
+    }
+
     /// TODO: move to builtin helper methods module.
     pub fn to_builtin_time(d: &Duration) -> builtin_interfaces::msg::Time {
         let sec = d.as_secs() as i32;
         let nanosec = d.subsec_nanos();
         builtin_interfaces::msg::Time { sec, nanosec }
+    }
+
+    /// Enables alternative source of time for this clock
+    ///
+    /// The clock must be [`ClockType::RosTime`].
+    ///
+    /// Wrapper for `rcl_enable_ros_time_override`
+    #[cfg(feature = "sim-time")]
+    pub(crate) fn enable_ros_time_override(
+        &mut self, initial_time: rcl_time_point_value_t,
+    ) -> Result<()> {
+        let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
+        if !valid {
+            return Err(Error::from_rcl_error(RCL_RET_INVALID_ARGUMENT as i32));
+        }
+
+        let ret = unsafe { rcl_enable_ros_time_override(&mut *self.clock_handle) };
+        if ret != RCL_RET_OK as i32 {
+            log::error!("could not enable ros time override: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        self.set_ros_time_override(initial_time)?;
+
+        Ok(())
+    }
+
+    /// Disables alternative source of time for this clock
+    ///
+    /// The clock must be [`ClockType::RosTime`].
+    ///
+    /// Wrapper for `rcl_disable_ros_time_override`
+    #[cfg(feature = "sim-time")]
+    pub(crate) fn disable_ros_time_override(&mut self) -> Result<()> {
+        let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
+        if !valid {
+            return Err(Error::from_rcl_error(RCL_RET_INVALID_ARGUMENT as i32));
+        }
+
+        let ret = unsafe { rcl_disable_ros_time_override(&mut *self.clock_handle) };
+        if ret != RCL_RET_OK as i32 {
+            log::error!("could not disable ros time override: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        Ok(())
+    }
+
+    /// Sets new time value if the clock has enabled alternative time source
+    ///
+    /// If the clock does not have alternative time source enabled this function will not change the time.
+    ///
+    /// The clock must be [`ClockType::RosTime`].
+    ///
+    /// Wrapper for `rcl_set_ros_time_override`
+    #[cfg(feature = "sim-time")]
+    pub(crate) fn set_ros_time_override(&mut self, time: rcl_time_point_value_t) -> Result<()> {
+        let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
+        if !valid {
+            return Err(Error::from_rcl_error(RCL_RET_INVALID_ARGUMENT as i32));
+        }
+
+        let ret = unsafe { rcl_set_ros_time_override(&mut *self.clock_handle, time) };
+        if ret != RCL_RET_OK as i32 {
+            log::error!("could not set ros time override: {}", ret);
+            return Err(Error::from_rcl_error(ret));
+        }
+
+        Ok(())
+    }
+}
+
+impl From<builtin_interfaces::msg::Time> for rcutils_time_point_value_t {
+    fn from(msg: builtin_interfaces::msg::Time) -> Self {
+        (msg.sec as rcl_time_point_value_t) * 1_000_000_000
+            + (msg.nanosec as rcl_time_point_value_t)
     }
 }
 
