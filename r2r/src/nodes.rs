@@ -29,6 +29,8 @@ use crate::publishers::*;
 use crate::qos::QosProfile;
 use crate::services::*;
 use crate::subscribers::*;
+#[cfg(feature = "sim-time")]
+use crate::time_source::TimeSource;
 
 /// A ROS Node.
 ///
@@ -56,6 +58,9 @@ pub struct Node {
     pubs: Vec<Arc<Publisher_>>,
     // RosTime clock used by all timers created by create_timer()
     ros_clock: Arc<Mutex<Clock>>,
+    // time source that provides simulated time
+    #[cfg(feature = "sim-time")]
+    time_source: TimeSource,
 }
 
 unsafe impl Send for Node {}
@@ -181,7 +186,13 @@ impl Node {
         };
 
         if res == RCL_RET_OK as i32 {
-            let clock = Clock::create(ClockType::RosTime)?;
+            let ros_clock = Arc::new(Mutex::new(Clock::create(ClockType::RosTime)?));
+            #[cfg(feature = "sim-time")]
+            let time_source = {
+                let time_source = TimeSource::new();
+                time_source.attach_ros_clock(Arc::downgrade(&ros_clock))?;
+                time_source
+            };
 
             let mut node = Node {
                 params: Arc::new(Mutex::new(HashMap::new())),
@@ -194,7 +205,9 @@ impl Node {
                 action_servers: Vec::new(),
                 timers: Vec::new(),
                 pubs: Vec::new(),
-                ros_clock: Arc::new(Mutex::new(clock)),
+                ros_clock,
+                #[cfg(feature = "sim-time")]
+                time_source,
             };
             node.load_params()?;
             Ok(node)
