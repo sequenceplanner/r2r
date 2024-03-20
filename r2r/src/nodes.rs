@@ -6,7 +6,9 @@ use futures::stream::{Stream, StreamExt};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::future::Future;
+use std::marker::PhantomPinned;
 use std::mem::MaybeUninit;
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -932,7 +934,7 @@ impl Node {
 
         for s in &self.timers {
             unsafe {
-                rcl_wait_set_add_timer(&mut ws, &s.timer_handle, std::ptr::null_mut());
+                rcl_wait_set_add_timer(&mut ws, s.get_handle(), std::ptr::null_mut());
             }
         }
 
@@ -1004,13 +1006,13 @@ impl Node {
                 // TODO: move this to impl Timer
                 let dropped = s.handle_incoming();
                 if dropped {
-                    timers_to_remove.push(s.timer_handle);
+                    timers_to_remove.push((*s.timer_handle).to_owned());
                 }
             }
         }
         // drop timers scheduled for deletion
         self.timers
-            .retain(|t| !timers_to_remove.contains(&t.timer_handle));
+            .retain(|t| !timers_to_remove.contains(&*t.timer_handle));
 
         let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
         for (s, ws_s) in self.clients.iter_mut().zip(ws_clients) {
@@ -1215,12 +1217,13 @@ impl Node {
     pub fn create_wall_timer(&mut self, period: Duration) -> Result<Timer> {
         let mut clock = Clock::create(ClockType::SteadyTime)?;
 
-        let mut timer_handle = unsafe { rcl_get_zero_initialized_timer() };
+        // rcl expects that the address of the rcl_timer_t does not change.
+        let mut timer_handle = unsafe { Box::pin(RclTimer::new()) };
 
         let mut ctx = self.context.context_handle.lock().unwrap();
         let ret = unsafe {
             rcl_timer_init(
-                &mut timer_handle,
+                &mut timer_handle.as_mut().get_unchecked_mut().handle,
                 clock.clock_handle.as_mut(),
                 ctx.as_mut(),
                 period.as_nanos() as i64,
@@ -1259,22 +1262,53 @@ impl Node {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct RclTimer {
+    handle: rcl_timer_t,
+    _pin: PhantomPinned, // To prevent Unpin implementation
+}
+
+impl RclTimer {
+    unsafe fn new() -> Self {
+        Self {
+            handle: rcl_get_zero_initialized_timer(),
+            _pin: PhantomPinned,
+        }
+    }
+}
+
 struct Timer_ {
-    timer_handle: rcl_timer_t,
+    timer_handle: Pin<Box<RclTimer>>,
     _clock: Clock, // just here to be dropped properly later.
     sender: mpsc::Sender<Duration>,
 }
 
 impl Timer_ {
+    fn get_handle(&self) -> *const rcl_timer_t {
+        &self.timer_handle.handle
+    }
+
+    /// Get mutable pointer to handle
+    ///
+    /// SAFETY:
+    ///     Pointer valid only for modification.
+    ///     Must not invalidate or replace the timer unless in Drop.
+    unsafe fn get_handle_mut(&mut self) -> *mut rcl_timer_t {
+        self.timer_handle
+            .as_mut()
+            .map_unchecked_mut(|s| &mut s.handle)
+            .get_unchecked_mut()
+    }
+
     fn handle_incoming(&mut self) -> bool {
         let mut is_ready = false;
-        let ret = unsafe { rcl_timer_is_ready(&self.timer_handle, &mut is_ready) };
+        let ret = unsafe { rcl_timer_is_ready(self.get_handle(), &mut is_ready) };
         if ret == RCL_RET_OK as i32 && is_ready {
             let mut nanos = 0i64;
             // todo: error handling
-            let ret = unsafe { rcl_timer_get_time_since_last_call(&self.timer_handle, &mut nanos) };
+            let ret = unsafe { rcl_timer_get_time_since_last_call(self.get_handle(), &mut nanos) };
             if ret == RCL_RET_OK as i32 {
-                let ret = unsafe { rcl_timer_call(&mut self.timer_handle) };
+                let ret = unsafe { rcl_timer_call(self.get_handle_mut()) };
                 if ret == RCL_RET_OK as i32 {
                     if let Err(e) = self.sender.try_send(Duration::from_nanos(nanos as u64)) {
                         if e.is_disconnected() {
@@ -1296,7 +1330,7 @@ impl Timer_ {
 
 impl Drop for Timer_ {
     fn drop(&mut self) {
-        let _ret = unsafe { rcl_timer_fini(&mut self.timer_handle) };
+        let _ret = unsafe { rcl_timer_fini(self.get_handle_mut()) };
     }
 }
 
