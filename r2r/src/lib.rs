@@ -124,6 +124,12 @@ mod nodes;
 pub use nodes::{Node, Timer};
 
 pub mod qos;
+
+#[cfg(feature = "sim-time")]
+mod time_source;
+#[cfg(feature = "sim-time")]
+pub use time_source::TimeSource;
+
 pub use qos::QosProfile;
 
 /// The ros version currently built against.

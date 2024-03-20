@@ -39,9 +39,9 @@ pub struct Node {
     context: Context,
     /// ROS parameters.
     pub params: Arc<Mutex<HashMap<String, Parameter>>>,
-    node_handle: Box<rcl_node_t>,
+    pub(crate) node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
-    subscribers: Vec<Box<dyn Subscriber_>>,
+    pub(crate) subscribers: Vec<Box<dyn Subscriber_>>,
     // services,
     services: Vec<Arc<Mutex<dyn Service_>>>,
     // service clients

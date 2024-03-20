@@ -83,6 +83,8 @@ pub enum Error {
     RCL_RET_EVENT_TAKE_FAILED,
 
     // Our own errors
+    #[error("Clock type is not RosTime")]
+    ClockTypeNotRosTime,
     #[error("No typesupport built for the message type: {}", msgtype)]
     InvalidMessageType { msgtype: String },
     #[error("Serde error: {}", err)]
