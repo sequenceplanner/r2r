@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Simulated time can be enabled by registering parameter handler
     // and starting the program this ros param 'use_sim_time:=true'
     // ```shell
-    // cargo run --features=sim-time --example=timer_sim_time -- --ros-args -p use_sim_time:=true
+    // cargo run --example=timer_sim_time -- --ros-args -p use_sim_time:=true
     // ```
     // this does not work if the parameter is changed during the runtime
     let (paramater_handler, _parameter_events) = node.make_parameter_handler()?;

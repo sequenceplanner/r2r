@@ -29,7 +29,7 @@ use crate::publishers::*;
 use crate::qos::QosProfile;
 use crate::services::*;
 use crate::subscribers::*;
-#[cfg(feature = "sim-time")]
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
 use crate::time_source::TimeSource;
 
 /// A ROS Node.
@@ -59,7 +59,7 @@ pub struct Node {
     // RosTime clock used by all timers created by create_timer()
     ros_clock: Arc<Mutex<Clock>>,
     // time source that provides simulated time
-    #[cfg(feature = "sim-time")]
+    #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     time_source: TimeSource,
 }
 
@@ -187,7 +187,7 @@ impl Node {
 
         if res == RCL_RET_OK as i32 {
             let ros_clock = Arc::new(Mutex::new(Clock::create(ClockType::RosTime)?));
-            #[cfg(feature = "sim-time")]
+            #[cfg(r2r__rosgraph_msgs__msg__Clock)]
             let time_source = {
                 let time_source = TimeSource::new();
                 time_source.attach_ros_clock(Arc::downgrade(&ros_clock))?;
@@ -206,7 +206,7 @@ impl Node {
                 timers: Vec::new(),
                 pubs: Vec::new(),
                 ros_clock,
-                #[cfg(feature = "sim-time")]
+                #[cfg(r2r__rosgraph_msgs__msg__Clock)]
                 time_source,
             };
             node.load_params()?;
@@ -428,7 +428,7 @@ impl Node {
 
         handlers.push(Box::pin(get_param_types_future));
 
-        #[cfg(feature = "sim-time")]
+        #[cfg(r2r__rosgraph_msgs__msg__Clock)]
         {
             // create TimeSource based on value of use_sim_time parameter
             let use_sim_time = {
@@ -1337,7 +1337,7 @@ impl Node {
     /// Get TimeSource of the node
     ///
     /// See: [`TimeSource`]
-    #[cfg(feature = "sim-time")]
+    #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     pub fn get_time_source(&self) -> TimeSource {
         self.time_source.clone()
     }

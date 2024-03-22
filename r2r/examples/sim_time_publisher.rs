@@ -1,10 +1,11 @@
-use r2r::rosgraph_msgs::msg;
 use r2r::ClockType::SystemTime;
 use r2r::{Clock, QosProfile};
 use std::time::Duration;
 
 /// Simple publisher publishing time starting at time 0 every `SENDING_PERIOD`
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use r2r::rosgraph_msgs::msg;
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "clock_publisher", "")?;
     let qos = QosProfile::default().keep_last(1);
@@ -27,4 +28,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         std::thread::sleep(SENDING_PERIOD);
     }
+}
+
+#[cfg(not(r2r__rosgraph_msgs__msg__Clock))]
+fn main() {
 }

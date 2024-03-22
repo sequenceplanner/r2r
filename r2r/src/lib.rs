@@ -125,9 +125,9 @@ pub use nodes::{Node, Timer};
 
 pub mod qos;
 
-#[cfg(feature = "sim-time")]
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
 mod time_source;
-#[cfg(feature = "sim-time")]
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
 pub use time_source::TimeSource;
 
 pub use qos::QosProfile;

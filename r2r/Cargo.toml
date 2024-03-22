@@ -49,7 +49,6 @@ prettyplease = "0.2.6"
 [features]
 save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen", "r2r_actions/save-bindgen"]
 doc-only = ["r2r_common/doc-only", "r2r_rcl/doc-only", "r2r_msg_gen/doc-only", "r2r_actions/doc-only"]
-sim-time = []
 
 [package.metadata.docs.rs]
 features = ["doc-only"]
@@ -57,7 +56,3 @@ features = ["doc-only"]
 [[bench]]
 name = "deserialization"
 harness = false
-
-[[example]]
-name = "timer_sim_time"
-required-features = ["sim-time"]

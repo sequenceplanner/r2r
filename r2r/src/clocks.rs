@@ -85,7 +85,7 @@ impl Clock {
     /// The clock must be [`ClockType::RosTime`].
     ///
     /// Wrapper for `rcl_enable_ros_time_override`
-    #[cfg(feature = "sim-time")]
+    #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     pub(crate) fn enable_ros_time_override(
         &mut self, initial_time: rcl_time_point_value_t,
     ) -> Result<()> {
@@ -110,7 +110,7 @@ impl Clock {
     /// The clock must be [`ClockType::RosTime`].
     ///
     /// Wrapper for `rcl_disable_ros_time_override`
-    #[cfg(feature = "sim-time")]
+    #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     pub(crate) fn disable_ros_time_override(&mut self) -> Result<()> {
         let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
         if !valid {
@@ -133,7 +133,7 @@ impl Clock {
     /// The clock must be [`ClockType::RosTime`].
     ///
     /// Wrapper for `rcl_set_ros_time_override`
-    #[cfg(feature = "sim-time")]
+    #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     pub(crate) fn set_ros_time_override(&mut self, time: rcl_time_point_value_t) -> Result<()> {
         let valid = unsafe { rcl_clock_valid(&mut *self.clock_handle) };
         if !valid {
