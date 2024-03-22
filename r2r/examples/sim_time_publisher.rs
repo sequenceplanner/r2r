@@ -32,4 +32,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(not(r2r__rosgraph_msgs__msg__Clock))]
 fn main() {
+    panic!("Sim_time_publisher example is not compiled with 'rosgraph_msgs'.");
 }

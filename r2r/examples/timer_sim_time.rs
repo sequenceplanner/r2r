@@ -33,6 +33,7 @@ async fn timer_task(
 
 /// Publication of time can be done either using the example `sim_time_publisher`
 /// or with `ros2 bag play --clock <clock_frequency> <the_bag>`
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
@@ -79,4 +80,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(not(r2r__rosgraph_msgs__msg__Clock))]
+fn main() {
+    panic!("Timer_sim_time example is not compiled with 'rosgraph_msgs'.");
 }
