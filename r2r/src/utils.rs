@@ -139,6 +139,22 @@ macro_rules! log_fatal {
     }}
 }
 
+/// Causes compile time error if `use_sim_time` is unsupported.
+#[cfg(r2r__rosgraph_msgs__msg__Clock)]
+#[macro_export]
+macro_rules! assert_compiled_with_use_sim_time_support {
+    () => {};
+}
+
+/// Causes compile time error if `use_sim_time` is unsupported.
+#[cfg(not(r2r__rosgraph_msgs__msg__Clock))]
+#[macro_export]
+macro_rules! assert_compiled_with_use_sim_time_support {
+    () => {
+        compile_error!("assert_compiled_with_use_sim_time_support failed: 'rosgraph_msgs' dependency is missing!");
+    };
+}
+
 #[test]
 fn test_log() {
     log_debug!("log_test", "debug msg");
