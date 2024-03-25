@@ -40,11 +40,13 @@ What works?
 - Services
 - Actions
 - Parameter handling
+- Simulated time (make sure `rosgraph_msgs` is sourced when building to enable)
 - Runs on Linux, OSX, and Windows.
 
 Changelog
 --------------------
 #### [Unreleased]
+- Support simulated time <https://github.com/sequenceplanner/r2r/pull/88>
 
 #### [0.8.4] - 2024-03-19
 - Fix QoS for rolling <https://github.com/sequenceplanner/r2r/pull/87>
