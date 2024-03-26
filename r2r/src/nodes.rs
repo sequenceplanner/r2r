@@ -707,7 +707,7 @@ impl Node {
     /// `spin_once` until available, so spin_once must be called
     /// repeatedly in order to get the wakeup.
     pub fn is_available(
-        &mut self, client: &dyn IsAvailablePollable,
+        client: &dyn IsAvailablePollable,
     ) -> Result<impl Future<Output = Result<()>>> {
         let (sender, receiver) = oneshot::channel();
         client.register_poll_available(sender)?;

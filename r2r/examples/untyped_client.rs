@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client =
         node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts")?;
 
-    let service_available = node.is_available(&client)?;
+    let service_available = r2r::Node::is_available(&client)?;
 
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
