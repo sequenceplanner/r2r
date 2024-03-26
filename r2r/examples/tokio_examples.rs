@@ -78,7 +78,7 @@ async fn client(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
         let mut node = arc_node.lock().unwrap();
         let client = node.create_client::<AddTwoInts::Service>("/add_two_ints")?;
         let timer = node.create_wall_timer(std::time::Duration::from_secs(2))?;
-        let service_available = node.is_available(&client)?;
+        let service_available = r2r::Node::is_available(&client)?;
         (client, timer, service_available)
     };
     println!("waiting for service...");

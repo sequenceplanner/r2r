@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut timer = node.create_wall_timer(std::time::Duration::from_millis(250))?;
     let mut timer2 = node.create_wall_timer(std::time::Duration::from_millis(2000))?;
     // wait for service to be available
-    let service_available = node.is_available(&client)?;
+    let service_available = r2r::Node::is_available(&client)?;
     let mut pool = LocalPool::new();
     let spawner = pool.spawner();
 
