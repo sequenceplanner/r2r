@@ -1,12 +1,12 @@
-use futures::channel::oneshot;
-use futures::TryFutureExt;
-use std::ffi::CString;
-use std::future::Future;
-use std::mem::MaybeUninit;
-use std::sync::{Mutex, Weak};
+use futures::{channel::oneshot, TryFutureExt};
+use std::{
+    ffi::CString,
+    future::Future,
+    mem::MaybeUninit,
+    sync::{Mutex, Weak},
+};
 
-use crate::error::*;
-use crate::msg_types::*;
+use crate::{error::*, msg_types::*};
 use r2r_rcl::*;
 
 /// ROS service client.

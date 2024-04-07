@@ -1,11 +1,13 @@
 use os_str_bytes::RawOsString;
 use regex::*;
 use sha2::{Digest, Sha256};
-use std::collections::HashMap;
-use std::env;
-use std::fs::{self, File};
-use std::io::Read;
-use std::path::Path;
+use std::{
+    collections::HashMap,
+    env,
+    fs::{self, File},
+    io::Read,
+    path::Path,
+};
 
 #[cfg(not(feature = "doc-only"))]
 const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "iron", "rolling"];

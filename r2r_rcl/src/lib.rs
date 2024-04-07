@@ -5,8 +5,7 @@
 #![allow(dead_code)]
 include!(concat!(env!("OUT_DIR"), "/rcl_bindings.rs"));
 
-use std::ffi::CStr;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 impl Default for rmw_message_info_t {
     fn default() -> Self {

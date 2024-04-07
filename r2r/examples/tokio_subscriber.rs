@@ -1,5 +1,4 @@
-use futures::future;
-use futures::stream::StreamExt;
+use futures::{future, stream::StreamExt};
 use r2r::QosProfile;
 
 #[tokio::main]

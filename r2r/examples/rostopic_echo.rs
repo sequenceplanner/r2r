@@ -1,12 +1,7 @@
-use futures::executor::LocalPool;
-use futures::future;
-use futures::stream::StreamExt;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, future, stream::StreamExt, task::LocalSpawnExt};
 use r2r::QosProfile;
 
-use std::collections::HashMap;
-use std::env;
-use std::thread;
+use std::{collections::HashMap, env, thread};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;

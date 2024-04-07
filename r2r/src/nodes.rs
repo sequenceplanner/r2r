@@ -1,36 +1,39 @@
-use futures::channel::{mpsc, oneshot};
-use futures::future::FutureExt;
-use futures::future::TryFutureExt;
-use futures::future::{self, join_all};
-use futures::stream::{Stream, StreamExt};
-use std::collections::HashMap;
-use std::ffi::{CStr, CString};
-use std::future::Future;
-use std::marker::PhantomPinned;
-use std::mem::MaybeUninit;
-use std::pin::Pin;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use futures::{
+    channel::{mpsc, oneshot},
+    future::{self, join_all, FutureExt, TryFutureExt},
+    stream::{Stream, StreamExt},
+};
+use std::{
+    collections::HashMap,
+    ffi::{CStr, CString},
+    future::Future,
+    marker::PhantomPinned,
+    mem::MaybeUninit,
+    pin::Pin,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 
 use r2r_actions::*;
 use r2r_rcl::*;
 
-use crate::action_clients::*;
-use crate::action_clients_untyped::*;
-use crate::action_servers::*;
-use crate::clients::*;
-use crate::clocks::*;
-use crate::context::*;
-use crate::error::*;
-use crate::msg_types::generated_msgs::rcl_interfaces;
-use crate::msg_types::*;
-use crate::parameters::*;
-use crate::publishers::*;
-use crate::qos::QosProfile;
-use crate::services::*;
-use crate::subscribers::*;
 #[cfg(r2r__rosgraph_msgs__msg__Clock)]
 use crate::time_source::TimeSource;
+use crate::{
+    action_clients::*,
+    action_clients_untyped::*,
+    action_servers::*,
+    clients::*,
+    clocks::*,
+    context::*,
+    error::*,
+    msg_types::{generated_msgs::rcl_interfaces, *},
+    parameters::*,
+    publishers::*,
+    qos::QosProfile,
+    services::*,
+    subscribers::*,
+};
 
 /// A ROS Node.
 ///
@@ -502,8 +505,7 @@ impl Node {
         req: ServiceRequest<rcl_interfaces::srv::DescribeParameters::Service>,
         params: &Arc<Mutex<HashMap<String, Parameter>>>,
     ) -> future::Ready<()> {
-        use rcl_interfaces::msg::ParameterDescriptor;
-        use rcl_interfaces::srv::DescribeParameters;
+        use rcl_interfaces::{msg::ParameterDescriptor, srv::DescribeParameters};
         let mut descriptors = Vec::<ParameterDescriptor>::new();
         let params = params.lock().unwrap();
         for name in &req.message.names {

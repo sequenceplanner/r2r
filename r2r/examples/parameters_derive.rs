@@ -1,6 +1,4 @@
-use futures::executor::LocalPool;
-use futures::prelude::*;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, prelude::*, task::LocalSpawnExt};
 use r2r::RosParams;
 use std::sync::{Arc, Mutex};
 

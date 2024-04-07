@@ -1,6 +1,4 @@
-use futures::executor::LocalPool;
-use futures::task::LocalSpawnExt;
-use futures::Future;
+use futures::{executor::LocalPool, task::LocalSpawnExt, Future};
 
 use std::io::Write;
 

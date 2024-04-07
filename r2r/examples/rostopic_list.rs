@@ -1,5 +1,4 @@
-use std::thread;
-use std::time::Duration;
+use std::{thread, time::Duration};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;

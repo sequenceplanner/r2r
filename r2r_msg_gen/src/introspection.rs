@@ -1,13 +1,14 @@
-use crate::rosidl_message_type_support_t as CTypeSupport;
-use crate::rosidl_typesupport_introspection_c__MessageMember as CMessageMember;
-use crate::rosidl_typesupport_introspection_c__MessageMembers as CMessageMembers;
-use crate::rust_mangle;
+use crate::{
+    rosidl_message_type_support_t as CTypeSupport,
+    rosidl_typesupport_introspection_c__MessageMember as CMessageMember,
+    rosidl_typesupport_introspection_c__MessageMembers as CMessageMembers, rust_mangle,
+};
 use quote::quote;
-use std::borrow::Cow;
-use std::ffi::c_char;
-use std::ffi::CStr;
-use std::mem;
-use std::slice;
+use std::{
+    borrow::Cow,
+    ffi::{c_char, CStr},
+    mem, slice,
+};
 
 pub struct Introspection<'a> {
     pub module: &'a str,

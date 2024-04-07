@@ -1,6 +1,4 @@
-use futures::executor::LocalPool;
-use futures::task::LocalSpawnExt;
-use futures::Future;
+use futures::{executor::LocalPool, task::LocalSpawnExt, Future};
 
 async fn requester_task(
     node_available: impl Future<Output = r2r::Result<()>>, c: r2r::ClientUntyped,

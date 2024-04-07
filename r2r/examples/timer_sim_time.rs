@@ -1,10 +1,11 @@
-use futures::executor::LocalPool;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, task::LocalSpawnExt};
 
 use r2r::{Clock, ClockType};
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::{
+    cell::RefCell,
+    rc::Rc,
+    sync::{Arc, Mutex},
+};
 
 async fn timer_task(
     mut t: r2r::Timer, ros_clock: Arc<Mutex<Clock>>, mut system_clock: Clock,

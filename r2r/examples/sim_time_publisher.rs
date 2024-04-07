@@ -1,5 +1,4 @@
-use r2r::ClockType::SystemTime;
-use r2r::{Clock, QosProfile};
+use r2r::{Clock, ClockType::SystemTime, QosProfile};
 use std::time::Duration;
 
 /// Simple publisher publishing time starting at time 0 every `SENDING_PERIOD`

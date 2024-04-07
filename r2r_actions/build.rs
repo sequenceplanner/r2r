@@ -1,6 +1,8 @@
-use std::fs::OpenOptions;
-use std::path::{Path, PathBuf};
-use std::{env, fs};
+use std::{
+    env, fs,
+    fs::OpenOptions,
+    path::{Path, PathBuf},
+};
 
 const BINDINGS_FILENAME: &str = "action_bindings.rs";
 

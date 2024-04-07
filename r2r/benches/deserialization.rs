@@ -1,7 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use r2r::*;
-use rand::thread_rng;
-use rand::Rng;
+use rand::{thread_rng, Rng};
 
 const NUM_ELEMENTS: usize = 10_000;
 const NUM_TIMES: usize = 1_000;

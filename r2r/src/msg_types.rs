@@ -5,11 +5,13 @@ use r2r_rcl::{
     rosidl_service_type_support_t,
 };
 use serde::{Deserialize, Serialize};
-use std::boxed::Box;
-use std::cell::RefCell;
-use std::convert::TryInto;
-use std::fmt::Debug;
-use std::ops::{Deref, DerefMut};
+use std::{
+    boxed::Box,
+    cell::RefCell,
+    convert::TryInto,
+    fmt::Debug,
+    ops::{Deref, DerefMut},
+};
 
 pub mod generated_msgs {
     #![allow(clippy::all)]
@@ -551,8 +553,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::generated_msgs::*;
-    use super::*;
+    use super::{generated_msgs::*, *};
     use r2r_rcl::*;
 
     #[test]

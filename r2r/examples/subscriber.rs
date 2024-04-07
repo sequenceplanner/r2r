@@ -1,7 +1,4 @@
-use futures::executor::LocalPool;
-use futures::future;
-use futures::stream::StreamExt;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, future, stream::StreamExt, task::LocalSpawnExt};
 use r2r::QosProfile;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

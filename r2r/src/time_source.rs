@@ -1,11 +1,13 @@
 #![cfg(r2r__rosgraph_msgs__msg__Clock)]
 
-use crate::builtin_interfaces::msg::Time;
-use crate::error::*;
-use crate::msg_types::{VoidPtr, WrappedNativeMsg};
-use crate::rosgraph_msgs;
-use crate::subscribers::{create_subscription_helper, Subscriber_};
-use crate::{Clock, ClockType, Node, QosProfile, WrappedTypesupport};
+use crate::{
+    builtin_interfaces::msg::Time,
+    error::*,
+    msg_types::{VoidPtr, WrappedNativeMsg},
+    rosgraph_msgs,
+    subscribers::{create_subscription_helper, Subscriber_},
+    Clock, ClockType, Node, QosProfile, WrappedTypesupport,
+};
 use r2r_rcl::{
     rcl_node_t, rcl_subscription_fini, rcl_subscription_t, rcl_take, rcl_time_point_value_t,
     rmw_message_info_t, RCL_RET_OK,

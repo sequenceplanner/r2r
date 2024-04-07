@@ -1,7 +1,11 @@
 use r2r_rcl::*;
-use std::ffi::CString;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Mutex, MutexGuard};
+use std::{
+    ffi::CString,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex, MutexGuard,
+    },
+};
 
 use lazy_static::lazy_static;
 

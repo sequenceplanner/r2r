@@ -1,17 +1,12 @@
-use futures::channel::oneshot;
-use futures::Future;
-use futures::TryFutureExt;
-use std::ffi::c_void;
-use std::ffi::CString;
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::sync::Mutex;
-use std::sync::Once;
-use std::sync::Weak;
+use futures::{channel::oneshot, Future, TryFutureExt};
+use std::{
+    ffi::{c_void, CString},
+    fmt::Debug,
+    marker::PhantomData,
+    sync::{Mutex, Once, Weak},
+};
 
-use crate::error::*;
-use crate::msg_types::*;
-use crate::qos::QosProfile;
+use crate::{error::*, msg_types::*, qos::QosProfile};
 use r2r_rcl::*;
 
 // The publish function is thread safe. ROS2 docs state:
