@@ -78,7 +78,7 @@ pub trait WrappedTypesupport:
 
             self.copy_to_native(unsafe { msg.as_mut().expect("not null") });
 
-            let msg_buf: &mut rcl_serialized_message_t = &mut *msg_buf
+            let msg_buf: &mut rcl_serialized_message_t = &mut msg_buf
                 .as_ref()
                 .map_err(|err| Error::from_rcl_error(*err))?
                 .borrow_mut();

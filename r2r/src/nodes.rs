@@ -276,7 +276,7 @@ impl Node {
             ))?;
 
         let params = self.params.clone();
-        let params_struct_clone = params_struct.as_ref().map(|p| p.clone());
+        let params_struct_clone = params_struct.clone();
         let set_params_future = set_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
                 let mut result = rcl_interfaces::srv::SetParameters::Response::default();
@@ -339,7 +339,7 @@ impl Node {
             ))?;
 
         let params = self.params.clone();
-        let params_struct_clone = params_struct.as_ref().map(|p| p.clone());
+        let params_struct_clone = params_struct.clone();
         let get_params_future = get_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
                 let params = params.lock().unwrap();
@@ -350,7 +350,7 @@ impl Node {
                     .map(|n| {
                         // First try to get the parameter from the param structure
                         if let Some(ps) = &params_struct_clone {
-                            if let Ok(value) = ps.lock().unwrap().get_parameter(&n) {
+                            if let Ok(value) = ps.lock().unwrap().get_parameter(n) {
                                 return value;
                             }
                         }
@@ -481,14 +481,14 @@ impl Node {
                     return (depth == ListParameters::Request::DEPTH_RECURSIVE as u64)
                         || substr.matches(separator).count() < depth as usize;
                 }
-                return false;
+                false
             });
             get_all || prefix_matches
         }) {
             result.names.push(name.clone());
             if let Some(last_separator) = name.rfind(separator) {
                 let prefix = &name[0..last_separator];
-                if result.prefixes.iter().find(|&p| p == prefix) == None {
+                if result.prefixes.iter().all(|p| p != prefix) {
                     result.prefixes.push(prefix.to_string());
                 }
             }

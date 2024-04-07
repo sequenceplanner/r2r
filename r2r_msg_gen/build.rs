@@ -115,7 +115,7 @@ fn generate_includes(bindgen_dir: &Path, msg_list: &[RosMsg]) {
             } = msg;
 
             // filename is certainly CamelCase -> snake_case. convert
-            let include_filename = camel_to_snake(&name);
+            let include_filename = camel_to_snake(name);
 
             [
                 format!("#include <{module}/{prefix}/{include_filename}.h>"),
@@ -131,7 +131,7 @@ fn generate_includes(bindgen_dir: &Path, msg_list: &[RosMsg]) {
     include_lines.par_sort();
 
     // Write the file content
-    let mut writer = BufWriter::new(File::create(&msg_includes_file).unwrap());
+    let mut writer = BufWriter::new(File::create(msg_includes_file).unwrap());
     for line in include_lines {
         writeln!(writer, "{line}").unwrap();
     }
@@ -163,7 +163,6 @@ fn generate_introspecion_map(bindgen_dir: &Path, msg_list: &[RosMsg]) {
                         );
                         (key, ident)
                     })
-                    .map(|(key, ident)| (key, ident))
                     .collect(),
                 "action" => {
                     let iter1 = ACTION_SUFFICES.iter().map(|s| {
@@ -551,6 +550,7 @@ fn run_dynlink(msg_list: &[RosMsg]) {
 fn touch(path: &Path) {
     OpenOptions::new()
         .create(true)
+        .truncate(true)
         .write(true)
         .open(path)
         .unwrap_or_else(|_| panic!("Unable to create file '{}'", path.display()));
