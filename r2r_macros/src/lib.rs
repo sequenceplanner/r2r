@@ -1,7 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::spanned::Spanned;
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use syn::{parse_macro_input, spanned::Spanned, Data, DeriveInput, Fields};
 
 extern crate proc_macro;
 

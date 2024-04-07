@@ -1,6 +1,5 @@
 use futures::stream::StreamExt;
-use r2r::QosProfile;
-use r2r::WrappedTypesupport;
+use r2r::{QosProfile, WrappedTypesupport};
 use tokio::task;
 
 const N_CONCURRENT_ROS_CONTEXT: usize = 3;

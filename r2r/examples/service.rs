@@ -1,8 +1,4 @@
-use futures::executor::LocalPool;
-use futures::select;
-use futures::stream::StreamExt;
-use futures::task::LocalSpawnExt;
-use futures::FutureExt;
+use futures::{executor::LocalPool, select, stream::StreamExt, task::LocalSpawnExt, FutureExt};
 
 use r2r::example_interfaces::srv::AddTwoInts;
 
@@ -12,7 +8,6 @@ use r2r::example_interfaces::srv::AddTwoInts;
 /// Run toghtether with the client example.
 /// e.g. cargo run --example service
 /// and in another terminal cargo run --example client
-///
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;

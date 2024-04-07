@@ -7,8 +7,10 @@ use {
     std::io::{self, prelude::*, BufWriter},
 };
 
-use std::path::{Path, PathBuf};
-use std::{env, fs};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 #[cfg(feature = "doc-only")]
 mod filenames {

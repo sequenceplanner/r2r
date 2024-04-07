@@ -1,12 +1,9 @@
 use futures::channel::mpsc;
 use std::ffi::CString;
 
-use crate::error::*;
-use crate::msg_types::*;
-use crate::qos::QosProfile;
+use crate::{error::*, msg_types::*, qos::QosProfile};
 use r2r_rcl::*;
-use std::ffi::c_void;
-use std::ffi::CStr;
+use std::ffi::{c_void, CStr};
 
 pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;

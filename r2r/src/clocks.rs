@@ -1,9 +1,6 @@
-use std::fmt::Debug;
-use std::mem::MaybeUninit;
-use std::time::Duration;
+use std::{fmt::Debug, mem::MaybeUninit, time::Duration};
 
-use crate::error::*;
-use crate::msg_types::generated_msgs::builtin_interfaces;
+use crate::{error::*, msg_types::generated_msgs::builtin_interfaces};
 use r2r_rcl::*;
 
 /// Different ROS clock types.

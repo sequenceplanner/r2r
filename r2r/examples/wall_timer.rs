@@ -1,8 +1,6 @@
-use futures::executor::LocalPool;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, task::LocalSpawnExt};
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 async fn timer_task(mut t: r2r::Timer) -> Result<(), Box<dyn std::error::Error>> {
     let mut x: i32 = 0;

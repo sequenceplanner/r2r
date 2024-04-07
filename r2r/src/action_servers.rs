@@ -1,15 +1,22 @@
-use futures::channel::{mpsc, oneshot};
-use futures::future::FutureExt;
-use futures::future::{join_all, JoinAll};
-use futures::stream::Stream;
-use std::collections::HashMap;
-use std::ffi::CString;
-use std::mem::MaybeUninit;
-use std::sync::{Arc, Mutex, Weak};
+use futures::{
+    channel::{mpsc, oneshot},
+    future::{join_all, FutureExt, JoinAll},
+    stream::Stream,
+};
+use std::{
+    collections::HashMap,
+    ffi::CString,
+    mem::MaybeUninit,
+    sync::{Arc, Mutex, Weak},
+};
 
-use crate::error::*;
-use crate::msg_types::generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs};
-use crate::msg_types::*;
+use crate::{
+    error::*,
+    msg_types::{
+        generated_msgs::{action_msgs, builtin_interfaces, unique_identifier_msgs},
+        *,
+    },
+};
 use r2r_actions::*;
 use r2r_rcl::*;
 

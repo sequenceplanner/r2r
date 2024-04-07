@@ -1,10 +1,7 @@
 //
 // This example is the same as action_client.rs but stripped of all (explicit) type information.
 //
-use futures::executor::LocalPool;
-use futures::future::FutureExt;
-use futures::stream::StreamExt;
-use futures::task::LocalSpawnExt;
+use futures::{executor::LocalPool, future::FutureExt, stream::StreamExt, task::LocalSpawnExt};
 
 use std::sync::{Arc, Mutex};
 

@@ -23,13 +23,11 @@ use {
     std::mem,
 };
 
-use quote::format_ident;
-use quote::quote;
+use quote::{format_ident, quote};
 use r2r_common::RosMsg;
 use r2r_rcl::*;
 
-use std::borrow::Cow;
-use std::ffi::CStr;
+use std::{borrow::Cow, ffi::CStr};
 
 use std::slice;
 

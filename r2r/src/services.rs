@@ -1,10 +1,11 @@
 use futures::channel::{mpsc, oneshot};
-use std::ffi::CString;
-use std::mem::MaybeUninit;
-use std::sync::{Arc, Mutex, Weak};
+use std::{
+    ffi::CString,
+    mem::MaybeUninit,
+    sync::{Arc, Mutex, Weak},
+};
 
-use crate::error::*;
-use crate::msg_types::*;
+use crate::{error::*, msg_types::*};
 use r2r_rcl::*;
 
 /// Encapsulates a service request.

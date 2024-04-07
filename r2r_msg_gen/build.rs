@@ -1,19 +1,15 @@
 use bindgen::Bindings;
-use itertools::chain;
-use itertools::iproduct;
-use itertools::Either;
-use itertools::Itertools;
-use quote::format_ident;
-use quote::quote;
+use itertools::{chain, iproduct, Either, Itertools};
+use quote::{format_ident, quote};
 use r2r_common::{camel_to_snake, RosMsg};
 use rayon::prelude::*;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::io::BufWriter;
-use std::mem;
-use std::path::{Path, PathBuf};
-use std::{env, fs};
+use std::{
+    env, fs,
+    fs::{File, OpenOptions},
+    io::{prelude::*, BufWriter},
+    mem,
+    path::{Path, PathBuf},
+};
 
 const MSG_INCLUDES_FILENAME: &str = "msg_includes.h";
 const INTROSPECTION_FILENAME: &str = "introspection_functions.rs";

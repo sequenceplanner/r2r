@@ -1,12 +1,11 @@
-use std::ffi::CStr;
-use std::ffi::CString;
-use std::fmt::Debug;
-use std::ops::{Deref, DerefMut};
-use std::sync::OnceLock;
-use std::sync::{Arc, Mutex};
+use std::{
+    ffi::{CStr, CString},
+    fmt::Debug,
+    ops::{Deref, DerefMut},
+    sync::{Arc, Mutex, OnceLock},
+};
 
-use crate::error::*;
-use crate::log_guard;
+use crate::{error::*, log_guard};
 use r2r_rcl::*;
 
 /// A ROS context. Needed to create nodes etc.

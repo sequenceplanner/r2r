@@ -1,7 +1,9 @@
-use futures::executor::{LocalPool, LocalSpawner};
-use futures::future::{self, Either};
-use futures::stream::{Stream, StreamExt};
-use futures::task::LocalSpawnExt;
+use futures::{
+    executor::{LocalPool, LocalSpawner},
+    future::{self, Either},
+    stream::{Stream, StreamExt},
+    task::LocalSpawnExt,
+};
 
 use r2r::example_interfaces::action::Fibonacci;
 use std::sync::{Arc, Mutex};

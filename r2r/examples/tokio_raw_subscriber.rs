@@ -1,7 +1,5 @@
-use futures::future;
-use futures::stream::StreamExt;
-use r2r::QosProfile;
-use r2r::WrappedTypesupport;
+use futures::{future, stream::StreamExt};
+use r2r::{QosProfile, WrappedTypesupport};
 use serde::{Deserialize, Serialize};
 
 #[tokio::main]
