@@ -1,6 +1,9 @@
+edition = "2021"
 hard_tabs = false
 tab_spaces = 4
 reorder_imports = true
 newline_style = "Unix"
 fn_call_width = 80
 fn_params_layout = "Compressed"
+imports_granularity = "Crate"
+format_code_in_doc_comments = true
