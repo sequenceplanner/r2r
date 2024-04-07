@@ -102,7 +102,7 @@ fn generate_bindings(bindgen_dir: &Path) {
         };
 
         let msgs_file = bindgen_dir.join(MSGS_FILENAME);
-        write_to_file(&msgs_file, &pretty_tokenstream(modules)).unwrap();
+        write_to_file(&msgs_file, pretty_tokenstream(modules)).unwrap();
     }
 
     let mod_files: Vec<_> = msgs
@@ -113,7 +113,7 @@ fn generate_bindings(bindgen_dir: &Path) {
                 .map(|(prefix, msgs)| {
                     let prefix_content = match *prefix {
                         "msg" => {
-                            let msg_snipplets = msgs.into_iter().map(|msg| {
+                            let msg_snipplets = msgs.iter().map(|msg| {
                                 println!("cargo:rustc-cfg=r2r__{}__{}__{}", module, prefix, msg);
                                 r2r_msg_gen::generate_rust_msg(module, prefix, msg)
                             });
@@ -124,7 +124,7 @@ fn generate_bindings(bindgen_dir: &Path) {
                             }
                         }
                         "srv" => {
-                            let msg_snipplets = msgs.into_iter().map(|msg| {
+                            let msg_snipplets = msgs.iter().map(|msg| {
                                 let service_snipplet =
                                     r2r_msg_gen::generate_rust_service(module, prefix, msg);
                                 let msg_snipplets = ["Request", "Response"].iter().map(|s| {
@@ -152,7 +152,7 @@ fn generate_bindings(bindgen_dir: &Path) {
                             }
                         }
                         "action" => {
-                            let msg_snipplets = msgs.into_iter().map(|msg| {
+                            let msg_snipplets = msgs.iter().map(|msg| {
                                 let action_snipplet =
                                     r2r_msg_gen::generate_rust_action(module, prefix, msg);
 
@@ -241,7 +241,7 @@ fn generate_bindings(bindgen_dir: &Path) {
             let mod_content = quote! { #(#snipplets)* };
             let file_name = format!("{}.rs", module);
             let mod_file = bindgen_dir.join(&file_name);
-            write_to_file(&mod_file, &pretty_tokenstream(mod_content)).unwrap();
+            write_to_file(&mod_file, pretty_tokenstream(mod_content)).unwrap();
 
             file_name
         })
@@ -251,19 +251,19 @@ fn generate_bindings(bindgen_dir: &Path) {
     {
         let untyped_helper = r2r_msg_gen::generate_untyped_helper(&msg_list);
         let untyped_file = bindgen_dir.join(UNTYPED_FILENAME);
-        write_to_file(&untyped_file, &pretty_tokenstream(untyped_helper)).unwrap();
+        write_to_file(&untyped_file, pretty_tokenstream(untyped_helper)).unwrap();
     }
 
     {
         let untyped_service_helper = r2r_msg_gen::generate_untyped_service_helper(&msg_list);
         let untyped_service_file = bindgen_dir.join(UNTYPED_SERVICE_FILENAME);
-        write_to_file(&untyped_service_file, &pretty_tokenstream(untyped_service_helper)).unwrap();
+        write_to_file(&untyped_service_file, pretty_tokenstream(untyped_service_helper)).unwrap();
     }
 
     {
         let untyped_action_helper = r2r_msg_gen::generate_untyped_action_helper(&msg_list);
         let untyped_action_file = bindgen_dir.join(UNTYPED_ACTION_FILENAME);
-        write_to_file(&untyped_action_file, &pretty_tokenstream(untyped_action_helper)).unwrap();
+        write_to_file(&untyped_action_file, pretty_tokenstream(untyped_action_helper)).unwrap();
     }
 
     // Save file list
@@ -292,16 +292,17 @@ fn copy_files(src_dir: &Path, tgt_dir: &Path) {
         .for_each(|file_name| {
             let src_file = src_dir.join(file_name);
             let tgt_file = tgt_dir.join(file_name);
-            fs::copy(&src_file, &tgt_file).unwrap();
+            fs::copy(src_file, tgt_file).unwrap();
         });
 
-    fs::copy(&src_list_file, &tgt_list_file).unwrap();
+    fs::copy(&src_list_file, tgt_list_file).unwrap();
 }
 
 #[cfg(not(feature = "doc-only"))]
 fn touch(path: &Path) {
     OpenOptions::new()
         .create(true)
+        .truncate(true)
         .write(true)
         .open(path)
         .unwrap_or_else(|_| panic!("Unable to create file '{}'", path.display()));

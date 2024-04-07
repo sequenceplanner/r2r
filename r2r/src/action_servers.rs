@@ -555,7 +555,7 @@ where
             // todo: add logic that replies to the requests
             self.result_requests
                 .entry(uuid)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push(request_id);
         }
     }
