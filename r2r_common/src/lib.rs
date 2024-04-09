@@ -315,7 +315,6 @@ fn get_msgs_from_package(package: &Path) -> Vec<String> {
                                 &l[7..l.len() - 4] // .idl
                             };
                             let action_name = format!("{}/action/{}", file_name_str, substr);
-                            println!("found action: {}", action_name);
                             msgs.push(action_name);
                         }
                     }
