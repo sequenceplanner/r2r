@@ -209,8 +209,10 @@ macro_rules! impl_ros_params {
                     // Apply parameter value if set from command line or launch file
                     self.set_parameter("", &cli_param.value)
                         .map_err(|e| e.update_param_name(prefix))?;
+                    // Remove the parameter (will be re-inserted below with deterministic order)
+                    params.shift_remove(prefix);
                 }
-                // Insert (or replace) the parameter with filled-in description etc.
+                // Insert the parameter with filled-in description etc.
                 let mut param = param.unwrap();
                 param.value = $param_value_type($to_param_conv(self)?);
                 params.insert(prefix.to_owned(), param);
