@@ -1,7 +1,8 @@
 use crate::{Error, Result};
-use std::{collections::HashMap, ffi::CStr};
+use std::ffi::CStr;
 
 use crate::msg_types::generated_msgs::rcl_interfaces;
+use indexmap::IndexMap;
 use r2r_rcl::*;
 
 /// ROS parameter value.
@@ -190,7 +191,7 @@ impl Parameter {
 /// `parameters_derive.rs` example.
 pub trait RosParams {
     fn register_parameters(
-        &mut self, prefix: &str, param: Option<Parameter>, params: &mut HashMap<String, Parameter>,
+        &mut self, prefix: &str, param: Option<Parameter>, params: &mut IndexMap<String, Parameter>,
     ) -> Result<()>;
     fn get_parameter(&mut self, param_name: &str) -> Result<ParameterValue>;
     fn set_parameter(&mut self, param_name: &str, param_val: &ParameterValue) -> Result<()>;
@@ -202,7 +203,7 @@ macro_rules! impl_ros_params {
         impl RosParams for $type {
             fn register_parameters(
                 &mut self, prefix: &str, param: Option<Parameter>,
-                params: &mut HashMap<String, Parameter>,
+                params: &mut IndexMap<String, Parameter>,
             ) -> Result<()> {
                 if let Some(cli_param) = params.get(prefix) {
                     // Apply parameter value if set from command line or launch file

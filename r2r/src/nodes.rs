@@ -3,6 +3,7 @@ use futures::{
     future::{self, join_all, FutureExt, TryFutureExt},
     stream::{Stream, StreamExt},
 };
+use indexmap::IndexMap;
 use std::{
     collections::HashMap,
     ffi::{CStr, CString},
@@ -43,7 +44,7 @@ use crate::{
 pub struct Node {
     context: Context,
     /// ROS parameters.
-    pub params: Arc<Mutex<HashMap<String, Parameter>>>,
+    pub params: Arc<Mutex<IndexMap<String, Parameter>>>,
     pub(crate) node_handle: Box<rcl_node_t>,
     // the node owns the subscribers
     pub(crate) subscribers: Vec<Box<dyn Subscriber_>>,
@@ -198,7 +199,7 @@ impl Node {
             };
 
             let mut node = Node {
-                params: Arc::new(Mutex::new(HashMap::new())),
+                params: Arc::new(Mutex::new(IndexMap::new())),
                 context: ctx,
                 node_handle,
                 subscribers: Vec::new(),
@@ -460,7 +461,7 @@ impl Node {
 
     fn handle_list_parameters(
         req: ServiceRequest<rcl_interfaces::srv::ListParameters::Service>,
-        params: &Arc<Mutex<HashMap<String, Parameter>>>,
+        params: &Arc<Mutex<IndexMap<String, Parameter>>>,
     ) -> future::Ready<()> {
         use rcl_interfaces::srv::ListParameters;
 
@@ -503,7 +504,7 @@ impl Node {
 
     fn handle_desc_parameters(
         req: ServiceRequest<rcl_interfaces::srv::DescribeParameters::Service>,
-        params: &Arc<Mutex<HashMap<String, Parameter>>>,
+        params: &Arc<Mutex<IndexMap<String, Parameter>>>,
     ) -> future::Ready<()> {
         use rcl_interfaces::{msg::ParameterDescriptor, srv::DescribeParameters};
         let mut descriptors = Vec::<ParameterDescriptor>::new();
