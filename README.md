@@ -46,6 +46,10 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Make the order of parameters deterministic <https://github.com/sequenceplanner/r2r/pull/94>
+- Add a r2r_info example to print environmental information <https://github.com/sequenceplanner/r2r/pull/92>
+- Code cleanups <https://github.com/sequenceplanner/r2r/pull/90>, <https://github.com/sequenceplanner/r2r/pull/91>
+- Remove is_available's node mut-ref dependency <https://github.com/sequenceplanner/r2r/pull/89>. Note, slight API change!
 - Support simulated time <https://github.com/sequenceplanner/r2r/pull/88>
 
 #### [0.8.4] - 2024-03-19
