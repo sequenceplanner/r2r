@@ -277,7 +277,8 @@ impl Node {
             .create_service::<rcl_interfaces::srv::SetParameters::Service>(&format!(
                 "{}/set_parameters",
                 node_name
-            ))?;
+            ),
+            None)?;
 
         let params = self.params.clone();
         let params_struct_clone = params_struct.clone();
@@ -340,7 +341,8 @@ impl Node {
             .create_service::<rcl_interfaces::srv::GetParameters::Service>(&format!(
                 "{}/get_parameters",
                 node_name
-            ))?;
+            ),
+            None)?;
 
         let params = self.params.clone();
         let params_struct_clone = params_struct.clone();
@@ -379,7 +381,7 @@ impl Node {
         // rcl_interfaces/srv/ListParameters
         use rcl_interfaces::srv::ListParameters;
         let list_params_request_stream = self
-            .create_service::<ListParameters::Service>(&format!("{}/list_parameters", node_name))?;
+            .create_service::<ListParameters::Service>(&format!("{}/list_parameters", node_name), None)?;
 
         let params = self.params.clone();
         let list_params_future = list_params_request_stream.for_each(
@@ -394,7 +396,7 @@ impl Node {
         use rcl_interfaces::srv::DescribeParameters;
         let desc_params_request_stream = self.create_service::<DescribeParameters::Service>(
             &format!("{node_name}/describe_parameters"),
-        )?;
+        None)?;
 
         let params = self.params.clone();
         let desc_params_future = desc_params_request_stream.for_each(
@@ -409,7 +411,7 @@ impl Node {
         use rcl_interfaces::srv::GetParameterTypes;
         let get_param_types_request_stream = self.create_service::<GetParameterTypes::Service>(
             &format!("{node_name}/get_parameter_types"),
-        )?;
+        None)?;
 
         let params = self.params.clone();
         let get_param_types_future = get_param_types_request_stream.for_each(
@@ -637,13 +639,13 @@ impl Node {
     /// This function returns a `Stream` of `ServiceRequest`:s. Call
     /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
-        &mut self, service_name: &str,
+        &mut self, service_name: &str, qos_profile: Option<QosProfile>
     ) -> Result<impl Stream<Item = ServiceRequest<T>> + Unpin>
     where
         T: WrappedServiceTypeSupport,
     {
         let service_handle =
-            create_service_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
+            create_service_helper(self.node_handle.as_mut(), service_name, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<ServiceRequest<T>>(10);
 
         let ws = TypedService::<T> {
