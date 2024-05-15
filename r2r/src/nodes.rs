@@ -278,7 +278,7 @@ impl Node {
                 "{}/set_parameters",
                 node_name
             ),
-            None)?;
+            QosProfile::default())?;
 
         let params = self.params.clone();
         let params_struct_clone = params_struct.clone();
@@ -338,11 +338,9 @@ impl Node {
 
         // rcl_interfaces/srv/GetParameters
         let get_params_request_stream = self
-            .create_service::<rcl_interfaces::srv::GetParameters::Service>(&format!(
-                "{}/get_parameters",
-                node_name
-            ),
-            None)?;
+            .create_service::<rcl_interfaces::srv::GetParameters::Service>(
+                &format!("{}/get_parameters",node_name),
+                QosProfile::default())?;
 
         let params = self.params.clone();
         let params_struct_clone = params_struct.clone();
@@ -381,7 +379,7 @@ impl Node {
         // rcl_interfaces/srv/ListParameters
         use rcl_interfaces::srv::ListParameters;
         let list_params_request_stream = self
-            .create_service::<ListParameters::Service>(&format!("{}/list_parameters", node_name), None)?;
+            .create_service::<ListParameters::Service>(&format!("{}/list_parameters", node_name), QosProfile::default())?;
 
         let params = self.params.clone();
         let list_params_future = list_params_request_stream.for_each(
@@ -395,8 +393,7 @@ impl Node {
         // rcl_interfaces/srv/DescribeParameters
         use rcl_interfaces::srv::DescribeParameters;
         let desc_params_request_stream = self.create_service::<DescribeParameters::Service>(
-            &format!("{node_name}/describe_parameters"),
-        None)?;
+            &format!("{node_name}/describe_parameters"), QosProfile::default())?;
 
         let params = self.params.clone();
         let desc_params_future = desc_params_request_stream.for_each(
@@ -411,7 +408,7 @@ impl Node {
         use rcl_interfaces::srv::GetParameterTypes;
         let get_param_types_request_stream = self.create_service::<GetParameterTypes::Service>(
             &format!("{node_name}/get_parameter_types"),
-        None)?;
+        QosProfile::default())?;
 
         let params = self.params.clone();
         let get_param_types_future = get_param_types_request_stream.for_each(
@@ -639,7 +636,7 @@ impl Node {
     /// This function returns a `Stream` of `ServiceRequest`:s. Call
     /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
-        &mut self, service_name: &str, qos_profile: Option<QosProfile>
+        &mut self, service_name: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = ServiceRequest<T>> + Unpin>
     where
         T: WrappedServiceTypeSupport,
@@ -661,12 +658,13 @@ impl Node {
     /// Create a ROS service client.
     ///
     /// A service client is used to make requests to a ROS service server.
-    pub fn create_client<T: 'static>(&mut self, service_name: &str) -> Result<Client<T>>
+    pub fn create_client<T: 'static>(
+        &mut self, service_name: &str, qos_profile: QosProfile,) -> Result<Client<T>>
     where
         T: WrappedServiceTypeSupport,
     {
         let client_handle =
-            create_client_helper(self.node_handle.as_mut(), service_name, T::get_ts())?;
+            create_client_helper(self.node_handle.as_mut(), service_name, T::get_ts(), qos_profile)?;
         let ws = TypedClient::<T> {
             rcl_handle: client_handle,
             response_channels: Vec::new(),
@@ -686,11 +684,11 @@ impl Node {
     /// with `serde_json::Value`s instead of concrete types.  Useful
     /// when you cannot know the type of the message at compile time.
     pub fn create_client_untyped(
-        &mut self, service_name: &str, service_type: &str,
+        &mut self, service_name: &str, service_type: &str, qos_profile: QosProfile,
     ) -> Result<ClientUntyped> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
         let client_handle =
-            create_client_helper(self.node_handle.as_mut(), service_name, service_type.ts)?;
+            create_client_helper(self.node_handle.as_mut(), service_name, service_type.ts, qos_profile)?;
         let client = UntypedClient_ {
             service_type,
             rcl_handle: client_handle,

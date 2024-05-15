@@ -1,4 +1,5 @@
 use futures::stream::StreamExt;
+use r2r::QosProfile;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -6,7 +7,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
 
     use r2r::example_interfaces::srv::AddTwoInts;
-    let mut service = node.create_service::<AddTwoInts::Service>("/add_two_ints")?;
+    let mut service = node.create_service::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
 
     let handle = tokio::task::spawn_blocking(move || loop {
         node.spin_once(std::time::Duration::from_millis(100));

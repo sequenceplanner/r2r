@@ -113,20 +113,15 @@ where
 }
 
 pub fn create_service_helper(
-    node: &mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t, qos_profile: Option<QosProfile>
+    node: &mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t, qos_profile: QosProfile,
 ) -> Result<rcl_service_t> {
     let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
     let service_name_c_string =
         CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
     let result = unsafe {
-        let service_options= 
-        match qos_profile {
-            Some(profile) => {let mut service_options = rcl_service_get_default_options();
-                service_options.qos = profile.into();
-                service_options}
-            None => {rcl_service_get_default_options()}
-        };
+        let mut service_options = rcl_service_get_default_options();
+            service_options.qos = qos_profile.into();
         rcl_service_init(
             &mut service_handle,
             node,
