@@ -1,6 +1,6 @@
 [package]
 name = "r2r_actions"
-version = "0.8.4"
+version = "0.9.0"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Internal dependency to the r2r crate."
 license = "MIT"
@@ -11,12 +11,12 @@ repository = "https://github.com/sequenceplanner/r2r"
 documentation = "https://docs.rs/r2r/latest/r2r"
 
 [dependencies]
-r2r_rcl = { path = "../r2r_rcl", version = "0.8.4" }
-r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.8.4" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.9.0" }
+r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.0" }
 
 [build-dependencies]
 bindgen = "0.63.0"
-r2r_common = { path = "../r2r_common", version = "0.8.4" }
+r2r_common = { path = "../r2r_common", version = "0.9.0" }
 
 [features]
 save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen"]
