@@ -446,14 +446,16 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
                         quote! {
                             #field_name : {
                                 let mut temp = Vec::with_capacity(msg. #field_name .size);
-                                let slice = unsafe {
-                                    std::slice::from_raw_parts(
-                                        msg. #field_name .data,
-                                        msg. #field_name .size
-                                    )
-                                };
-                                for s in slice {
-                                    temp.push( #module :: #prefix :: #name :: from_native(s));
+                                if msg. #field_name .data != std::ptr::null_mut() {
+                                    let slice = unsafe {
+                                        std::slice::from_raw_parts(
+                                            msg. #field_name .data,
+                                            msg. #field_name .size
+                                        )
+                                    };
+                                    for s in slice {
+                                        temp.push( #module :: #prefix :: #name :: from_native(s));
+                                    }
                                 }
                                 temp
                             },
@@ -589,9 +591,11 @@ pub fn generate_rust_msg(module_: &str, prefix_: &str, name_: &str) -> proc_macr
                                 #fini_func (&mut msg. #field_name);
                                 #init_func (&mut msg. #field_name , self. #field_name .len());
 
-                                let slice = std::slice::from_raw_parts_mut(msg. #field_name .data, msg. #field_name .size);
-                                for (t, s) in slice.iter_mut().zip(&self. #field_name ) {
-                                    s.copy_to_native(t);
+                                if msg. #field_name .data != std::ptr::null_mut() {
+                                    let slice = std::slice::from_raw_parts_mut(msg. #field_name .data, msg. #field_name .size);
+                                    for (t, s) in slice.iter_mut().zip(&self. #field_name ) {
+                                        s.copy_to_native(t);
+                                    }
                                 }
                             }
                         }

@@ -203,8 +203,12 @@ impl Subscriber_ for RawSubscriber {
             return false;
         }
 
-        let data_bytes = unsafe {
-            std::slice::from_raw_parts(self.msg_buf.buffer, self.msg_buf.buffer_length).to_vec()
+        let data_bytes = if self.msg_buf.buffer == std::ptr::null_mut() {
+            Vec::new()
+        } else {
+            unsafe {
+                std::slice::from_raw_parts(self.msg_buf.buffer, self.msg_buf.buffer_length).to_vec()
+            }
         };
 
         if let Err(e) = self.sender.try_send(data_bytes) {

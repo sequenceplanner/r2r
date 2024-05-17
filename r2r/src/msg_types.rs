@@ -93,8 +93,12 @@ pub trait WrappedTypesupport:
                 )
             };
 
-            let data_bytes = unsafe {
-                std::slice::from_raw_parts(msg_buf.buffer, msg_buf.buffer_length).to_vec()
+            let data_bytes = if msg_buf.buffer == std::ptr::null_mut() {
+                Vec::new()
+            } else {
+                unsafe {
+                    std::slice::from_raw_parts(msg_buf.buffer, msg_buf.buffer_length).to_vec()
+                }
             };
 
             Self::destroy_msg(msg);

@@ -115,6 +115,15 @@ impl Node {
             return Ok(());
         }
 
+        unsafe {
+            if (*(*params.as_ref())).node_names == std::ptr::null_mut()
+                || (*(*params.as_ref())).params == std::ptr::null_mut()
+            {
+                rcl_yaml_node_struct_fini(*params);
+                return Ok(());
+            }
+        }
+
         let node_names = unsafe {
             std::slice::from_raw_parts(
                 (*(*params.as_ref())).node_names,
@@ -148,18 +157,22 @@ impl Node {
             }
 
             // make key value pairs.
-            let param_names =
-                unsafe { std::slice::from_raw_parts(np.parameter_names, np.num_params) };
-
-            let param_values =
-                unsafe { std::slice::from_raw_parts(np.parameter_values, np.num_params) };
-
             let mut params = self.params.lock().unwrap();
-            for (s, v) in param_names.iter().zip(param_values) {
-                let s = unsafe { CStr::from_ptr(*s) };
-                let key = s.to_str().unwrap_or("");
-                let val = ParameterValue::from_rcl(v);
-                params.insert(key.to_owned(), Parameter::new(val));
+            if np.parameter_names != std::ptr::null_mut()
+                && np.parameter_values != std::ptr::null_mut()
+            {
+                let param_names =
+                    unsafe { std::slice::from_raw_parts(np.parameter_names, np.num_params) };
+
+                let param_values =
+                    unsafe { std::slice::from_raw_parts(np.parameter_values, np.num_params) };
+
+                for (s, v) in param_names.iter().zip(param_values) {
+                    let s = unsafe { CStr::from_ptr(*s) };
+                    let key = s.to_str().unwrap_or("");
+                    let val = ParameterValue::from_rcl(v);
+                    params.insert(key.to_owned(), Parameter::new(val));
+                }
             }
         }
 
@@ -1028,29 +1041,33 @@ impl Node {
             return;
         }
 
-        let ws_subs =
-            unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subscribers.len()) };
         let mut subs_to_remove = vec![];
-        for (s, ws_s) in self.subscribers.iter_mut().zip(ws_subs) {
-            if ws_s != &std::ptr::null() {
-                let dropped = s.handle_incoming();
-                if dropped {
-                    s.destroy(&mut self.node_handle);
-                    subs_to_remove.push(*s.handle());
+        if ws.subscriptions != std::ptr::null_mut() {
+            let ws_subs =
+                unsafe { std::slice::from_raw_parts(ws.subscriptions, self.subscribers.len()) };
+            for (s, ws_s) in self.subscribers.iter_mut().zip(ws_subs) {
+                if ws_s != &std::ptr::null() {
+                    let dropped = s.handle_incoming();
+                    if dropped {
+                        s.destroy(&mut self.node_handle);
+                        subs_to_remove.push(*s.handle());
+                    }
                 }
             }
         }
         self.subscribers
             .retain(|s| !subs_to_remove.contains(s.handle()));
 
-        let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, self.timers.len()) };
         let mut timers_to_remove = vec![];
-        for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
-            if ws_s != &std::ptr::null() {
-                // TODO: move this to impl Timer
-                let dropped = s.handle_incoming();
-                if dropped {
-                    timers_to_remove.push((*s.timer_handle).to_owned());
+        if ws.timers != std::ptr::null_mut() {
+            let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, self.timers.len()) };
+            for (s, ws_s) in self.timers.iter_mut().zip(ws_timers) {
+                if ws_s != &std::ptr::null() {
+                    // TODO: move this to impl Timer
+                    let dropped = s.handle_incoming();
+                    if dropped {
+                        timers_to_remove.push((*s.timer_handle).to_owned());
+                    }
                 }
             }
         }
@@ -1058,23 +1075,28 @@ impl Node {
         self.timers
             .retain(|t| !timers_to_remove.contains(&*t.timer_handle));
 
-        let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
-        for (s, ws_s) in self.clients.iter_mut().zip(ws_clients) {
-            if ws_s != &std::ptr::null() {
-                let mut s = s.lock().unwrap();
-                s.handle_response();
+        if ws.clients != std::ptr::null_mut() {
+            let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
+            for (s, ws_s) in self.clients.iter_mut().zip(ws_clients) {
+                if ws_s != &std::ptr::null() {
+                    let mut s = s.lock().unwrap();
+                    s.handle_response();
+                }
             }
         }
 
-        let ws_services = unsafe { std::slice::from_raw_parts(ws.services, self.services.len()) };
         let mut services_to_remove = vec![];
-        for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
-            if ws_s != &std::ptr::null() {
-                let mut service = s.lock().unwrap();
-                let dropped = service.handle_request(s.clone());
-                if dropped {
-                    service.destroy(&mut self.node_handle);
-                    services_to_remove.push(*service.handle());
+        if ws.services != std::ptr::null_mut() {
+            let ws_services =
+                unsafe { std::slice::from_raw_parts(ws.services, self.services.len()) };
+            for (s, ws_s) in self.services.iter_mut().zip(ws_services) {
+                if ws_s != &std::ptr::null() {
+                    let mut service = s.lock().unwrap();
+                    let dropped = service.handle_request(s.clone());
+                    if dropped {
+                        service.destroy(&mut self.node_handle);
+                        services_to_remove.push(*service.handle());
+                    }
                 }
             }
         }
@@ -1194,20 +1216,22 @@ impl Node {
             return Err(Error::from_rcl_error(ret));
         }
 
-        let names = unsafe { std::slice::from_raw_parts(tnat.names.data, tnat.names.size) };
-        let types = unsafe { std::slice::from_raw_parts(tnat.types, tnat.names.size) };
-
         let mut res = HashMap::new();
-        for (n, t) in names.iter().zip(types) {
-            let topic_name = unsafe { CStr::from_ptr(*n).to_str().unwrap().to_owned() };
-            let topic_types = unsafe { std::slice::from_raw_parts(t, t.size) };
-            let topic_types: Vec<String> = unsafe {
-                topic_types
-                    .iter()
-                    .map(|t| CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned())
-                    .collect()
-            };
-            res.insert(topic_name, topic_types);
+        if tnat.names.data != std::ptr::null_mut() && tnat.types != std::ptr::null_mut() {
+            let names = unsafe { std::slice::from_raw_parts(tnat.names.data, tnat.names.size) };
+            let types = unsafe { std::slice::from_raw_parts(tnat.types, tnat.names.size) };
+
+            for (n, t) in names.iter().zip(types) {
+                let topic_name = unsafe { CStr::from_ptr(*n).to_str().unwrap().to_owned() };
+                let topic_types = unsafe { std::slice::from_raw_parts(t, t.size) };
+                let topic_types: Vec<String> = unsafe {
+                    topic_types
+                        .iter()
+                        .map(|t| CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned())
+                        .collect()
+                };
+                res.insert(topic_name, topic_types);
+            }
         }
         unsafe {
             rmw_names_and_types_fini(&mut tnat);
@@ -1532,11 +1556,13 @@ fn convert_info_array_to_vec(
 ) -> Vec<TopicEndpointInfo> {
     let mut topic_info_list = Vec::with_capacity(info_array.size);
 
-    unsafe {
-        let infos = std::slice::from_raw_parts(info_array.info_array, info_array.size);
-        for &info in infos {
-            let endpoint_info = TopicEndpointInfo::from(info);
-            topic_info_list.push(endpoint_info);
+    if info_array.info_array != std::ptr::null_mut() {
+        unsafe {
+            let infos = std::slice::from_raw_parts(info_array.info_array, info_array.size);
+            for &info in infos {
+                let endpoint_info = TopicEndpointInfo::from(info);
+                topic_info_list.push(endpoint_info);
+            }
         }
     }
 

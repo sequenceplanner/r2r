@@ -34,36 +34,62 @@ impl ParameterValue {
             ParameterValue::String(string)
         } else if !v.byte_array_value.is_null() {
             let vals = unsafe {
-                std::slice::from_raw_parts((*v.byte_array_value).values, (*v.byte_array_value).size)
+                if (*v.byte_array_value).values == std::ptr::null_mut() {
+                    &[]
+                } else {
+                    std::slice::from_raw_parts(
+                        (*v.byte_array_value).values,
+                        (*v.byte_array_value).size,
+                    )
+                }
             };
             ParameterValue::ByteArray(vals.to_vec())
         } else if !v.bool_array_value.is_null() {
             let vals = unsafe {
-                std::slice::from_raw_parts((*v.bool_array_value).values, (*v.bool_array_value).size)
+                if (*v.bool_array_value).values == std::ptr::null_mut() {
+                    &[]
+                } else {
+                    std::slice::from_raw_parts(
+                        (*v.bool_array_value).values,
+                        (*v.bool_array_value).size,
+                    )
+                }
             };
             ParameterValue::BoolArray(vals.to_vec())
         } else if !v.integer_array_value.is_null() {
             let vals = unsafe {
-                std::slice::from_raw_parts(
-                    (*v.integer_array_value).values,
-                    (*v.integer_array_value).size,
-                )
+                if (*v.integer_array_value).values == std::ptr::null_mut() {
+                    &[]
+                } else {
+                    std::slice::from_raw_parts(
+                        (*v.integer_array_value).values,
+                        (*v.integer_array_value).size,
+                    )
+                }
             };
             ParameterValue::IntegerArray(vals.to_vec())
         } else if !v.double_array_value.is_null() {
             let vals = unsafe {
-                std::slice::from_raw_parts(
-                    (*v.double_array_value).values,
-                    (*v.double_array_value).size,
-                )
+                if (*v.double_array_value).values == std::ptr::null_mut() {
+                    &[]
+                } else {
+                    std::slice::from_raw_parts(
+                        (*v.double_array_value).values,
+                        (*v.double_array_value).size,
+                    )
+                }
             };
             ParameterValue::DoubleArray(vals.to_vec())
         } else if !v.string_array_value.is_null() {
             let vals = unsafe {
-                std::slice::from_raw_parts(
-                    (*v.string_array_value).data,
-                    (*v.string_array_value).size,
-                )
+                if (*v.string_array_value).data == std::ptr::null_mut() {
+                    &[]
+                } else {
+                    std::slice::from_raw_parts(
+                        (*v.string_array_value).data,
+                        (*v.string_array_value).size,
+                    )
+                }
             };
             let s = vals
                 .iter()
