@@ -75,7 +75,8 @@ async fn client(arc_node: Arc<Mutex<r2r::Node>>) -> Result<(), r2r::Error> {
     let (client, mut timer, service_available) = {
         // Limiting the scope when locking the arc
         let mut node = arc_node.lock().unwrap();
-        let client = node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
+        let client =
+            node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
         let timer = node.create_wall_timer(std::time::Duration::from_secs(2))?;
         let service_available = r2r::Node::is_available(&client)?;
         (client, timer, service_available)

@@ -7,7 +7,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let duration = std::time::Duration::from_millis(2500);
 
     use r2r::example_interfaces::srv::AddTwoInts;
-    let client = node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
+    let client =
+        node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
     let mut timer = node.create_wall_timer(duration)?;
     let waiting = r2r::Node::is_available(&client)?;
 

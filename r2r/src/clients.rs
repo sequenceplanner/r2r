@@ -319,7 +319,8 @@ impl Client_ for UntypedClient_ {
 }
 
 pub fn create_client_helper(
-    node: *mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t, qos_profile: QosProfile,
+    node: *mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t,
+    qos_profile: QosProfile,
 ) -> Result<rcl_client_t> {
     let mut client_handle = unsafe { rcl_get_zero_initialized_client() };
     let service_name_c_string =

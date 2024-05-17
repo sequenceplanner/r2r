@@ -29,7 +29,8 @@ async fn requester_task(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
-    let client = node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
+    let client =
+        node.create_client::<AddTwoInts::Service>("/add_two_ints", QosProfile::default())?;
 
     let service_available = r2r::Node::is_available(&client)?;
 
