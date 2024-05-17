@@ -1,4 +1,5 @@
 use futures::{executor::LocalPool, task::LocalSpawnExt, Future};
+use r2r::QosProfile;
 
 async fn requester_task(
     node_available: impl Future<Output = r2r::Result<()>>, c: r2r::ClientUntyped,
@@ -25,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "testnode", "")?;
     let client =
-        node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts")?;
+        node.create_client_untyped("/add_two_ints", "example_interfaces/srv/AddTwoInts", QosProfile::default())?;
 
     let service_available = r2r::Node::is_available(&client)?;
 

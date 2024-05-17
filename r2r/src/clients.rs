@@ -6,7 +6,7 @@ use std::{
     sync::{Mutex, Weak},
 };
 
-use crate::{error::*, msg_types::*};
+use crate::{error::*, msg_types::*, QosProfile};
 use r2r_rcl::*;
 
 /// ROS service client.
@@ -319,14 +319,15 @@ impl Client_ for UntypedClient_ {
 }
 
 pub fn create_client_helper(
-    node: *mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t,
+    node: *mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t, qos_profile: QosProfile,
 ) -> Result<rcl_client_t> {
     let mut client_handle = unsafe { rcl_get_zero_initialized_client() };
     let service_name_c_string =
         CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
     let result = unsafe {
-        let client_options = rcl_client_get_default_options();
+        let mut client_options = rcl_client_get_default_options();
+        client_options.qos = qos_profile.into();
         rcl_client_init(
             &mut client_handle,
             node,
