@@ -46,6 +46,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Expose QoS settings for service clients and servers <https://github.com/sequenceplanner/r2r/pull/95>
 - Make the order of parameters deterministic <https://github.com/sequenceplanner/r2r/pull/94>
 - Add a r2r_info example to print environmental information <https://github.com/sequenceplanner/r2r/pull/92>
 - Code cleanups <https://github.com/sequenceplanner/r2r/pull/90>, <https://github.com/sequenceplanner/r2r/pull/91>
