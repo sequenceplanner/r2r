@@ -65,6 +65,10 @@ pub struct Node {
     // time source that provides simulated time
     #[cfg(r2r__rosgraph_msgs__msg__Clock)]
     time_source: TimeSource,
+    // and a guard condition to notify the waitset that it should reload its elements.
+    // This guard condition must be triggered by any subscriber, service, etc. that changes
+    // its `is_waiting` state to true
+    waitset_elements_changed_gc: rcl_guard_condition_t,
 }
 
 unsafe impl Send for Node {}
@@ -182,7 +186,7 @@ impl Node {
 
     /// Creates a ROS node.
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
-        let (res, node_handle) = {
+        let (res, waitset_gc, node_handle) = {
             let mut ctx_handle = ctx.context_handle.lock().unwrap();
 
             let c_node_name = CString::new(name).unwrap();
@@ -199,7 +203,9 @@ impl Node {
                     &node_options as *const _,
                 )
             };
-            (res, node_handle)
+
+            let waitset_gc = new_guard_condition(ctx_handle.as_mut())?;
+            (res, waitset_gc, node_handle)
         };
 
         if res == RCL_RET_OK as i32 {
@@ -225,6 +231,7 @@ impl Node {
                 ros_clock,
                 #[cfg(r2r__rosgraph_msgs__msg__Clock)]
                 time_source,
+                waitset_elements_changed_gc: waitset_gc,
             };
             node.load_params()?;
             Ok(node)
@@ -552,14 +559,20 @@ impl Node {
     {
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
-        let (sender, receiver) = mpsc::channel::<T>(10);
 
+        let waker = Arc::new(std::sync::Mutex::new(None));
         let ws = TypedSubscriber {
             rcl_handle: subscription_handle,
-            sender,
+            waker: Arc::clone(&waker),
         };
         self.subscribers.push(Box::new(ws));
-        Ok(receiver)
+
+        Ok(SubscriberStream::<T> {
+            rcl_handle: subscription_handle,
+            waker,
+            waiting_state_changed_gc: self.waitset_elements_changed_gc,
+            stream_type: std::marker::PhantomData,
+        })
     }
 
     /// Subscribe to a ROS topic.
@@ -987,7 +1000,7 @@ impl Node {
                 rcl_wait_set_init(
                     &mut ws,
                     self.subscribers.len() + total_action_subs,
-                    0,
+                    1, // for the waitset_elements_changed_gc
                     self.timers.len() + total_action_timers,
                     self.clients.len() + total_action_clients,
                     self.services.len() + total_action_services,
@@ -1001,9 +1014,27 @@ impl Node {
             rcl_wait_set_clear(&mut ws);
         }
 
+        unsafe {
+            // First off, add the waitset_elements_changed guard condition.
+            // Rationale: The code below will add only subscribers that are actively waiting.
+            // This avoids an endless loop where a busy subscriber keeps waking up the waitset
+            // even though it doesn't have the capacity to handle the new data. However, it also
+            // means that a subscriber/service/etc that changes its waiting state needs to update
+            // the waitset, otherwise it will not be woken up when new data arrives. In that situation
+            // it shall trigger this guard condition, which will force a wakeup of the waitset and a return
+            // from this function. On the next call to spin_once, the subscriber will be added.
+            rcl_wait_set_add_guard_condition(
+                &mut ws,
+                &self.waitset_elements_changed_gc as *const rcl_guard_condition_t,
+                std::ptr::null_mut(),
+            );
+        }
+
         for s in &self.subscribers {
-            unsafe {
-                rcl_wait_set_add_subscription(&mut ws, s.handle(), std::ptr::null_mut());
+            if s.is_waiting() {
+                unsafe {
+                    rcl_wait_set_add_subscription(&mut ws, s.handle(), std::ptr::null_mut());
+                }
             }
         }
 
@@ -1588,4 +1619,18 @@ fn convert_info_array_to_vec(
     }
 
     topic_info_list
+}
+
+fn new_guard_condition(ctx: &mut rcl_context_s) -> Result<rcl_guard_condition_t> {
+    unsafe {
+        let mut gc = rcl_get_zero_initialized_guard_condition();
+        match Error::from_rcl_error(rcl_guard_condition_init(
+            &mut gc,
+            ctx,
+            rcl_guard_condition_get_default_options(),
+        )) {
+            Error::RCL_RET_OK => Ok(gc),
+            e => Err(e),
+        }
+    }
 }
