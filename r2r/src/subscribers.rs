@@ -101,23 +101,27 @@ where
                     let handle_ptr = Box::into_raw(handle_box);
                     let ret =
                         rcl_return_loaned_message_from_subscription(handle_ptr, msg as *mut c_void);
-                    if ret != RCL_RET_OK as i32 {
+                    if ret == RCL_RET_OK as i32 {
+                        drop(Box::from_raw(handle_ptr));
+                    } else {
+                        let topic_str = rcl_subscription_get_topic_name(handle_ptr);
+                        let topic = CStr::from_ptr(topic_str);
+                        drop(Box::from_raw(handle_ptr));
+
                         let err_str = rcutils_get_error_string();
                         let err_str_ptr = &(err_str.str_) as *const std::os::raw::c_char;
                         let error_msg = CStr::from_ptr(err_str_ptr);
 
-                        let topic_str = rcl_subscription_get_topic_name(handle_ptr);
-                        let topic = CStr::from_ptr(topic_str);
-
-                        crate::log_error!(
-                            "r2r",
+                        // Returning a loan shouldn't fail unless one of the handles or pointers
+                        // is invalid, both of which indicate a severe bug. Panicking is therefore
+                        // more appropriate than leaking the loaned message.
+                        panic!(
                             "rcl_return_loaned_message_from_subscription() \
                             failed for subscription on topic {}: {}",
                             topic.to_str().expect("to_str() call failed"),
                             error_msg.to_str().expect("to_str() call failed")
                         );
                     }
-                    // drop(Box::from_raw(handle_ptr));
                 });
                 WrappedNativeMsg::<T>::from_loaned(loaned_msg as *mut T::CStruct, deallocator)
             } else {
