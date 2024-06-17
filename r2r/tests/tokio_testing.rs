@@ -157,3 +157,61 @@ async fn tokio_testing() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn pub_sub_with_subscriber_after_publisher() -> Result<(), Box<dyn std::error::Error>> {
+    // Test that pub-sub works if the publication happens before the subscriber waits
+    let ctx = r2r::Context::create()?;
+    let mut node = r2r::Node::create(ctx, "testnode", "")?;
+    let mut s_the_no =
+        node.subscribe::<r2r::std_msgs::msg::Int32>("/the_to", QosProfile::default())?;
+    let p_the_no =
+        node.create_publisher::<r2r::std_msgs::msg::Int32>("/the_to", QosProfile::default())?;
+    let state = Arc::new(Mutex::new(false));
+
+    // First publish a message
+    p_the_no
+        .publish(&r2r::std_msgs::msg::Int32 { data: 0xc0ffee })?;
+
+    // Then check if that message arrived
+    let msg = s_the_no
+        .next()
+        .await
+        .expect("Awaiting the subscription yielded none");
+    assert_eq!(msg.data, 0xc0ffee);
+    Ok(())
+}
+
+#[tokio::test]
+async fn pub_sub_with_waiting_subscriber() -> Result<(), Box<dyn std::error::Error>> {
+    // Test that pub-sub works if the subscriber is blocking before the publication happens
+    let ctx = r2r::Context::create()?;
+    let mut node = r2r::Node::create(ctx, "testnode", "")?;
+    let mut s_the_no =
+        node.subscribe::<r2r::std_msgs::msg::Int32>("/the_no", QosProfile::default())?;
+    let p_the_no =
+        node.create_publisher::<r2r::std_msgs::msg::Int32>("/the_no", QosProfile::default())?;
+    let state = Arc::new(Mutex::new(false));
+
+    // First spawn a subscriber
+    let handle = task::spawn({
+        let state = state.clone();
+        async move {
+        if let Some(msg) = s_the_no.next().await {
+            assert_eq!(msg.data, 0xc0ffee);
+            *state.lock().unwrap() = true;
+        }
+    }});
+
+    // Then wait some time to ensure the future is being polled
+    tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+
+    // Then publish a message
+    p_the_no
+        .publish(&r2r::std_msgs::msg::Int32 { data: 0xc0ffee })?;
+
+    // And check that the subscriber receives it
+    handle.await.expect("subscriber task panicked");
+    assert!(*state.lock().unwrap());
+    Ok(())
+}
