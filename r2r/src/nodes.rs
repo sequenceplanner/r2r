@@ -567,12 +567,11 @@ impl Node {
         };
         self.subscribers.push(Box::new(ws));
 
-        Ok(SubscriberStream::<T> {
-            rcl_handle: subscription_handle,
+        Ok(SubscriberStream::<T>::new(
+            subscription_handle,
             waker,
-            waiting_state_changed_gc: self.waitset_elements_changed_gc,
-            stream_type: std::marker::PhantomData,
-        })
+            self.waitset_elements_changed_gc,
+        ))
     }
 
     /// Subscribe to a ROS topic.
@@ -586,14 +585,19 @@ impl Node {
     {
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
-        let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
-        let ws = NativeSubscriber {
+        let waker = Arc::new(std::sync::Mutex::new(None));
+        let ws = TypedSubscriber {
             rcl_handle: subscription_handle,
-            sender,
+            waker: Arc::clone(&waker),
         };
         self.subscribers.push(Box::new(ws));
-        Ok(receiver)
+
+        Ok(NativeSubscriberStream::<T>::new(
+            subscription_handle,
+            waker,
+            self.waitset_elements_changed_gc,
+        ))
     }
 
     /// Subscribe to a ROS topic.
@@ -606,15 +610,20 @@ impl Node {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
-        let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
+        let waker = Arc::new(std::sync::Mutex::new(None));
 
         let ws = UntypedSubscriber {
             rcl_handle: subscription_handle,
-            topic_type: topic_type.to_string(),
-            sender,
+            waker: waker.clone(),
         };
+
         self.subscribers.push(Box::new(ws));
-        Ok(receiver)
+        Ok(UntypedSubscriberStream::new(
+            subscription_handle,
+            waker,
+            self.waitset_elements_changed_gc,
+            topic_type.to_string(),
+        ))
     }
 
     /// Subscribe to a ROS topic.
@@ -624,6 +633,7 @@ impl Node {
     pub fn subscribe_raw(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = Vec<u8>> + Unpin> {
+        // TODO(tobias.stark): Port over to new approach
         // TODO is it possible to handle the raw message without type support?
         //
         // Passing null ts to rcl_subscription_init throws an error ..
