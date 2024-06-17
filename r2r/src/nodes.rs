@@ -916,6 +916,16 @@ impl Node {
     /// `timeout` is a duration specifying how long the spin should
     /// block for if there are no pending events.
     pub fn spin_once(&mut self, timeout: Duration) {
+        // like std::slice_from_raw_parts, but allows data to be nullptr if len is zero
+        unsafe fn slice_from_ptr<'a, T>(data : *const T, len : usize) -> &'a [T] {
+            if data.is_null() {
+                assert_eq!(len, 0);
+                std::slice::from_raw_parts(std::ptr::NonNull::<T>::dangling().as_ptr(), 0)
+            } else {
+                std::slice::from_raw_parts(data, len)
+            }
+        }
+
         // first handle any completed action cancellation responses
         for a in &mut self.action_servers {
             a.lock().unwrap().send_completed_cancel_requests();
@@ -1100,6 +1110,9 @@ impl Node {
             return;
         }
 
+
+        let ws_subs =
+            unsafe { slice_from_ptr(ws.subscriptions, self.subscribers.len()) };
         let mut subs_to_remove = vec![];
         if ws.subscriptions != std::ptr::null_mut() {
             let ws_subs =
@@ -1117,6 +1130,7 @@ impl Node {
         self.subscribers
             .retain(|s| !subs_to_remove.contains(s.handle()));
 
+        let ws_timers = unsafe { slice_from_ptr(ws.timers, self.timers.len()) };
         let mut timers_to_remove = vec![];
         if ws.timers != std::ptr::null_mut() {
             let ws_timers = unsafe { std::slice::from_raw_parts(ws.timers, self.timers.len()) };
@@ -1134,16 +1148,15 @@ impl Node {
         self.timers
             .retain(|t| !timers_to_remove.contains(&*t.timer_handle));
 
-        if ws.clients != std::ptr::null_mut() {
-            let ws_clients = unsafe { std::slice::from_raw_parts(ws.clients, self.clients.len()) };
-            for (s, ws_s) in self.clients.iter_mut().zip(ws_clients) {
-                if ws_s != &std::ptr::null() {
-                    let mut s = s.lock().unwrap();
-                    s.handle_response();
-                }
+        let ws_clients = unsafe { slice_from_ptr(ws.clients, self.clients.len()) };
+        for (s, ws_s) in self.clients.iter_mut().zip(ws_clients) {
+            if ws_s != &std::ptr::null() {
+                let mut s = s.lock().unwrap();
+                s.handle_response();
             }
         }
 
+        let ws_services = unsafe { slice_from_ptr(ws.services, self.services.len()) };
         let mut services_to_remove = vec![];
         if ws.services != std::ptr::null_mut() {
             let ws_services =
