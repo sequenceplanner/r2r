@@ -17,7 +17,7 @@ jobs:
     - run: docker build . --file ./tests/Dockerfile_no_ros --tag r2r_no_ros
     - run: docker run r2r_no_ros cargo build --features doc-only
 
-  minimal_workspace_iron:
+  minimal_workspace_jazzy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -26,8 +26,15 @@ jobs:
       with:
         repository: m-dahl/r2r_minimal_node
         path: r2r_minimal_node
-    - run: docker build . --file ./tests/Dockerfile_iron --tag r2r_iron
-    - run: docker run r2r_iron /r2r/tests/build_minimal_node.bash
+    - run: docker build . --file ./tests/Dockerfile_jazzy --tag r2r_jazzy
+    - run: docker run r2r_jazzy /r2r/tests/build_minimal_node.bash
+
+  tests_jazzy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: docker build . --file ./tests/Dockerfile_jazzy --tag r2r_jazzy
+    - run: docker run r2r_jazzy cargo test
 
   tests_iron:
     runs-on: ubuntu-latest

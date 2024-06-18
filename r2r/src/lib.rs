@@ -141,12 +141,21 @@ pub const ROS_DISTRO: &str = "foxy";
 pub const ROS_DISTRO: &str = "galactic";
 #[cfg(r2r__ros__distro__humble)]
 pub const ROS_DISTRO: &str = "humble";
+#[cfg(r2r__ros__distro__iron)]
+pub const ROS_DISTRO: &str = "iron";
+#[cfg(r2r__ros__distro__jazzy)]
+pub const ROS_DISTRO: &str = "jazzy";
+
 #[cfg(r2r__ros__distro__rolling)]
 pub const ROS_DISTRO: &str = "rolling";
+
 #[cfg(not(any(
     r2r__ros__distro__foxy,
     r2r__ros__distro__galactic,
     r2r__ros__distro__humble,
+    r2r__ros__distro__iron,
+    r2r__ros__distro__jazzy,
+
     r2r__ros__distro__rolling
 )))]
 pub const ROS_DISTRO: &str = "unknown";

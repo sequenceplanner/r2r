@@ -10,7 +10,7 @@ use std::{
 };
 
 #[cfg(not(feature = "doc-only"))]
-const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "iron", "rolling"];
+const SUPPORTED_ROS_DISTROS: &[&str] = &["foxy", "galactic", "humble", "iron", "jazzy", "rolling"];
 
 const WATCHED_ENV_VARS: &[&str] = &[
     "AMENT_PREFIX_PATH",
