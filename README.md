@@ -34,7 +34,7 @@ Since the default behavior is to build all sourced message types, build time can
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron Jazzy
 - Building Rust types
 - Publish/subscribe
 - Services
@@ -46,6 +46,8 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+
+- Update for ros2 jazzy
 
 #### [0.9.0] - 2024-05-17
 - Fix unsafe precondition(s) violated with rust 1.78 <https://github.com/sequenceplanner/r2r/issues/96>. There may be more of these to fix, please report if you encounter.
