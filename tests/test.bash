@@ -5,7 +5,9 @@
 # run rustup to test with latest rust version
 rustup update
 
-if [ -e "/opt/ros/iron/setup.bash" ]; then
+if [ -e "/opt/ros/jazzy/setup.bash" ]; then
+    source "/opt/ros/jazzy/setup.bash"
+elif [ -e "/opt/ros/iron/setup.bash" ]; then
     source "/opt/ros/iron/setup.bash"
 elif [ -e "/opt/ros/humble/setup.bash" ]; then
     source "/opt/ros/humble/setup.bash"
