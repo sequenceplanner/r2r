@@ -1,4 +1,4 @@
-use futures::channel::{mpsc, oneshot};
+use futures::channel::mpsc;
 use std::{
     ffi::CString,
     mem::MaybeUninit,
@@ -57,7 +57,6 @@ where
 {
     pub rcl_handle: rcl_service_t,
     pub sender: mpsc::Sender<ServiceRequest<T>>,
-    pub outstanding_requests: Vec<oneshot::Receiver<(rmw_request_id_t, T::Response)>>,
 }
 
 impl<T: 'static> Service_ for TypedService<T>

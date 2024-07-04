@@ -669,7 +669,6 @@ impl Node {
 
         let ws = TypedService::<T> {
             rcl_handle: service_handle,
-            outstanding_requests: vec![],
             sender,
         };
 
