@@ -247,6 +247,11 @@ impl Subscriber_ for TimeSourceSubscriber {
         }
     }
 
+    fn is_waiting(&self) -> bool {
+        // TODO(tobiasstark): Implement
+        true
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_subscription_fini(&mut self.subscriber_handle, node);

@@ -4,20 +4,64 @@ use std::ffi::CString;
 use crate::{error::*, msg_types::*, qos::QosProfile};
 use r2r_rcl::*;
 use std::ffi::{c_void, CStr};
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::Poll;
+use futures::stream::Stream;
 
 pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;
     /// Returns true if the subscriber stream has been dropped.
     fn handle_incoming(&mut self) -> bool;
+    // Returns true if the subscriber is waiting for incoming messages
+    fn is_waiting(&self) -> bool;
     fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
-pub struct TypedSubscriber<T>
+// TODO(tobias.stark): Implement the new wakeup logic for the other subscriber types as well.
+// Let's just take TypedSubscriber as our proof of concept.
+pub struct TypedSubscriber {
+    pub rcl_handle: rcl_subscription_t,
+    // The waker to call when new data is available
+    pub waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+}
+
+pub struct SubscriberStream<T>
 where
     T: WrappedTypesupport,
 {
     pub rcl_handle: rcl_subscription_t,
-    pub sender: mpsc::Sender<T>,
+    pub waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+    pub waiting_state_changed_gc: rcl_guard_condition_t,
+    // suppress Rust's "unused type" error
+    pub stream_type: std::marker::PhantomData<T>,
+}
+
+impl<T: WrappedTypesupport + 'static> std::marker::Unpin for SubscriberStream<T> {}
+unsafe impl<T: WrappedTypesupport + 'static> std::marker::Send for SubscriberStream<T> {}
+
+impl<T: 'static> SubscriberStream<T>
+where
+    T: WrappedTypesupport,
+{
+    fn receive(&mut self) -> Option<T> {
+        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
+        let mut msg = WrappedNativeMsg::<T>::new();
+        let ret = unsafe {
+            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
+        };
+        if ret == RCL_RET_OK as i32 {
+            Some(T::from_native(&msg))
+        } else if ret == RCL_RET_SUBSCRIPTION_TAKE_FAILED as i32 {
+            // No message available
+            None
+        } else {
+            // An unexpected error while reading. The old code just ignored it.
+            // For now just panic, but we should think about this again
+            panic!("Error while reading message from subscription: {ret}");
+        }
+    }
 }
 
 pub struct NativeSubscriber<T>
@@ -40,31 +84,21 @@ pub struct RawSubscriber {
     pub sender: mpsc::Sender<Vec<u8>>,
 }
 
-impl<T: 'static> Subscriber_ for TypedSubscriber<T>
-where
-    T: WrappedTypesupport,
-{
+impl Subscriber_ for TypedSubscriber {
     fn handle(&self) -> &rcl_subscription_t {
         &self.rcl_handle
     }
 
     fn handle_incoming(&mut self) -> bool {
-        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
-        let mut msg = WrappedNativeMsg::<T>::new();
-        let ret = unsafe {
-            rcl_take(&self.rcl_handle, msg.void_ptr_mut(), &mut msg_info, std::ptr::null_mut())
-        };
-        if ret == RCL_RET_OK as i32 {
-            let msg = T::from_native(&msg);
-            if let Err(e) = self.sender.try_send(msg) {
-                if e.is_disconnected() {
-                    // user dropped the handle to the stream, signal removal.
-                    return true;
-                }
-                log::debug!("error {:?}", e)
-            }
+        let locked_waker = self.waker.lock().unwrap();
+        if let Some(ref waker) = *locked_waker {
+            waker.wake_by_ref();
         }
         false
+    }
+
+    fn is_waiting(&self) -> bool {
+        self.waker.lock().unwrap().is_some()
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -148,6 +182,11 @@ where
         false
     }
 
+    fn is_waiting(&self) -> bool {
+        // TODO(tobiasstark): Implement
+        true
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
@@ -178,6 +217,11 @@ impl Subscriber_ for UntypedSubscriber {
             }
         }
         false
+    }
+
+    fn is_waiting(&self) -> bool {
+        // TODO(tobiasstark): Implement
+        true
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
@@ -226,6 +270,11 @@ impl Subscriber_ for RawSubscriber {
         false
     }
 
+    fn is_waiting(&self) -> bool {
+        // TODO(tobiasstark): Implement
+        true
+    }
+
     fn destroy(&mut self, node: &mut rcl_node_t) {
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
@@ -256,5 +305,47 @@ pub fn create_subscription_helper(
         Ok(subscription_handle)
     } else {
         Err(Error::from_rcl_error(result))
+    }
+}
+
+impl<T: 'static> Stream for SubscriberStream<T>
+where
+    T: WrappedTypesupport,
+{
+    type Item = T;
+
+    // Required method
+    fn poll_next(
+        mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<T>> {
+        if let Some(msg) = self.receive() {
+            *self.waker.lock().unwrap() = None;
+            return Poll::Ready(Some(msg));
+        }
+
+        // Update the stored waker, depending on whether the subscriber is now pending or not
+        let was_waiting = {
+            let mut stored_waker = self.waker.lock().unwrap();
+            let was_waiting = stored_waker.is_some();
+            *stored_waker = Some(cx.waker().clone());
+            was_waiting
+        };
+
+        // If the subscription goes from not-waiting to waiting, notify the waitset so it adds this subscription
+        if !was_waiting {
+            unsafe {
+                match Error::from_rcl_error(rcl_trigger_guard_condition(
+                    &mut self.waiting_state_changed_gc,
+                )) {
+                    Error::RCL_RET_OK => {}
+                    e => {
+                        // This can only fail if the guard condition object was invalid, so panic is the appropriate response
+                        panic!("Failed to trigger guard condition: {e}");
+                    }
+                }
+            }
+        }
+
+        Poll::Pending
     }
 }
