@@ -75,15 +75,16 @@ async fn tokio_subscribe_raw_testing() -> Result<(), Box<dyn std::error::Error>>
                         }
                     });
 
-                    let handle = std::thread::spawn(move || {
-                        for _ in 1..=30 {
-                            node.spin_once(std::time::Duration::from_millis(100));
+                    let spin_task = tokio::task::spawn_blocking(move || {
+                        loop {
+                        node.spin_once(tokio::time::Duration::from_millis(10));
                         }
                     });
 
                     sub_int_handle.await.unwrap();
                     sub_array_handle.await.unwrap();
-                    handle.join().unwrap();
+                    spin_task.abort();
+                    spin_task.await;
 
                     println!("Going to drop tokio_subscribe_raw_testing iteration {i_cycle}");
                 }

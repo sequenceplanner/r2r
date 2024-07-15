@@ -1,4 +1,3 @@
-use futures::channel::mpsc;
 use std::ffi::CString;
 
 use crate::{error::*, msg_types::*, qos::QosProfile};
@@ -6,9 +5,9 @@ use futures::stream::Stream;
 use r2r_rcl::*;
 use std::ffi::{c_void, CStr};
 use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::task::Poll;
-use futures::stream::Stream;
 
 pub trait Subscriber_ {
     fn handle(&self) -> &rcl_subscription_t;
@@ -19,21 +18,31 @@ pub trait Subscriber_ {
     fn destroy(&mut self, node: &mut rcl_node_t);
 }
 
+pub struct SharedSubscriptionData {
+    // A flag that is set to true when the subscription object is destroyed.
+    // This must be checked by stream objects before accessing the underlying rcl handle
+    subscription_is_dead: AtomicBool,
+    // The waker to call when new data is available
+    waker: std::sync::Mutex<Option<std::task::Waker>>,
+}
+
+impl SharedSubscriptionData {
+    pub fn new() -> Self {
+        SharedSubscriptionData {
+            subscription_is_dead: AtomicBool::new(false),
+            waker: std::sync::Mutex::new(None),
+        }
+    }
+}
+
 pub struct TypedSubscriber {
     pub rcl_handle: rcl_subscription_t,
-    // The waker to call when new data is available
-    pub waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+    pub shared: Arc<SharedSubscriptionData>,
 }
 
 // Existing code distinguished these two kinds of subscribers, so keep that distinction in place
 // to reduce delta with upstream.
 pub type UntypedSubscriber = TypedSubscriber;
-
-pub struct RawSubscriber {
-    pub rcl_handle: rcl_subscription_t,
-    pub msg_buf: rcl_serialized_message_t,
-    pub sender: mpsc::Sender<Vec<u8>>,
-}
 
 impl Subscriber_ for TypedSubscriber {
     fn handle(&self) -> &rcl_subscription_t {
@@ -41,7 +50,7 @@ impl Subscriber_ for TypedSubscriber {
     }
 
     fn handle_incoming(&mut self) -> bool {
-        let locked_waker = self.waker.lock().unwrap();
+        let locked_waker = self.shared.waker.lock().unwrap();
         if let Some(ref waker) = *locked_waker {
             waker.wake_by_ref();
         }
@@ -49,56 +58,41 @@ impl Subscriber_ for TypedSubscriber {
     }
 
     fn is_waiting(&self) -> bool {
-        self.waker.lock().unwrap().is_some()
+        self.shared.waker.lock().unwrap().is_some()
     }
 
     fn destroy(&mut self, node: &mut rcl_node_t) {
+        self.shared
+            .subscription_is_dead
+            .store(true, Ordering::Release);
         unsafe {
             rcl_subscription_fini(&mut self.rcl_handle, node);
         }
     }
 }
 
-struct SubscriberStreamWaker {
-    waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
-    pub waiting_state_changed_gc: rcl_guard_condition_t,
-}
+fn set_waker(
+    shared: Arc<SharedSubscriptionData>, new_waker: std::task::Waker,
+    gc: &mut rcl_guard_condition_t,
+) {
+    let was_waiting = {
+        let mut stored_waker = shared.waker.lock().unwrap();
+        let was_waiting = stored_waker.is_some();
+        *stored_waker = Some(new_waker);
+        was_waiting
+    };
 
-impl SubscriberStreamWaker {
-    fn new(
-        waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>, gc: rcl_guard_condition_t,
-    ) -> Self {
-        SubscriberStreamWaker {
-            waker,
-            waiting_state_changed_gc: gc,
-        }
-    }
-
-    fn set_waker(&mut self, waker: std::task::Waker) {
-        let was_waiting = {
-            let mut stored_waker = self.waker.lock().unwrap();
-            let was_waiting = stored_waker.is_some();
-            *stored_waker = Some(waker);
-            was_waiting
-        };
-
-        // If the subscription goes from not-waiting to waiting, notify the waitset so it adds this subscription
-        if !was_waiting {
-            unsafe {
-                match Error::from_rcl_error(rcl_trigger_guard_condition(
-                    &mut self.waiting_state_changed_gc,
-                )) {
-                    Error::RCL_RET_OK => {}
-                    e => {
-                        // This can only fail if the guard condition object was invalid, so panic is the appropriate response
-                        panic!("Failed to trigger guard condition: {e}");
-                    }
+    // If the subscription goes from not-waiting to waiting, notify the waitset so it adds this subscription
+    if !was_waiting {
+        unsafe {
+            match Error::from_rcl_error(rcl_trigger_guard_condition(gc)) {
+                Error::RCL_RET_OK => {}
+                e => {
+                    // This can only fail if the guard condition object was invalid, so panic is the appropriate response
+                    panic!("Failed to trigger guard condition: {e}");
                 }
             }
         }
-    }
-    fn clear(&mut self) {
-        *self.waker.lock().unwrap() = None;
     }
 }
 
@@ -107,7 +101,8 @@ where
     T: WrappedTypesupport,
 {
     pub rcl_handle: rcl_subscription_t,
-    waker: SubscriberStreamWaker,
+    shared: Arc<SharedSubscriptionData>,
+    pub waiting_state_changed_gc: rcl_guard_condition_t,
     // suppress Rust's "unused type" error
     pub stream_type: std::marker::PhantomData<T>,
 }
@@ -124,7 +119,8 @@ where
 
 pub struct UntypedSubscriberStream {
     pub rcl_handle: rcl_subscription_t,
-    waker: SubscriberStreamWaker,
+    shared: Arc<SharedSubscriptionData>,
+    pub waiting_state_changed_gc: rcl_guard_condition_t,
     pub topic_type: String,
 }
 
@@ -133,8 +129,15 @@ unsafe impl std::marker::Send for UntypedSubscriberStream {}
 
 pub struct RawSubscriberStream {
     pub rcl_handle: rcl_subscription_t,
-    waker: SubscriberStreamWaker,
+    shared: Arc<SharedSubscriptionData>,
+    pub waiting_state_changed_gc: rcl_guard_condition_t,
     msg_buf: rcl_serialized_message_t,
+}
+
+impl Drop for RawSubscriberStream {
+    fn drop(&mut self) {
+        rcutils_uint8_array_fini(&mut self.msg_buf as *mut rcl_serialized_message_t);
+    }
 }
 
 impl std::marker::Unpin for RawSubscriberStream {}
@@ -142,12 +145,13 @@ unsafe impl std::marker::Send for RawSubscriberStream {}
 
 impl<T: 'static + WrappedTypesupport> SubscriberStream<T> {
     pub fn new(
-        sub: rcl_subscription_t, waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+        sub: rcl_subscription_t, shared_sub_data: Arc<SharedSubscriptionData>,
         gc: rcl_guard_condition_t,
     ) -> Self {
         SubscriberStream::<T> {
             rcl_handle: sub,
-            waker: SubscriberStreamWaker::new(waker, gc),
+            shared: shared_sub_data,
+            waiting_state_changed_gc: gc,
             stream_type: std::marker::PhantomData,
         }
     }
@@ -227,23 +231,24 @@ impl<T: 'static + WrappedTypesupport> SubscriberStream<T> {
 
 impl<T: 'static + WrappedTypesupport> NativeSubscriberStream<T> {
     pub fn new(
-        sub: rcl_subscription_t, waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+        sub: rcl_subscription_t, shared_sub_data: Arc<SharedSubscriptionData>,
         gc: rcl_guard_condition_t,
     ) -> Self {
         Self {
-            stream: SubscriberStream::<T>::new(sub, waker, gc),
+            stream: SubscriberStream::<T>::new(sub, shared_sub_data, gc),
         }
     }
 }
 
 impl UntypedSubscriberStream {
     pub fn new(
-        sub: rcl_subscription_t, waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+        sub: rcl_subscription_t, shared_sub_data: Arc<SharedSubscriptionData>,
         gc: rcl_guard_condition_t, topic_type: String,
     ) -> Self {
         Self {
             rcl_handle: sub,
-            waker: SubscriberStreamWaker::new(waker, gc),
+            shared: shared_sub_data,
+            waiting_state_changed_gc: gc,
             topic_type,
         }
     }
@@ -269,13 +274,14 @@ impl UntypedSubscriberStream {
 }
 
 impl RawSubscriberStream {
-    fn new(
-        sub: rcl_subscription_t, waker: Arc<std::sync::Mutex<Option<std::task::Waker>>>,
+    pub fn new(
+        sub: rcl_subscription_t, shared_sub_data: Arc<SharedSubscriptionData>,
         gc: rcl_guard_condition_t,
     ) -> Self {
         Self {
             rcl_handle: sub,
-            waker: SubscriberStreamWaker::new(waker, gc),
+            shared: shared_sub_data,
+            waiting_state_changed_gc: gc,
             msg_buf: unsafe { rcutils_get_zero_initialized_uint8_array() },
         }
     }
@@ -316,13 +322,20 @@ where
 
     // Required method
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<T>> {
+        if self.shared.subscription_is_dead.load(Ordering::Acquire) {
+            return Poll::Ready(None);
+        }
         match self.receive() {
             Some(msg) => {
-                self.waker.clear();
+                *self.shared.waker.lock().unwrap() = None;
                 Poll::Ready(Some(msg))
             }
             None => {
-                self.waker.set_waker(cx.waker().clone());
+                set_waker(
+                    Arc::clone(&self.shared),
+                    cx.waker().clone(),
+                    &mut self.waiting_state_changed_gc,
+                );
                 Poll::Pending
             }
         }
@@ -339,13 +352,26 @@ where
     fn poll_next(
         mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<WrappedNativeMsg<T>>> {
+        if self
+            .stream
+            .shared
+            .subscription_is_dead
+            .load(Ordering::Acquire)
+        {
+            return Poll::Ready(None);
+        }
+
         match self.stream.receive_native() {
             Some(msg) => {
-                self.stream.waker.clear();
+                *self.stream.shared.waker.lock().unwrap() = None;
                 Poll::Ready(Some(msg))
             }
             None => {
-                self.stream.waker.set_waker(cx.waker().clone());
+                set_waker(
+                    Arc::clone(&self.stream.shared),
+                    cx.waker().clone(),
+                    &mut self.stream.waiting_state_changed_gc,
+                );
                 Poll::Pending
             }
         }
@@ -359,13 +385,21 @@ impl Stream for UntypedSubscriberStream {
     fn poll_next(
         mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Self::Item>> {
+        if self.shared.subscription_is_dead.load(Ordering::Acquire) {
+            return Poll::Ready(None);
+        }
+
         match self.receive_json() {
             Some(msg) => {
-                self.waker.clear();
+                *self.shared.waker.lock().unwrap() = None;
                 Poll::Ready(Some(msg))
             }
             None => {
-                self.waker.set_waker(cx.waker().clone());
+                set_waker(
+                    Arc::clone(&self.shared),
+                    cx.waker().clone(),
+                    &mut self.waiting_state_changed_gc,
+                );
                 Poll::Pending
             }
         }
@@ -379,67 +413,23 @@ impl Stream for RawSubscriberStream {
     fn poll_next(
         mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Self::Item>> {
+        if self.shared.subscription_is_dead.load(Ordering::Acquire) {
+            return Poll::Ready(None);
+        }
+
         match self.receive_raw() {
             Some(msg) => {
-                self.waker.clear();
+                *self.shared.waker.lock().unwrap() = None;
                 Poll::Ready(Some(msg))
             }
             None => {
-                self.waker.set_waker(cx.waker().clone());
+                set_waker(
+                    Arc::clone(&self.shared),
+                    cx.waker().clone(),
+                    &mut self.waiting_state_changed_gc,
+                );
                 Poll::Pending
             }
-        }
-    }
-}
-
-impl Subscriber_ for RawSubscriber {
-    fn handle(&self) -> &rcl_subscription_t {
-        &self.rcl_handle
-    }
-
-    fn handle_incoming(&mut self) -> bool {
-        let mut msg_info = rmw_message_info_t::default(); // we dont care for now
-        let ret = unsafe {
-            rcl_take_serialized_message(
-                &self.rcl_handle,
-                &mut self.msg_buf as *mut rcl_serialized_message_t,
-                &mut msg_info,
-                std::ptr::null_mut(),
-            )
-        };
-        if ret != RCL_RET_OK as i32 {
-            log::error!("failed to take serialized message");
-            return false;
-        }
-
-        let data_bytes = if self.msg_buf.buffer == std::ptr::null_mut() {
-            Vec::new()
-        } else {
-            unsafe {
-                std::slice::from_raw_parts(self.msg_buf.buffer, self.msg_buf.buffer_length).to_vec()
-            }
-        };
-
-        if let Err(e) = self.sender.try_send(data_bytes) {
-            if e.is_disconnected() {
-                // user dropped the handle to the stream, signal removal.
-                return true;
-            }
-            log::debug!("error {:?}", e)
-        }
-
-        false
-    }
-
-    fn is_waiting(&self) -> bool {
-        // TODO(tobiasstark): Implement
-        true
-    }
-
-    fn destroy(&mut self, node: &mut rcl_node_t) {
-        unsafe {
-            rcl_subscription_fini(&mut self.rcl_handle, node);
-            rcutils_uint8_array_fini(&mut self.msg_buf as *mut rcl_serialized_message_t);
         }
     }
 }

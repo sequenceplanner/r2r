@@ -560,10 +560,10 @@ impl Node {
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
 
-        let waker = Arc::new(std::sync::Mutex::new(None));
+        let waker = Arc::new(SharedSubscriptionData::new());
         let ws = TypedSubscriber {
             rcl_handle: subscription_handle,
-            waker: Arc::clone(&waker),
+            shared: Arc::clone(&waker),
         };
         self.subscribers.push(Box::new(ws));
 
@@ -586,10 +586,10 @@ impl Node {
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
 
-        let waker = Arc::new(std::sync::Mutex::new(None));
+        let waker = Arc::new(SharedSubscriptionData::new());
         let ws = TypedSubscriber {
             rcl_handle: subscription_handle,
-            waker: Arc::clone(&waker),
+            shared: Arc::clone(&waker),
         };
         self.subscribers.push(Box::new(ws));
 
@@ -610,11 +610,11 @@ impl Node {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
-        let waker = Arc::new(std::sync::Mutex::new(None));
+        let waker = Arc::new(SharedSubscriptionData::new());
 
         let ws = UntypedSubscriber {
             rcl_handle: subscription_handle,
-            waker: waker.clone(),
+            shared: waker.clone(),
         };
 
         self.subscribers.push(Box::new(ws));
@@ -633,7 +633,6 @@ impl Node {
     pub fn subscribe_raw(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = Vec<u8>> + Unpin> {
-        // TODO(tobias.stark): Port over to new approach
         // TODO is it possible to handle the raw message without type support?
         //
         // Passing null ts to rcl_subscription_init throws an error ..
@@ -661,15 +660,20 @@ impl Node {
 
         let subscription_handle =
             create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
-        let (sender, receiver) = mpsc::channel::<Vec<u8>>(10);
 
-        let ws = RawSubscriber {
+        let waker = Arc::new(SharedSubscriptionData::new());
+
+        let ws = UntypedSubscriber {
             rcl_handle: subscription_handle,
-            msg_buf,
-            sender,
+            shared: waker.clone(),
         };
+
         self.subscribers.push(Box::new(ws));
-        Ok(receiver)
+        Ok(RawSubscriberStream::new(
+            subscription_handle,
+            waker,
+            self.waitset_elements_changed_gc,
+        ))
     }
 
     /// Create a ROS service.

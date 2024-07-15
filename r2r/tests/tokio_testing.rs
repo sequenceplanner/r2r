@@ -167,13 +167,13 @@ async fn pub_sub_with_subscriber_after_publisher() -> Result<(), Box<dyn std::er
         node.subscribe::<r2r::std_msgs::msg::Int32>("/the_to", QosProfile::default())?;
     let p_the_no =
         node.create_publisher::<r2r::std_msgs::msg::Int32>("/the_to", QosProfile::default())?;
-    let state = Arc::new(Mutex::new(false));
 
     // First publish a message
     p_the_no
         .publish(&r2r::std_msgs::msg::Int32 { data: 0xc0ffee })?;
 
-    // Then check if that message arrived
+    // Then check if that message arrived.
+    // Note that there's no need to spin the node as no waiting is involved
     let msg = s_the_no
         .next()
         .await
@@ -210,8 +210,15 @@ async fn pub_sub_with_waiting_subscriber() -> Result<(), Box<dyn std::error::Err
     p_the_no
         .publish(&r2r::std_msgs::msg::Int32 { data: 0xc0ffee })?;
 
+    let spin_task = tokio::task::spawn_blocking(move || {
+        loop {
+        node.spin_once(tokio::time::Duration::from_millis(10));
+        }
+    });
     // And check that the subscriber receives it
+
     handle.await.expect("subscriber task panicked");
+    spin_task.abort();
     assert!(*state.lock().unwrap());
     Ok(())
 }
