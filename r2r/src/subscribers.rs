@@ -105,7 +105,7 @@ where
                         drop(Box::from_raw(handle_ptr));
                     } else {
                         let topic_str = rcl_subscription_get_topic_name(handle_ptr);
-                        let topic = CStr::from_ptr(topic_str);
+                        let topic = CStr::from_ptr(topic_str).to_str().expect("to_str() call failed").to_owned();
                         drop(Box::from_raw(handle_ptr));
 
                         let err_str = rcutils_get_error_string();
@@ -118,7 +118,7 @@ where
                         panic!(
                             "rcl_return_loaned_message_from_subscription() \
                             failed for subscription on topic {}: {}",
-                            topic.to_str().expect("to_str() call failed"),
+                            topic,
                             error_msg.to_str().expect("to_str() call failed")
                         );
                     }
