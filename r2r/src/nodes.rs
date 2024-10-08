@@ -1239,12 +1239,17 @@ impl Node {
             let types = unsafe { std::slice::from_raw_parts(tnat.types, tnat.names.size) };
 
             for (n, t) in names.iter().zip(types) {
+                assert!(!(*n).is_null());
                 let topic_name = unsafe { CStr::from_ptr(*n).to_str().unwrap().to_owned() };
+                assert!(!t.data.is_null());
                 let topic_types = unsafe { std::slice::from_raw_parts(t, t.size) };
                 let topic_types: Vec<String> = unsafe {
                     topic_types
                         .iter()
-                        .map(|t| CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned())
+                        .map(|t| {
+                            assert!(*(t.data) != std::ptr::null_mut());
+                            CStr::from_ptr(*(t.data)).to_str().unwrap().to_owned()
+                        })
                         .collect()
                 };
                 res.insert(topic_name, topic_types);
