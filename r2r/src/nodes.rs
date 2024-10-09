@@ -931,11 +931,10 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let publisher_handle =
+        let publisher_arc =
             create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
-        let arc = Arc::new(publisher_handle);
-        let p = make_publisher(Arc::downgrade(&arc));
-        self.pubs.push(arc);
+        let p = make_publisher(Arc::downgrade(&publisher_arc));
+        self.pubs.push(publisher_arc);
         Ok(p)
     }
 
@@ -946,11 +945,10 @@ impl Node {
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let publisher_handle =
+        let publisher_arc =
             create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
-        let arc = Arc::new(publisher_handle);
-        let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
-        self.pubs.push(arc);
+        let p = make_publisher_untyped(Arc::downgrade(&publisher_arc), topic_type.to_owned());
+        self.pubs.push(publisher_arc);
         Ok(p)
     }
 
