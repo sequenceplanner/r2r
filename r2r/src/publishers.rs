@@ -176,6 +176,8 @@ impl PublisherUntyped {
         let native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
 
+        r2r_tracing::trace_publish(native_msg.void_ptr());
+
         let result = unsafe {
             rcl_publish(
                 &publisher.handle as *const rcl_publisher_t,
@@ -213,6 +215,8 @@ impl PublisherUntyped {
             // Since its read only, this should never be used ..
             allocator: unsafe { rcutils_get_default_allocator() },
         };
+
+        // No tracepoint because it is not in rclcpp either
 
         let result = unsafe {
             rcl_publish_serialized_message(
@@ -271,6 +275,9 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
+
+        r2r_tracing::trace_publish(native_msg.void_ptr());
+
         let result = unsafe {
             rcl_publish(
                 &publisher.handle as *const rcl_publisher_t,
@@ -356,6 +363,8 @@ where
             .handle
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        r2r_tracing::trace_publish(msg.void_ptr());
 
         let result = if msg.is_loaned {
             unsafe {

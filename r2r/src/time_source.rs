@@ -12,11 +12,14 @@ use r2r_rcl::{
     rcl_node_t, rcl_subscription_fini, rcl_subscription_t, rcl_take, rcl_time_point_value_t,
     rmw_message_info_t, RCL_RET_OK,
 };
-use std::sync::{Arc, Mutex, Weak};
+use std::{
+    any::type_name,
+    sync::{Arc, Mutex, Weak},
+};
 
 /// Provides time from `/clock` topic to attached ROS clocks
 ///
-/// By default only clock used by ROS timers is attached and time from `/clock` topic is disabled.
+/// By default, only clock used by ROS timers is attached and time from `/clock` topic is disabled.
 ///
 /// The time from `/clock` topic can be activated by either of these:
 /// - calling [`TimeSource::enable_sim_time`]
@@ -195,12 +198,18 @@ impl TimeSourceSubscriber {
         // The values are set based on default values in rclcpp
         let qos = QosProfile::default().keep_last(1).best_effort();
 
-        let subscriber = create_subscription_helper(
+        let (subscriber, subscriber_id) = create_subscription_helper(
             node_handle,
             "/clock",
             crate::rosgraph_msgs::msg::Clock::get_ts(),
             qos,
         )?;
+
+        let callback_id = Arc::as_ptr(&time_source.inner) as usize;
+        r2r_tracing::trace_subscription_init(subscriber_id, &subscriber);
+        r2r_tracing::trace_subscription_callback_added(&subscriber, callback_id);
+        r2r_tracing::trace_callback_register(callback_id, type_name::<TimeSource>());
+
         Ok(Self {
             subscriber_handle: subscriber,
             time_source,
@@ -226,11 +235,21 @@ impl Subscriber_ for TimeSourceSubscriber {
             )
         };
 
+        r2r_tracing::trace_take_ptr(clock_msg.void_ptr());
+
         let mut inner_time_source = self.time_source.inner.lock().unwrap();
         if ret == RCL_RET_OK as i32 {
             let msg = rosgraph_msgs::msg::Clock::from_native(&clock_msg);
+            r2r_tracing::trace_update_time(
+                &self.subscriber_handle,
+                msg.clock.sec,
+                msg.clock.nanosec,
+            );
 
+            let time_source_ptr = Arc::as_ptr(&self.time_source.inner) as usize;
+            r2r_tracing::trace_callback_start(time_source_ptr, false);
             inner_time_source.set_clock_time(msg.clock);
+            r2r_tracing::trace_callback_end(time_source_ptr);
         }
 
         match inner_time_source.subscriber_state {
