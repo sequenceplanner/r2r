@@ -116,7 +116,7 @@ macro_rules! primitive_sequence {
                     unsafe { [<$ctype __Sequence__fini>] (self as *mut _); }
                     unsafe { [<$ctype __Sequence__init>] (self as *mut _, values.len()); }
                     if self.data != std::ptr::null_mut() {
-                        unsafe { std::ptr::copy(values.as_ptr(), self.data, values.len()); }
+                        unsafe { std::ptr::copy_nonoverlapping(values.as_ptr(), self.data, values.len()); }
                     }
                 }
 
@@ -126,7 +126,7 @@ macro_rules! primitive_sequence {
                     }
                     let mut target = Vec::with_capacity(self.size);
                     unsafe {
-                        std::ptr::copy(self.data, target.as_mut_ptr(), self.size);
+                        std::ptr::copy_nonoverlapping(self.data, target.as_mut_ptr(), self.size);
                         target.set_len(self.size);
                     }
                     target
