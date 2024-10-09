@@ -12,6 +12,9 @@ pub use rclcpp_tracepoints::*;
 mod r2r_tracepoints;
 pub use r2r_tracepoints::*;
 
+mod callback;
+pub use callback::Callback;
+
 mod tracing_id;
 pub use tracing_id::TracingId;
 
