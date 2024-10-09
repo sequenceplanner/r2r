@@ -541,6 +541,30 @@ impl Node {
         future::ready(())
     }
 
+    /// Fetch a single ROS parameter.
+    pub fn get_parameter<T>(&self, name: &str) -> Result<T>
+    where
+        ParameterValue: TryInto<T, Error = WrongParameterType>,
+    {
+        let params = self.params.lock().unwrap();
+        let parameter = params.get(name).ok_or(Error::ParameterNotSet {
+            name: name.to_string(),
+        })?;
+
+        let value: T =
+            parameter
+                .value
+                .clone()
+                .try_into()
+                .map_err(|error: WrongParameterType| Error::ParameterWrongType {
+                    name: name.to_string(),
+                    expected_type: error.expected_type_name,
+                    actual_type: error.actual_type_name,
+                })?;
+
+        Ok(value)
+    }
+
     /// Subscribe to a ROS topic.
     ///
     /// This function returns a `Stream` of ros messages.

@@ -127,6 +127,18 @@ pub enum Error {
 
     #[error("Parameter {name} conversion failed: {msg}")]
     ParameterValueConv { name: String, msg: String },
+
+    #[error("Expected parameter {name} is not set")]
+    ParameterNotSet { name: String },
+
+    #[error(
+        "Parameter {name} was expected to be of type {expected_type} but was of type {actual_type}"
+    )]
+    ParameterWrongType {
+        name: String,
+        expected_type: &'static str,
+        actual_type: &'static str,
+    },
 }
 
 impl Error {

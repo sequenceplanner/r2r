@@ -22,8 +22,8 @@ pub enum ParameterValue {
 
 #[derive(Debug)]
 pub struct WrongParameterType {
-    expected_type_name: &'static str,
-    actual_type_name: &'static str,
+    pub expected_type_name: &'static str,
+    pub actual_type_name: &'static str,
 }
 
 impl std::error::Error for WrongParameterType {}
