@@ -771,19 +771,31 @@ impl Node {
     where
         T: WrappedServiceTypeSupport,
     {
-        let client_handle = create_client_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            T::get_ts(),
-            qos_profile,
-        )?;
-        let ws = TypedClient::<T> {
-            rcl_handle: client_handle,
+        // SAFETY: The `rcl_handle` is not fully initialized yet.
+        let mut client_arc = Arc::new(Mutex::new(TypedClient::<T> {
+            rcl_handle: unsafe { rcl_get_zero_initialized_client() },
             response_channels: Vec::new(),
             poll_available_channels: Vec::new(),
+        }));
+
+        // SAFETY:
+        // The client was zero initialized above.
+        // Full initialization happens in `create_client_helper`.
+        unsafe {
+            let client = Arc::get_mut(&mut client_arc)
+                .expect("No other Arc or Weak should exist. The Arc was just created.")
+                .get_mut()
+                .expect("The mutex was just created. It should not be poisoned.");
+
+            create_client_helper(
+                &mut client.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                T::get_ts(),
+                qos_profile,
+            )?
         };
 
-        let client_arc = Arc::new(Mutex::new(ws));
         let c = make_client(Arc::downgrade(&client_arc));
         self.clients.push(client_arc);
         Ok(c)
@@ -799,20 +811,33 @@ impl Node {
         &mut self, service_name: &str, service_type: &str, qos_profile: QosProfile,
     ) -> Result<ClientUntyped> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
-        let client_handle = create_client_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            service_type.ts,
-            qos_profile,
-        )?;
-        let client = UntypedClient_ {
+
+        // SAFETY: The `rcl_handle` is not fully initialized yet.
+        let mut client_arc = Arc::new(Mutex::new(UntypedClient_ {
             service_type,
-            rcl_handle: client_handle,
+            rcl_handle: unsafe { rcl_get_zero_initialized_client() },
             response_channels: Vec::new(),
             poll_available_channels: Vec::new(),
+        }));
+
+        // SAFETY:
+        // The client was zero initialized above.
+        // Full initialization happens in `create_client_helper`.
+        unsafe {
+            let client = Arc::get_mut(&mut client_arc)
+                .expect("No other Arc or Weak should exist. The Arc was just created.")
+                .get_mut()
+                .expect("The mutex was just created. It should not be poisoned.");
+
+            create_client_helper(
+                &mut client.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                client.service_type.ts,
+                qos_profile,
+            )?
         };
 
-        let client_arc = Arc::new(Mutex::new(client));
         let c = make_untyped_client(Arc::downgrade(&client_arc));
         self.clients.push(client_arc);
         Ok(c)
