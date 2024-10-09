@@ -547,14 +547,13 @@ impl Node {
         ParameterValue: TryInto<T, Error = WrongParameterType>,
     {
         let params = self.params.lock().unwrap();
-        let parameter = params.get(name).ok_or(Error::ParameterNotSet {
-            name: name.to_string(),
-        })?;
+        let value = params
+            .get(name)
+            .map(|parameter| parameter.value.clone())
+            .unwrap_or(ParameterValue::NotSet);
 
         let value: T =
-            parameter
-                .value
-                .clone()
+            value
                 .try_into()
                 .map_err(|error: WrongParameterType| Error::ParameterWrongType {
                     name: name.to_string(),
