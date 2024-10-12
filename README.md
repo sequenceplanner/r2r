@@ -14,7 +14,7 @@ These bindings are being written organically when things are needed by me and ot
 How to use
 --------------------
 1. Make sure you have libclang installed. (e.g. libclang-dev on ubuntu)
-2. Depend on this package in Cargo.toml: `r2r = "0.9.0"`
+2. Depend on this package in Cargo.toml: `r2r = "0.9.1"`
 3. You need to source your ROS2 installation before building/running.
 4. The bindings will rebuild automatically if/when you source your workspace(s).
 5. If you make changes to existing message types, run `cargo clean -p r2r_msg_gen` to force recompilation of the rust message types on the next build.
@@ -46,6 +46,9 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+
+#### [0.9.1] - 2024-10-12
+- Minor code fixes: <https://github.com/sequenceplanner/r2r/pull/105>, <https://github.com/sequenceplanner/r2r/pull/106>
 - Update for ros2 jazzy <https://github.com/sequenceplanner/r2r/pull/100>
 
 #### [0.9.0] - 2024-05-17
