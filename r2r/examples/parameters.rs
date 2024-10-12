@@ -18,6 +18,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ctx = r2r::Context::create()?;
     let mut node = r2r::Node::create(ctx, "to_be_replaced", "to_be_replaced")?;
 
+    // if you only need to load a parameter once at startup, it can be done like this.
+    // errors can be propigated with the ? operator and enhanced with the `thiserror` and `anyhow` crates.
+    // we do not use the ? operator here because we want the program to continue, even if the value is not set.
+    let serial_interface_path = node.get_parameter::<String>("serial_interface");
+    match serial_interface_path {
+        Ok(serial_interface) => println!("Serial interface: {serial_interface}"),
+        Err(error) => println!("Failed to get name of serial interface: {error}"),
+    }
+
+    // you can also get parameters as optional types.
+    // this will be None if the parameter is not set. If the parameter is set but to the wrong type, this will
+    // will produce an error.
+    let baud_rate: Option<i64> = node.get_parameter("baud_rate")?;
+
+    // because the baud_rate is an optional type, we can use `unwrap_or` to provide a default value.
+    let baud_rate = baud_rate.unwrap_or(115200);
+    println!("Baud rate: {baud_rate}");
+
     // make a parameter handler (once per node).
     // the parameter handler is optional, only spawn one if you need it.
     let (paramater_handler, parameter_events) = node.make_parameter_handler()?;
