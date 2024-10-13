@@ -1,6 +1,6 @@
 [package]
 name = "r2r"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Easy to use, runtime-agnostic, async rust bindings for ROS2."
 license = "MIT AND Apache-2.0"
@@ -18,11 +18,11 @@ serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.89"
 thiserror = "1.0.37"
 lazy_static = "1.4.0"
-r2r_common = { path = "../r2r_common", version = "0.9.1" }
-r2r_rcl = { path = "../r2r_rcl", version = "0.9.1" }
-r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.1" }
-r2r_actions = { path = "../r2r_actions", version = "0.9.1" }
-r2r_macros = { path = "../r2r_macros", version = "0.9.1" }
+r2r_common = { path = "../r2r_common", version = "0.9.2" }
+r2r_rcl = { path = "../r2r_rcl", version = "0.9.2" }
+r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.2" }
+r2r_actions = { path = "../r2r_actions", version = "0.9.2" }
+r2r_macros = { path = "../r2r_macros", version = "0.9.2" }
 uuid = { version = "1.2.2", features = ["serde", "v4"] }
 futures = "0.3.25"
 log = "0.4.18"
@@ -38,8 +38,8 @@ cdr = "0.2.4"
 criterion = "0.5.1"
 
 [build-dependencies]
-r2r_common = { path = "../r2r_common", version = "0.9.1" }
-r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.1" }
+r2r_common = { path = "../r2r_common", version = "0.9.2" }
+r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.2" }
 rayon = "1.7.0"
 force-send-sync = "1.0.0"
 quote = "1.0.28"

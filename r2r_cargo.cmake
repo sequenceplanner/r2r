@@ -1,5 +1,5 @@
 #
-# For r2r 0.9.1
+# For r2r 0.9.2
 #
 # cmake code for simple colcon integration.
 # See https://github.com/m-dahl/r2r_minimal_node/
