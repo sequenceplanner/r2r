@@ -1,12 +1,12 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![allow(improper_ctypes)]
 #![allow(dead_code)]
 // Silence "`extern` fn uses type `u128`, which is not FFI-safe"
 // As of rustc 1.78, this has been fixed.
 // It could be good to still warn if building with an older rust version.
 #![allow(improper_ctypes)]
+#![allow(improper_ctypes_definitions)]
 include!(concat!(env!("OUT_DIR"), "/rcl_bindings.rs"));
 
 use std::ffi::{CStr, CString};

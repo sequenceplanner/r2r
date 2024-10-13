@@ -46,6 +46,8 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Fix cfg warnings <https://github.com/sequenceplanner/r2r/commit/4cb5bd362e81154924cc7dc21f8edbf470c4604a>
+- More convinent one time parameter access <https://github.com/sequenceplanner/r2r/pull/107>
 
 #### [0.9.1] - 2024-10-12
 - Minor code fixes: <https://github.com/sequenceplanner/r2r/pull/105>, <https://github.com/sequenceplanner/r2r/pull/106>
