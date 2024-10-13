@@ -20,7 +20,94 @@ pub enum ParameterValue {
     StringArray(Vec<String>),
 }
 
+#[derive(Debug)]
+pub struct WrongParameterType {
+    pub expected_type_name: &'static str,
+    pub actual_type_name: &'static str,
+}
+
+impl std::error::Error for WrongParameterType {}
+
+impl std::fmt::Display for WrongParameterType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "got `{}`, expected `{}`", self.actual_type_name, self.expected_type_name)
+    }
+}
+
+macro_rules! try_into_template {
+    ($ty:ty, $expected_type_name:literal, $variant:pat => $result:expr) => {
+        impl TryInto<$ty> for ParameterValue {
+            type Error = WrongParameterType;
+
+            fn try_into(self) -> std::prelude::v1::Result<$ty, Self::Error> {
+                match self {
+                    $variant => Ok($result),
+                    _ => Err(WrongParameterType {
+                        expected_type_name: $expected_type_name,
+                        actual_type_name: self.type_name(),
+                    }),
+                }
+            }
+        }
+    };
+}
+
+try_into_template!((), "not set", ParameterValue::NotSet => ());
+try_into_template!(bool, "boolean", ParameterValue::Bool(value) => value);
+try_into_template!(i64, "integer", ParameterValue::Integer(value) => value);
+try_into_template!(f64, "double", ParameterValue::Double(value) => value);
+try_into_template!(String, "string", ParameterValue::String(value) => value);
+try_into_template!(Vec<bool>, "boolean array", ParameterValue::BoolArray(value) => value);
+try_into_template!(Vec<u8>, "byte array", ParameterValue::ByteArray(value) => value);
+try_into_template!(Vec<i64>, "integer array", ParameterValue::IntegerArray(value) => value);
+try_into_template!(Vec<f64>, "double array", ParameterValue::DoubleArray(value) => value);
+try_into_template!(Vec<String>, "string array", ParameterValue::StringArray(value) => value);
+
+macro_rules! try_into_option_template {
+    ($ty:ty, $expected_type_name:literal, $variant:pat => $result:expr) => {
+        impl TryInto<Option<$ty>> for ParameterValue {
+            type Error = WrongParameterType;
+
+            fn try_into(self) -> std::prelude::v1::Result<Option<$ty>, Self::Error> {
+                match self {
+                    $variant => Ok(Some($result)),
+                    ParameterValue::NotSet => Ok(None),
+                    _ => Err(WrongParameterType {
+                        expected_type_name: $expected_type_name,
+                        actual_type_name: self.type_name(),
+                    }),
+                }
+            }
+        }
+    };
+}
+
+try_into_option_template!(bool, "boolean", ParameterValue::Bool(value) => value);
+try_into_option_template!(i64, "integer", ParameterValue::Integer(value) => value);
+try_into_option_template!(f64, "double", ParameterValue::Double(value) => value);
+try_into_option_template!(String, "string", ParameterValue::String(value) => value);
+try_into_option_template!(Vec<bool>, "boolean array", ParameterValue::BoolArray(value) => value);
+try_into_option_template!(Vec<u8>, "byte array", ParameterValue::ByteArray(value) => value);
+try_into_option_template!(Vec<i64>, "integer array", ParameterValue::IntegerArray(value) => value);
+try_into_option_template!(Vec<f64>, "double array", ParameterValue::DoubleArray(value) => value);
+try_into_option_template!(Vec<String>, "string array", ParameterValue::StringArray(value) => value);
+
 impl ParameterValue {
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            ParameterValue::NotSet => "not set",
+            ParameterValue::Bool(_) => "boolean",
+            ParameterValue::Integer(_) => "integer",
+            ParameterValue::Double(_) => "double",
+            ParameterValue::String(_) => "string",
+            ParameterValue::BoolArray(_) => "boolean array",
+            ParameterValue::ByteArray(_) => "byte array",
+            ParameterValue::IntegerArray(_) => "integer array",
+            ParameterValue::DoubleArray(_) => "double array",
+            ParameterValue::StringArray(_) => "string array",
+        }
+    }
+
     pub(crate) fn from_rcl(v: &rcl_variant_t) -> Self {
         if !v.bool_value.is_null() {
             ParameterValue::Bool(unsafe { *v.bool_value })
