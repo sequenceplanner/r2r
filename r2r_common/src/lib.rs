@@ -150,6 +150,19 @@ pub fn print_cargo_ros_distro() {
     }
 }
 
+pub fn print_cargo_used_cfgs(message_cfgs: &[&str]) {
+    // Declare all supported ros distros as cfg directives for cargo
+    for d in SUPPORTED_ROS_DISTROS {
+        println!("cargo::rustc-check-cfg=cfg(r2r__ros__distro__{d})");
+    }
+
+    // additionally we have conditional tests and features based on some
+    // optional ros message packages.
+    for c in message_cfgs {
+        println!("cargo::rustc-check-cfg=cfg({c})");
+    }
+}
+
 pub fn print_cargo_link_search() {
     let ament_prefix_var_name = "AMENT_PREFIX_PATH";
     if let Some(paths) = env::var_os(ament_prefix_var_name) {

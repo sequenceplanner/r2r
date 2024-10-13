@@ -36,6 +36,18 @@ use filenames::*;
 
 fn main() {
     r2r_common::print_cargo_watches();
+    // Declare all the custom cfg directives we use
+    // to silence cargo warnings.
+    r2r_common::print_cargo_used_cfgs(&[
+        "r2r__rosgraph_msgs__msg__Clock",
+        "r2r__action_msgs__msg__GoalStatus",
+        "r2r__test_msgs__msg__Defaults",
+        "r2r__test_msgs__msg__Arrays",
+        "r2r__test_msgs__msg__WStrings",
+        "r2r__example_interfaces__srv__AddTwoInts",
+        "r2r__std_srvs__srv__Empty",
+        "r2r__example_interfaces__action__Fibonacci",
+    ]);
     r2r_common::print_cargo_ros_distro();
 
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Use the local version of r2r when building the minimal node.
+rm /r2r/r2r_minimal_node/r2r_minimal_node/Cargo.lock
 cat >> /r2r/r2r_minimal_node/r2r_minimal_node/Cargo.toml << EOF
 
 [patch.crates-io]
