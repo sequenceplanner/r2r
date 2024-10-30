@@ -31,6 +31,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         count += 1;
     }
 
+    // destroy publisher before the node
+    node.destroy_publisher(publisher);
+
     println!("All done!");
 
     Ok(())

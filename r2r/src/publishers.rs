@@ -104,7 +104,7 @@ pub struct Publisher<T>
 where
     T: WrappedTypesupport,
 {
-    handle: Weak<Publisher_>,
+    pub(crate) handle: Weak<Publisher_>,
     type_: PhantomData<T>,
 }
 
@@ -116,7 +116,7 @@ unsafe impl Send for PublisherUntyped {}
 /// move between threads.
 #[derive(Debug, Clone)]
 pub struct PublisherUntyped {
-    handle: Weak<Publisher_>,
+    pub(crate) handle: Weak<Publisher_>,
     type_: String,
 }
 

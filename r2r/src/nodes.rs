@@ -905,6 +905,30 @@ impl Node {
         Ok(p)
     }
 
+    /// Destroy a ROS publisher.
+    pub fn destroy_publisher<T: WrappedTypesupport>(&mut self, p: Publisher<T>) {
+        if let Some(handle) = p.handle.upgrade() {
+            // Remove handle from list of publishers.
+            self.pubs.iter().position(|p| Arc::ptr_eq(p, &handle))
+                .map(|i| self.pubs.swap_remove(i));
+
+            let handle = wait_until_unwrapped(handle);
+            handle.destroy(self.node_handle.as_mut());
+        }
+    }
+
+    /// Destroy a ROS publisher.
+    pub fn destroy_publisher_untyped(&mut self, p: PublisherUntyped) {
+        if let Some(handle) = p.handle.upgrade() {
+            // Remove handle from list of publishers.
+            self.pubs.iter().position(|p| Arc::ptr_eq(p, &handle))
+                .map(|i| self.pubs.swap_remove(i));
+
+            let handle = wait_until_unwrapped(handle);
+            handle.destroy(self.node_handle.as_mut());
+        }
+    }
+
     /// Spin the ROS node.
     ///
     /// This handles wakeups of all subscribes, services, etc on the
