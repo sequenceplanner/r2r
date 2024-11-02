@@ -46,6 +46,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Add functions to destroy a publisher <https://github.com/sequenceplanner/r2r/pull/110>
 
 #### [0.9.2] - 2024-10-13
 - Fix cfg warnings <https://github.com/sequenceplanner/r2r/commit/4cb5bd362e81154924cc7dc21f8edbf470c4604a>
