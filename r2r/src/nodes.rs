@@ -1259,6 +1259,8 @@ impl Node {
             return;
         }
 
+        r2r_tracing::trace_spin_wake(&*self.node_handle);
+
         let mut subs_to_remove = vec![];
         if ws.subscriptions != std::ptr::null_mut() {
             let ws_subs =

@@ -15,6 +15,11 @@ pub fn trace_spin_end(node: *const rcl_node_t) {
     tp::spin_end(node as usize);
 }
 
+/// The `node` woke up from waiting on a wait set.
+pub fn trace_spin_wake(node: *const rcl_node_t) {
+    tp::spin_wake(node as usize);
+}
+
 /// The `node`` timeouted while spinning
 pub fn trace_spin_timeout(node: *const rcl_node_t) {
     tp::spin_timeout(node as usize);

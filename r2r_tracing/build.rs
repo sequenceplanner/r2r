@@ -46,6 +46,9 @@ fn generate_r2r_tracepoints() {
     create_tracepoint!(r2r::spin_end(
         node_handle: CTFType::IntegerHex(CIntegerType::USize),
     ));
+    create_tracepoint!(r2r::spin_wake(
+        node_handle: CTFType::IntegerHex(CIntegerType::USize),
+    ));
     create_tracepoint!(r2r::spin_timeout(
         node_handle: CTFType::IntegerHex(CIntegerType::USize),
     ));
