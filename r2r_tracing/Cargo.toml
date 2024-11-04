@@ -1,0 +1,16 @@
+[package]
+name = "r2r_tracing"
+version = "0.9.2"
+
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lttng-ust = { git = "https://github.com/skoudmar/lttng-ust-rs.git"}
+r2r_rcl = { path = "../r2r_rcl", version = "0.9.2" }
+
+[build-dependencies]
+lttng-ust-generate = { git = "https://github.com/skoudmar/lttng-ust-rs.git"}
+bindgen = {version = "0.63.0"}
+r2r_common = { path = "../r2r_common", version = "0.9.2" }
