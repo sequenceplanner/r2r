@@ -14,7 +14,7 @@ These bindings are being written organically when things are needed by me and ot
 How to use
 --------------------
 1. Make sure you have libclang installed. (e.g. libclang-dev on ubuntu)
-2. Depend on this package in Cargo.toml: `r2r = "0.9.2"`
+2. Depend on this package in Cargo.toml: `r2r = "0.9.3"`
 3. You need to source your ROS2 installation before building/running.
 4. The bindings will rebuild automatically if/when you source your workspace(s).
 5. If you make changes to existing message types, run `cargo clean -p r2r_msg_gen` to force recompilation of the rust message types on the next build.
@@ -46,6 +46,9 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+
+#### [0.9.3] - 2024-11-09
+- Expose WrongParameterType <https://github.com/sequenceplanner/r2r/pull/111>
 - Add functions to destroy a publisher <https://github.com/sequenceplanner/r2r/pull/110>
 
 #### [0.9.2] - 2024-10-13
