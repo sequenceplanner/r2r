@@ -234,7 +234,7 @@ impl MemberType {
             MemberType::F32 => quote! { f32 },
             MemberType::F64 => quote! { f64 },
             MemberType::Char => quote! { std::ffi::c_char },
-            MemberType::WChar => quote! { widestring::WideChar },
+            MemberType::WChar => quote! { u16 },
             MemberType::String => quote! { std::string::String },
             MemberType::WString => quote! { std::string::String },
             MemberType::Message => quote! { message },
