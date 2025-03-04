@@ -653,15 +653,27 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<T>(10);
 
-        let ws = TypedSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(TypedSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -674,15 +686,27 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
-        let ws = NativeSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(NativeSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -694,16 +718,28 @@ impl Node {
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
-        let ws = UntypedSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(UntypedSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             topic_type: topic_type.to_string(),
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                msg.ts,
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -739,16 +775,28 @@ impl Node {
             return Err(Error::from_rcl_error(ret));
         }
 
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
         let (sender, receiver) = mpsc::channel::<Vec<u8>>(10);
 
-        let ws = RawSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(RawSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             msg_buf,
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                msg.ts,
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 

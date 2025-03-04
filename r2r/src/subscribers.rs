@@ -234,18 +234,17 @@ impl Subscriber_ for RawSubscriber {
     }
 }
 
-pub fn create_subscription_helper(
-    node: &mut rcl_node_t, topic: &str, ts: *const rosidl_message_type_support_t,
-    qos_profile: QosProfile,
-) -> Result<rcl_subscription_t> {
-    let mut subscription_handle = unsafe { rcl_get_zero_initialized_subscription() };
+pub unsafe fn create_subscription_helper(
+    subscription_handle: &mut rcl_subscription_t, node: &mut rcl_node_t, topic: &str,
+    ts: *const rosidl_message_type_support_t, qos_profile: QosProfile,
+) -> Result<()> {
     let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
     let result = unsafe {
         let mut subscription_options = rcl_subscription_get_default_options();
         subscription_options.qos = qos_profile.into();
         rcl_subscription_init(
-            &mut subscription_handle,
+            subscription_handle,
             node,
             ts,
             topic_c_string.as_ptr(),
@@ -253,7 +252,7 @@ pub fn create_subscription_helper(
         )
     };
     if result == RCL_RET_OK as i32 {
-        Ok(subscription_handle)
+        Ok(())
     } else {
         Err(Error::from_rcl_error(result))
     }

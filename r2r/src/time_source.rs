@@ -9,8 +9,8 @@ use crate::{
     Clock, ClockType, Node, QosProfile, WrappedTypesupport,
 };
 use r2r_rcl::{
-    rcl_node_t, rcl_subscription_fini, rcl_subscription_t, rcl_take, rcl_time_point_value_t,
-    rmw_message_info_t, RCL_RET_OK,
+    rcl_get_zero_initialized_subscription, rcl_node_t, rcl_subscription_fini, rcl_subscription_t,
+    rcl_take, rcl_time_point_value_t, rmw_message_info_t, RCL_RET_OK,
 };
 use std::sync::{Arc, Mutex, Weak};
 
@@ -102,7 +102,7 @@ impl TimeSource {
         match inner.subscriber_state {
             TimeSourceSubscriberState::None => {
                 let subscriber = TimeSourceSubscriber::new(&mut node.node_handle, self.clone())?;
-                node.subscribers.push(Box::new(subscriber));
+                node.subscribers.push(subscriber);
                 inner.subscriber_state = TimeSourceSubscriberState::Active;
             }
             TimeSourceSubscriberState::ToBeDestroyed => {
@@ -191,20 +191,29 @@ impl TimeSource_ {
 }
 
 impl TimeSourceSubscriber {
-    fn new(node_handle: &mut rcl_node_t, time_source: TimeSource) -> Result<TimeSourceSubscriber> {
+    fn new(node_handle: &mut rcl_node_t, time_source: TimeSource) -> Result<Box<Self>> {
         // The values are set based on default values in rclcpp
         let qos = QosProfile::default().keep_last(1).best_effort();
 
-        let subscriber = create_subscription_helper(
-            node_handle,
-            "/clock",
-            crate::rosgraph_msgs::msg::Clock::get_ts(),
-            qos,
-        )?;
-        Ok(Self {
-            subscriber_handle: subscriber,
+        let mut subscriber = Box::new(Self {
+            subscriber_handle: unsafe { rcl_get_zero_initialized_subscription() },
             time_source,
-        })
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscriber.subscriber_handle,
+                node_handle,
+                "/clock",
+                crate::rosgraph_msgs::msg::Clock::get_ts(),
+                qos,
+            )?
+        };
+
+        Ok(subscriber)
     }
 }
 
