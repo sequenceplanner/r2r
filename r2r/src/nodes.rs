@@ -810,20 +810,33 @@ impl Node {
     where
         T: WrappedServiceTypeSupport,
     {
-        let service_handle = create_service_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            T::get_ts(),
-            qos_profile,
-        )?;
         let (sender, receiver) = mpsc::channel::<ServiceRequest<T>>(10);
 
-        let ws = TypedService::<T> {
-            rcl_handle: service_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut service_arc = Arc::new(Mutex::new(TypedService::<T> {
+            rcl_handle: unsafe { rcl_get_zero_initialized_service() },
             sender,
+        }));
+        let service_ref = Arc::get_mut(&mut service_arc)
+            .unwrap() // No other Arc should exist. The Arc was just created.
+            .get_mut()
+            .unwrap(); // The mutex was just created. It should not be poisoned.
+
+        // SAFETY:
+        // The service was zero initialized above.
+        // Full initialization happens in `create_service_helper``.
+        unsafe {
+            create_service_helper(
+                &mut service_ref.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
 
-        self.services.push(Arc::new(Mutex::new(ws)));
+        // Only push after full initialization.
+        self.services.push(service_arc);
         Ok(receiver)
     }
 
