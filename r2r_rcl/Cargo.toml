@@ -15,7 +15,7 @@ paste = "1.0.9"
 widestring = "1.0.2"
 
 [build-dependencies]
-bindgen = "0.63.0"
+bindgen = "0.71.1"
 r2r_common = { path = "../r2r_common", version = "0.9.4" }
 
 [features]

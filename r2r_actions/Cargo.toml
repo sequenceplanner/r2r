@@ -15,7 +15,7 @@ r2r_rcl = { path = "../r2r_rcl", version = "0.9.4" }
 r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.4" }
 
 [build-dependencies]
-bindgen = "0.63.0"
+bindgen = "0.71.1"
 r2r_common = { path = "../r2r_common", version = "0.9.4" }
 
 [features]
