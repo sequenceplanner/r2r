@@ -302,7 +302,7 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let set_params_future = set_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
-                log::info!(
+                println!(
                     "make_parameter_handler: set_parameters service called: {:?}",
                     req.message
                 );
@@ -358,7 +358,7 @@ impl Node {
         );
         handlers.push(Box::pin(set_params_future));
 
-        log::info!("make_parameter_handler: created {}/get_parameters service", node_name);
+        println!("make_parameter_handler: created {}/get_parameters service", node_name);
 
         // rcl_interfaces/srv/GetParameters
         let get_params_request_stream = self
@@ -371,7 +371,7 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let get_params_future = get_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
-                log::info!(
+                println!(
                     "make_parameter_handler: get_parameters service called: {:?}",
                     req.message
                 );
@@ -406,7 +406,7 @@ impl Node {
 
         handlers.push(Box::pin(get_params_future));
 
-        log::info!("make_parameter_handler: creating {}/list_parameters service", node_name);
+        println!("make_parameter_handler: creating {}/list_parameters service", node_name);
 
         // rcl_interfaces/srv/ListParameters
         use rcl_interfaces::srv::ListParameters;
@@ -418,7 +418,7 @@ impl Node {
         let params = self.params.clone();
         let list_params_future = list_params_request_stream.for_each(
             move |req: ServiceRequest<ListParameters::Service>| {
-                log::info!(
+                println!(
                     "make_parameter_handler: list_parameters service called: {:?}",
                     req.message
                 );
@@ -428,7 +428,7 @@ impl Node {
 
         handlers.push(Box::pin(list_params_future));
 
-        log::info!("make_parameter_handler: created {}/describe_parameters service", node_name);
+        println!("make_parameter_handler: created {}/describe_parameters service", node_name);
 
         // rcl_interfaces/srv/DescribeParameters
         use rcl_interfaces::srv::DescribeParameters;
@@ -440,7 +440,7 @@ impl Node {
         let params = self.params.clone();
         let desc_params_future = desc_params_request_stream.for_each(
             move |req: ServiceRequest<DescribeParameters::Service>| {
-                log::info!(
+                println!(
                     "make_parameter_handler: describe_parameters service called: {:?}",
                     req.message
                 );
@@ -450,7 +450,7 @@ impl Node {
 
         handlers.push(Box::pin(desc_params_future));
 
-        log::info!("make_parameter_handler: creating {}/get_parameter_types service", node_name);
+        println!("make_parameter_handler: creating {}/get_parameter_types service", node_name);
 
         // rcl_interfaces/srv/GetParameterTypes
         use rcl_interfaces::srv::GetParameterTypes;
@@ -462,7 +462,7 @@ impl Node {
         let params = self.params.clone();
         let get_param_types_future = get_param_types_request_stream.for_each(
             move |req: ServiceRequest<GetParameterTypes::Service>| {
-                log::info!(
+                println!(
                     "make_parameter_handler: get_parameter_types service called: {:?}",
                     req.message
                 );
@@ -507,7 +507,7 @@ impl Node {
             }
         }
 
-        log::info!("make_parameter_handler should be done now");
+        println!("make_parameter_handler should be done now");
 
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
