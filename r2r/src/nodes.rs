@@ -283,9 +283,15 @@ impl Node {
                 .register_parameters("", None, &mut self.params.lock().unwrap())?;
         }
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
+
+        log::info!("make_parameter_handler: creating channel");
+
         let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
 
         let node_name = self.name()?;
+
+        log::info!("make_parameter_handler: creating {}/set_parameters service", node_name);
+
         let set_params_request_stream = self
             .create_service::<rcl_interfaces::srv::SetParameters::Service>(
                 &format!("{}/set_parameters", node_name),
@@ -296,6 +302,10 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let set_params_future = set_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
+                log::info!(
+                    "make_parameter_handler: set_parameters service called: {:?}",
+                    req.message
+                );
                 let mut result = rcl_interfaces::srv::SetParameters::Response::default();
                 for p in &req.message.parameters {
                     let val = ParameterValue::from_parameter_value_msg(p.value.clone());
@@ -348,6 +358,8 @@ impl Node {
         );
         handlers.push(Box::pin(set_params_future));
 
+        log::info!("make_parameter_handler: created {}/get_parameters service", node_name);
+
         // rcl_interfaces/srv/GetParameters
         let get_params_request_stream = self
             .create_service::<rcl_interfaces::srv::GetParameters::Service>(
@@ -359,6 +371,11 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let get_params_future = get_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
+                log::info!(
+                    "make_parameter_handler: get_parameters service called: {:?}",
+                    req.message
+                );
+
                 let params = params.lock().unwrap();
                 let values = req
                     .message
@@ -389,6 +406,8 @@ impl Node {
 
         handlers.push(Box::pin(get_params_future));
 
+        log::info!("make_parameter_handler: creating {}/list_parameters service", node_name);
+
         // rcl_interfaces/srv/ListParameters
         use rcl_interfaces::srv::ListParameters;
         let list_params_request_stream = self.create_service::<ListParameters::Service>(
@@ -399,11 +418,17 @@ impl Node {
         let params = self.params.clone();
         let list_params_future = list_params_request_stream.for_each(
             move |req: ServiceRequest<ListParameters::Service>| {
+                log::info!(
+                    "make_parameter_handler: list_parameters service called: {:?}",
+                    req.message
+                );
                 Self::handle_list_parameters(req, &params)
             },
         );
 
         handlers.push(Box::pin(list_params_future));
+
+        log::info!("make_parameter_handler: created {}/describe_parameters service", node_name);
 
         // rcl_interfaces/srv/DescribeParameters
         use rcl_interfaces::srv::DescribeParameters;
@@ -415,11 +440,17 @@ impl Node {
         let params = self.params.clone();
         let desc_params_future = desc_params_request_stream.for_each(
             move |req: ServiceRequest<DescribeParameters::Service>| {
+                log::info!(
+                    "make_parameter_handler: describe_parameters service called: {:?}",
+                    req.message
+                );
                 Self::handle_desc_parameters(req, &params)
             },
         );
 
         handlers.push(Box::pin(desc_params_future));
+
+        log::info!("make_parameter_handler: creating {}/get_parameter_types service", node_name);
 
         // rcl_interfaces/srv/GetParameterTypes
         use rcl_interfaces::srv::GetParameterTypes;
@@ -431,6 +462,10 @@ impl Node {
         let params = self.params.clone();
         let get_param_types_future = get_param_types_request_stream.for_each(
             move |req: ServiceRequest<GetParameterTypes::Service>| {
+                log::info!(
+                    "make_parameter_handler: get_parameter_types service called: {:?}",
+                    req.message
+                );
                 let params = params.lock().unwrap();
                 let types = req
                     .message
@@ -471,6 +506,8 @@ impl Node {
                 ts.enable_sim_time(self)?;
             }
         }
+
+        log::info!("make_parameter_handler should be done now");
 
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
@@ -909,7 +946,9 @@ impl Node {
     pub fn destroy_publisher<T: WrappedTypesupport>(&mut self, p: Publisher<T>) {
         if let Some(handle) = p.handle.upgrade() {
             // Remove handle from list of publishers.
-            self.pubs.iter().position(|p| Arc::ptr_eq(p, &handle))
+            self.pubs
+                .iter()
+                .position(|p| Arc::ptr_eq(p, &handle))
                 .map(|i| self.pubs.swap_remove(i));
 
             let handle = wait_until_unwrapped(handle);
@@ -921,7 +960,9 @@ impl Node {
     pub fn destroy_publisher_untyped(&mut self, p: PublisherUntyped) {
         if let Some(handle) = p.handle.upgrade() {
             // Remove handle from list of publishers.
-            self.pubs.iter().position(|p| Arc::ptr_eq(p, &handle))
+            self.pubs
+                .iter()
+                .position(|p| Arc::ptr_eq(p, &handle))
                 .map(|i| self.pubs.swap_remove(i));
 
             let handle = wait_until_unwrapped(handle);
