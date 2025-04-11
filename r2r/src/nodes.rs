@@ -284,14 +284,12 @@ impl Node {
         }
         let mut handlers: Vec<std::pin::Pin<Box<dyn Future<Output = ()> + Send>>> = Vec::new();
 
-        log::info!("make_parameter_handler: creating channel");
-
-        let (mut event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
+        let (mut set_event_tx, event_rx) = mpsc::channel::<(String, ParameterValue)>(10);
+        let mut set_atomically_event_tx = set_event_tx.clone();
 
         let node_name = self.name()?;
 
-        log::info!("make_parameter_handler: creating {}/set_parameters service", node_name);
-
+        // rcl_interfaces/srv/SetParameters
         let set_params_request_stream = self
             .create_service::<rcl_interfaces::srv::SetParameters::Service>(
                 &format!("{}/set_parameters", node_name),
@@ -302,10 +300,6 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let set_params_future = set_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
-                println!(
-                    "make_parameter_handler: set_parameters service called: {:?}",
-                    req.message
-                );
                 let mut result = rcl_interfaces::srv::SetParameters::Response::default();
                 for p in &req.message.parameters {
                     let val = ParameterValue::from_parameter_value_msg(p.value.clone());
@@ -345,7 +339,7 @@ impl Node {
                     };
                     // if the value changed, send out new value on parameter event stream
                     if changed && r.successful {
-                        if let Err(e) = event_tx.try_send((p.name.clone(), val)) {
+                        if let Err(e) = set_event_tx.try_send((p.name.clone(), val)) {
                             log::debug!("Warning: could not send parameter event ({}).", e);
                         }
                     }
@@ -358,8 +352,6 @@ impl Node {
         );
         handlers.push(Box::pin(set_params_future));
 
-        println!("make_parameter_handler: created {}/get_parameters service", node_name);
-
         // rcl_interfaces/srv/GetParameters
         let get_params_request_stream = self
             .create_service::<rcl_interfaces::srv::GetParameters::Service>(
@@ -371,11 +363,6 @@ impl Node {
         let params_struct_clone = params_struct.clone();
         let get_params_future = get_params_request_stream.for_each(
             move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
-                println!(
-                    "make_parameter_handler: get_parameters service called: {:?}",
-                    req.message
-                );
-
                 let params = params.lock().unwrap();
                 let values = req
                     .message
@@ -406,8 +393,6 @@ impl Node {
 
         handlers.push(Box::pin(get_params_future));
 
-        println!("make_parameter_handler: creating {}/list_parameters service", node_name);
-
         // rcl_interfaces/srv/ListParameters
         use rcl_interfaces::srv::ListParameters;
         let list_params_request_stream = self.create_service::<ListParameters::Service>(
@@ -418,17 +403,11 @@ impl Node {
         let params = self.params.clone();
         let list_params_future = list_params_request_stream.for_each(
             move |req: ServiceRequest<ListParameters::Service>| {
-                println!(
-                    "make_parameter_handler: list_parameters service called: {:?}",
-                    req.message
-                );
                 Self::handle_list_parameters(req, &params)
             },
         );
 
         handlers.push(Box::pin(list_params_future));
-
-        println!("make_parameter_handler: created {}/describe_parameters service", node_name);
 
         // rcl_interfaces/srv/DescribeParameters
         use rcl_interfaces::srv::DescribeParameters;
@@ -440,17 +419,11 @@ impl Node {
         let params = self.params.clone();
         let desc_params_future = desc_params_request_stream.for_each(
             move |req: ServiceRequest<DescribeParameters::Service>| {
-                println!(
-                    "make_parameter_handler: describe_parameters service called: {:?}",
-                    req.message
-                );
                 Self::handle_desc_parameters(req, &params)
             },
         );
 
         handlers.push(Box::pin(desc_params_future));
-
-        println!("make_parameter_handler: creating {}/get_parameter_types service", node_name);
 
         // rcl_interfaces/srv/GetParameterTypes
         use rcl_interfaces::srv::GetParameterTypes;
@@ -462,10 +435,6 @@ impl Node {
         let params = self.params.clone();
         let get_param_types_future = get_param_types_request_stream.for_each(
             move |req: ServiceRequest<GetParameterTypes::Service>| {
-                println!(
-                    "make_parameter_handler: get_parameter_types service called: {:?}",
-                    req.message
-                );
                 let params = params.lock().unwrap();
                 let types = req
                     .message
@@ -483,6 +452,73 @@ impl Node {
         );
 
         handlers.push(Box::pin(get_param_types_future));
+
+        let set_params_atomically_request_stream =
+            self.create_service::<rcl_interfaces::srv::SetParametersAtomically::Service>(
+                &format!("{}/set_parameters_atomically", node_name),
+                QosProfile::default(),
+            )?;
+
+        let params = self.params.clone();
+        let params_struct_clone = params_struct.clone();
+        let set_params_atomically_future = set_params_atomically_request_stream.for_each(
+            move |req: ServiceRequest<rcl_interfaces::srv::SetParametersAtomically::Service>| {
+                let mut result = rcl_interfaces::srv::SetParametersAtomically::Response::default();
+                result.result.successful = true;
+                for p in &req.message.parameters {
+                    let val = ParameterValue::from_parameter_value_msg(p.value.clone());
+                    let changed = params
+                        .lock()
+                        .unwrap()
+                        .get(&p.name)
+                        .map(|v| v.value != val)
+                        .unwrap_or(true); // changed=true if new
+                    let r = if let Some(ps) = &params_struct_clone {
+                        // Update parameter structure
+                        let result = ps.lock().unwrap().set_parameter(&p.name, &val);
+                        if result.is_ok() {
+                            // Also update Node::params
+                            params
+                                .lock()
+                                .unwrap()
+                                .entry(p.name.clone())
+                                .and_modify(|p| p.value = val.clone());
+                        }
+                        rcl_interfaces::msg::SetParametersResult {
+                            successful: result.is_ok(),
+                            reason: result.err().map_or("".into(), |e| e.to_string()),
+                        }
+                    } else {
+                        // No parameter structure - update only Node::params
+                        params
+                            .lock()
+                            .unwrap()
+                            .entry(p.name.clone())
+                            .and_modify(|p| p.value = val.clone())
+                            .or_insert(Parameter::new(val.clone()));
+                        rcl_interfaces::msg::SetParametersResult {
+                            successful: true,
+                            reason: "".into(),
+                        }
+                    };
+                    // if the value changed, send out new value on parameter event stream
+                    if changed && r.successful {
+                        if let Err(e) = set_atomically_event_tx.try_send((p.name.clone(), val)) {
+                            log::debug!("Warning: could not send parameter event ({}).", e);
+                        }
+                    }
+                    // if this parameter failed, set the result and break
+                    if !r.successful {
+                        result.result = r;
+                        break;
+                    }
+                }
+                req.respond(result)
+                    .expect("could not send reply to set parameter request");
+                future::ready(())
+            },
+        );
+        handlers.push(Box::pin(set_params_atomically_future));
 
         #[cfg(r2r__rosgraph_msgs__msg__Clock)]
         {
@@ -506,8 +542,6 @@ impl Node {
                 ts.enable_sim_time(self)?;
             }
         }
-
-        println!("make_parameter_handler should be done now");
 
         // we don't care about the result, the futures will not complete anyway.
         Ok((join_all(handlers).map(|_| ()), event_rx))
