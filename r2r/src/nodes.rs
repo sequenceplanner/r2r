@@ -453,6 +453,10 @@ impl Node {
 
         handlers.push(Box::pin(get_param_types_future));
 
+        // rcl_interfaces/srv/SetParametersAtomically
+
+        // NOTE: This is not a proper implementation of the specs, but rather a copy of set_parameters.
+        // On error, some of the parameters might already be set.
         let set_params_atomically_request_stream =
             self.create_service::<rcl_interfaces::srv::SetParametersAtomically::Service>(
                 &format!("{}/set_parameters_atomically", node_name),
