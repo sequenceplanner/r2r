@@ -318,11 +318,10 @@ impl Client_ for UntypedClient_ {
     }
 }
 
-pub fn create_client_helper(
-    node: *mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t,
-    qos_profile: QosProfile,
-) -> Result<rcl_client_t> {
-    let mut client_handle = unsafe { rcl_get_zero_initialized_client() };
+pub unsafe fn create_client_helper(
+    client_handle: &mut rcl_client_t, node: *mut rcl_node_t, service_name: &str,
+    service_ts: *const rosidl_service_type_support_t, qos_profile: QosProfile,
+) -> Result<()> {
     let service_name_c_string =
         CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
@@ -330,15 +329,16 @@ pub fn create_client_helper(
         let mut client_options = rcl_client_get_default_options();
         client_options.qos = qos_profile.into();
         rcl_client_init(
-            &mut client_handle,
+            client_handle,
             node,
             service_ts,
             service_name_c_string.as_ptr(),
             &client_options,
         )
     };
+
     if result == RCL_RET_OK as i32 {
-        Ok(client_handle)
+        Ok(())
     } else {
         Err(Error::from_rcl_error(result))
     }

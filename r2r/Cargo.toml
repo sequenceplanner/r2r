@@ -23,6 +23,7 @@ r2r_rcl = { path = "../r2r_rcl", version = "0.9.4" }
 r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.4" }
 r2r_actions = { path = "../r2r_actions", version = "0.9.4" }
 r2r_macros = { path = "../r2r_macros", version = "0.9.4" }
+r2r_tracing = { path = "../r2r_tracing", version = "0.9.4" }
 uuid = { version = "1.2.2", features = ["serde", "v4"] }
 futures = "0.3.25"
 log = "0.4.18"
@@ -50,6 +51,7 @@ prettyplease = "0.2.6"
 [features]
 save-bindgen = ["r2r_rcl/save-bindgen", "r2r_msg_gen/save-bindgen", "r2r_actions/save-bindgen"]
 doc-only = ["r2r_common/doc-only", "r2r_rcl/doc-only", "r2r_msg_gen/doc-only", "r2r_actions/doc-only"]
+tracing = ["r2r_tracing/tracing"]
 
 [package.metadata.docs.rs]
 features = ["doc-only"]

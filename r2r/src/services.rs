@@ -111,11 +111,13 @@ where
     }
 }
 
-pub fn create_service_helper(
-    node: &mut rcl_node_t, service_name: &str, service_ts: *const rosidl_service_type_support_t,
-    qos_profile: QosProfile,
-) -> Result<rcl_service_t> {
-    let mut service_handle = unsafe { rcl_get_zero_initialized_service() };
+/// Initializes the service.
+///
+/// SAFETY: requires that the service handle is zero initialized by [`rcl_get_zero_initialized_service`].
+pub unsafe fn create_service_helper(
+    service_handle: &mut rcl_service_t, node: &mut rcl_node_t, service_name: &str,
+    service_ts: *const rosidl_service_type_support_t, qos_profile: QosProfile,
+) -> Result<()> {
     let service_name_c_string =
         CString::new(service_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
 
@@ -123,7 +125,7 @@ pub fn create_service_helper(
         let mut service_options = rcl_service_get_default_options();
         service_options.qos = qos_profile.into();
         rcl_service_init(
-            &mut service_handle,
+            service_handle,
             node,
             service_ts,
             service_name_c_string.as_ptr(),
@@ -131,7 +133,7 @@ pub fn create_service_helper(
         )
     };
     if result == RCL_RET_OK as i32 {
-        Ok(service_handle)
+        Ok(())
     } else {
         Err(Error::from_rcl_error(result))
     }

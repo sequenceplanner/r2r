@@ -1,0 +1,19 @@
+[package]
+name = "r2r_tracing"
+description = "Internal dependency containing tracepoint definitions or imports for r2r."
+authors = ["Martin Škoudlil <skoudmar@cvut.cz>"]
+version = "0.9.4"
+license = "MIT"
+edition = "2021"
+repository = "https://github.com/sequenceplanner/r2r"
+readme = "README.md"
+
+[dependencies]
+r2r_rcl = { path = "../r2r_rcl", version = "0.9.4" }
+
+[build-dependencies]
+lttng-ust-generate = { git = "https://github.com/skoudmar/lttng-ust-rs.git", rev = "bd437b5eeb8c4378d78ebb5aa17f0f4a95828b32", optional = true}
+r2r_common = { path = "../r2r_common", version = "0.9.4", optional = true}
+
+[features]
+tracing = ["dep:lttng-ust-generate", "dep:r2r_common"]

@@ -3,7 +3,7 @@ use std::{
     ffi::{c_void, CString},
     fmt::Debug,
     marker::PhantomData,
-    sync::{Mutex, Once, Weak},
+    sync::{Arc, Mutex, Once, Weak},
 };
 
 use crate::{error::*, msg_types::*, qos::QosProfile};
@@ -137,15 +137,24 @@ pub fn make_publisher_untyped(handle: Weak<Publisher_>, type_: String) -> Publis
 pub fn create_publisher_helper(
     node: &mut rcl_node_t, topic: &str, typesupport: *const rosidl_message_type_support_t,
     qos_profile: QosProfile,
-) -> Result<Publisher_> {
-    let mut publisher_handle = unsafe { rcl_get_zero_initialized_publisher() };
+) -> Result<Arc<Publisher_>> {
     let topic_c_string = CString::new(topic).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+    // Allocate the memory now so that the location of the rcl handle
+    // does not change after call to rcl_publisher_init.
+    // This is important because tracing in rcl expects the handle to be at a fixed location.
+    let mut publisher_arc = Arc::new(Publisher_ {
+        handle: unsafe { rcl_get_zero_initialized_publisher() },
+        poll_inter_process_subscriber_channels: Mutex::new(Vec::new()),
+    });
+    let publisher_mut = Arc::get_mut(&mut publisher_arc)
+        .expect("No other Arc should exist. The Arc was just created.");
 
     let result = unsafe {
         let mut publisher_options = rcl_publisher_get_default_options();
         publisher_options.qos = qos_profile.into();
         rcl_publisher_init(
-            &mut publisher_handle,
+            &mut publisher_mut.handle,
             node,
             typesupport,
             topic_c_string.as_ptr(),
@@ -153,10 +162,7 @@ pub fn create_publisher_helper(
         )
     };
     if result == RCL_RET_OK as i32 {
-        Ok(Publisher_ {
-            handle: publisher_handle,
-            poll_inter_process_subscriber_channels: Mutex::new(Vec::new()),
-        })
+        Ok(publisher_arc)
     } else {
         Err(Error::from_rcl_error(result))
     }
@@ -175,6 +181,8 @@ impl PublisherUntyped {
 
         let native_msg = WrappedNativeMsgUntyped::new_from(&self.type_)?;
         native_msg.from_json(msg)?;
+
+        r2r_tracing::trace_publish(native_msg.void_ptr());
 
         let result = unsafe {
             rcl_publish(
@@ -213,6 +221,8 @@ impl PublisherUntyped {
             // Since its read only, this should never be used ..
             allocator: unsafe { rcutils_get_default_allocator() },
         };
+
+        r2r_tracing::trace_publish((&msg_buf as *const rcl_serialized_message_t).cast::<c_void>());
 
         let result = unsafe {
             rcl_publish_serialized_message(
@@ -271,6 +281,9 @@ where
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
         let native_msg: WrappedNativeMsg<T> = WrappedNativeMsg::<T>::from(msg);
+
+        r2r_tracing::trace_publish(native_msg.void_ptr());
+
         let result = unsafe {
             rcl_publish(
                 &publisher.handle as *const rcl_publisher_t,
@@ -356,6 +369,8 @@ where
             .handle
             .upgrade()
             .ok_or(Error::RCL_RET_PUBLISHER_INVALID)?;
+
+        r2r_tracing::trace_publish(msg.void_ptr());
 
         let result = if msg.is_loaned {
             unsafe {
