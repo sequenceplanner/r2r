@@ -1,6 +1,6 @@
 [package]
 name = "r2r_macros"
-version = "0.9.4"
+version = "0.9.5"
 authors = ["Martin Dahl <martin.dahl@gmail.com>"]
 description = "Minimal ros2 bindings."
 license = "MIT"
