@@ -18,6 +18,8 @@ pub fn derive_r2r_params(input: proc_macro::TokenStream) -> proc_macro::TokenStr
     let get_param_matches = param_matches_for(quote!(get_parameter(suffix)), &input.data);
     let set_param_matches =
         param_matches_for(quote!(set_parameter(suffix, param_val)), &input.data);
+    let check_param_matches =
+        param_matches_for(quote!(check_parameter(suffix, param_val)), &input.data);
 
     let expanded = quote! {
         // The generated impl.
@@ -58,6 +60,20 @@ pub fn derive_r2r_params(input: proc_macro::TokenStream) -> proc_macro::TokenStr
                 };
                 let result = match prefix {
                     #set_param_matches
+                    _ => Err(::r2r::Error::InvalidParameterName {
+                        name: "".into(),
+                    }),
+                };
+                result.map_err(|e| e.update_param_name(&param_name))
+            }
+            fn check_parameter(&self, param_name: &str, param_val: &::r2r::ParameterValue) -> ::r2r::Result<()>
+            {
+                let (prefix, suffix) = match param_name.split_once('.') {
+                    None => (param_name, ""),
+                    Some((prefix, suffix)) => (prefix, suffix)
+                };
+                let result = match prefix {
+                    #check_param_matches
                     _ => Err(::r2r::Error::InvalidParameterName {
                         name: "".into(),
                     }),
