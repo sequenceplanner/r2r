@@ -1,4 +1,4 @@
-use crate::tracepoint_fn;
+use crate::{tracepoint_fn, TracingId};
 use r2r_rcl::{rcl_node_t, rcl_service_t, rcl_subscription_t, rcl_timer_t};
 
 #[cfg(feature = "tracing")]
@@ -104,18 +104,18 @@ pub fn trace_service_callback_added(service: *const rcl_service_t, callback_id: 
 /// Tracepoint to allow associating the timer callback identified by `callback_id` with its `rcl_timer_t` handle.
 ///
 /// Tracepoint: `ros2::rclcpp_timer_callback_added`
-pub fn trace_timer_callback_added(timer: *const rcl_timer_t, callback_id: usize) {
+pub fn trace_timer_callback_added(timer: TracingId<rcl_timer_t>, callback_id: usize) {
     unsafe {
-        tp::ros_trace_rclcpp_timer_callback_added(timer.cast(), c_void!(callback_id));
+        tp::ros_trace_rclcpp_timer_callback_added(timer.c_void(), c_void!(callback_id));
     }
 }
 
 /// Tracepoint to allow associating the `timer` with a `node`.
 ///
 /// Tracepoint: `ros2::rclcpp_timer_link_node`
-pub fn trace_timer_link_node(timer: *const rcl_timer_t, node: *const rcl_node_t) {
+pub fn trace_timer_link_node(timer: TracingId<rcl_timer_t>, node: TracingId<rcl_node_t>) {
     unsafe {
-        tp::ros_trace_rclcpp_timer_link_node(timer.cast(), node.cast());
+        tp::ros_trace_rclcpp_timer_link_node(timer.c_void(), node.c_void());
     }
 }
 

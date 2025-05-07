@@ -12,5 +12,8 @@ pub use rclcpp_tracepoints::*;
 mod r2r_tracepoints;
 pub use r2r_tracepoints::*;
 
+mod tracing_id;
+pub use tracing_id::TracingId;
+
 mod macros;
 use macros::tracepoint_fn;
