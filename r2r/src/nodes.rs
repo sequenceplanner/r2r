@@ -4,6 +4,7 @@ use futures::{
     stream::{Stream, StreamExt},
 };
 use indexmap::IndexMap;
+use r2r_tracing::{StreamWithTracingData, StreamWithTracingDataBuilder, TracingId};
 use std::{
     collections::HashMap,
     ffi::{CStr, CString},
@@ -290,194 +291,16 @@ impl Node {
         let node_name = self.name()?;
 
         // rcl_interfaces/srv/SetParameters
-        let set_params_request_stream = self
+        let params = self.params.clone();
+        let params_struct_clone = params_struct.clone();
+        let set_params_future = self
             .create_service::<rcl_interfaces::srv::SetParameters::Service>(
                 &format!("{}/set_parameters", node_name),
                 QosProfile::default(),
-            )?;
-
-        let params = self.params.clone();
-        let params_struct_clone = params_struct.clone();
-        let set_params_future = set_params_request_stream.for_each(
-            move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
-                let mut result = rcl_interfaces::srv::SetParameters::Response::default();
-                for p in &req.message.parameters {
-                    let val = ParameterValue::from_parameter_value_msg(p.value.clone());
-                    let changed = params
-                        .lock()
-                        .unwrap()
-                        .get(&p.name)
-                        .map(|v| v.value != val)
-                        .unwrap_or(true); // changed=true if new
-                    let r = if let Some(ps) = &params_struct_clone {
-                        // Update parameter structure
-                        let result = ps.lock().unwrap().set_parameter(&p.name, &val);
-                        if result.is_ok() {
-                            // Also update Node::params
-                            params
-                                .lock()
-                                .unwrap()
-                                .entry(p.name.clone())
-                                .and_modify(|p| p.value = val.clone());
-                        }
-                        rcl_interfaces::msg::SetParametersResult {
-                            successful: result.is_ok(),
-                            reason: result.err().map_or("".into(), |e| e.to_string()),
-                        }
-                    } else {
-                        // No parameter structure - update only Node::params
-                        params
-                            .lock()
-                            .unwrap()
-                            .entry(p.name.clone())
-                            .and_modify(|p| p.value = val.clone())
-                            .or_insert(Parameter::new(val.clone()));
-                        rcl_interfaces::msg::SetParametersResult {
-                            successful: true,
-                            reason: "".into(),
-                        }
-                    };
-                    // if the value changed, send out new value on parameter event stream
-                    if changed && r.successful {
-                        if let Err(e) = set_event_tx.try_send((p.name.clone(), val)) {
-                            log::debug!("Warning: could not send parameter event ({}).", e);
-                        }
-                    }
-                    result.results.push(r);
-                }
-                req.respond(result)
-                    .expect("could not send reply to set parameter request");
-                future::ready(())
-            },
-        );
-        handlers.push(Box::pin(set_params_future));
-
-        // rcl_interfaces/srv/GetParameters
-        let get_params_request_stream = self
-            .create_service::<rcl_interfaces::srv::GetParameters::Service>(
-                &format!("{}/get_parameters", node_name),
-                QosProfile::default(),
-            )?;
-
-        let params = self.params.clone();
-        let params_struct_clone = params_struct.clone();
-        let get_params_future = get_params_request_stream.for_each(
-            move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
-                let params = params.lock().unwrap();
-                let values = req
-                    .message
-                    .names
-                    .iter()
-                    .map(|n| {
-                        // First try to get the parameter from the param structure
-                        if let Some(ps) = &params_struct_clone {
-                            if let Ok(value) = ps.lock().unwrap().get_parameter(n) {
-                                return value;
-                            }
-                        }
-                        // Otherwise get it from node HashMap
-                        match params.get(n) {
-                            Some(v) => v.value.clone(),
-                            None => ParameterValue::NotSet,
-                        }
-                    })
-                    .map(|v| v.into_parameter_value_msg())
-                    .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
-
-                let result = rcl_interfaces::srv::GetParameters::Response { values };
-                req.respond(result)
-                    .expect("could not send reply to set parameter request");
-                future::ready(())
-            },
-        );
-
-        handlers.push(Box::pin(get_params_future));
-
-        // rcl_interfaces/srv/ListParameters
-        use rcl_interfaces::srv::ListParameters;
-        let list_params_request_stream = self.create_service::<ListParameters::Service>(
-            &format!("{}/list_parameters", node_name),
-            QosProfile::default(),
-        )?;
-
-        let params = self.params.clone();
-        let list_params_future = list_params_request_stream.for_each(
-            move |req: ServiceRequest<ListParameters::Service>| {
-                Self::handle_list_parameters(req, &params)
-            },
-        );
-
-        handlers.push(Box::pin(list_params_future));
-
-        // rcl_interfaces/srv/DescribeParameters
-        use rcl_interfaces::srv::DescribeParameters;
-        let desc_params_request_stream = self.create_service::<DescribeParameters::Service>(
-            &format!("{node_name}/describe_parameters"),
-            QosProfile::default(),
-        )?;
-
-        let params = self.params.clone();
-        let desc_params_future = desc_params_request_stream.for_each(
-            move |req: ServiceRequest<DescribeParameters::Service>| {
-                Self::handle_desc_parameters(req, &params)
-            },
-        );
-
-        handlers.push(Box::pin(desc_params_future));
-
-        // rcl_interfaces/srv/GetParameterTypes
-        use rcl_interfaces::srv::GetParameterTypes;
-        let get_param_types_request_stream = self.create_service::<GetParameterTypes::Service>(
-            &format!("{node_name}/get_parameter_types"),
-            QosProfile::default(),
-        )?;
-
-        let params = self.params.clone();
-        let get_param_types_future = get_param_types_request_stream.for_each(
-            move |req: ServiceRequest<GetParameterTypes::Service>| {
-                let params = params.lock().unwrap();
-                let types = req
-                    .message
-                    .names
-                    .iter()
-                    .map(|name| match params.get(name) {
-                        Some(param) => param.value.into_parameter_type(),
-                        None => rcl_interfaces::msg::ParameterType::PARAMETER_NOT_SET as u8,
-                    })
-                    .collect();
-                req.respond(GetParameterTypes::Response { types })
-                    .expect("could not send reply to get parameter types request");
-                future::ready(())
-            },
-        );
-
-        handlers.push(Box::pin(get_param_types_future));
-
-        // rcl_interfaces/srv/SetParametersAtomically
-        let set_params_atomically_request_stream =
-            self.create_service::<rcl_interfaces::srv::SetParametersAtomically::Service>(
-                &format!("{}/set_parameters_atomically", node_name),
-                QosProfile::default(),
-            )?;
-
-        let params = self.params.clone();
-        let params_struct_clone = params_struct.clone();
-        let set_params_atomically_future = set_params_atomically_request_stream.for_each(
-            move |req: ServiceRequest<rcl_interfaces::srv::SetParametersAtomically::Service>| {
-                let mut result = rcl_interfaces::srv::SetParametersAtomically::Response::default();
-                result.result.successful = true;
-                if let Some(ps) = &params_struct_clone {
-                    for p in &req.message.parameters {
-                        let val = ParameterValue::from_parameter_value_msg(p.value.clone());
-                        if let Err(e) = ps.lock().unwrap().check_parameter(&p.name, &val) {
-                            result.result.successful = false;
-                            result.result.reason = format!("Can't set parameter {}: {}", p.name, e);
-                            break;
-                        }
-                    }
-                }
-                if result.result.successful {
-                    // Since we checked them above now we assume these will be set ok...
+            )?
+            .traced_callback(
+                move |req: ServiceRequest<rcl_interfaces::srv::SetParameters::Service>| {
+                    let mut result = rcl_interfaces::srv::SetParameters::Response::default();
                     for p in &req.message.parameters {
                         let val = ParameterValue::from_parameter_value_msg(p.value.clone());
                         let changed = params
@@ -516,17 +339,190 @@ impl Node {
                         };
                         // if the value changed, send out new value on parameter event stream
                         if changed && r.successful {
-                            if let Err(e) = set_atomically_event_tx.try_send((p.name.clone(), val)) {
+                            if let Err(e) = set_event_tx.try_send((p.name.clone(), val)) {
                                 log::debug!("Warning: could not send parameter event ({}).", e);
                             }
                         }
+                        result.results.push(r);
                     }
-                }
-                req.respond(result)
-                    .expect("could not send reply to set parameter request");
-                future::ready(())
-            },
-        );
+                    req.respond(result)
+                        .expect("could not send reply to set parameter request");
+                },
+            );
+        handlers.push(Box::pin(set_params_future));
+
+        // rcl_interfaces/srv/GetParameters
+        let params = self.params.clone();
+        let params_struct_clone = params_struct.clone();
+        let get_params_future = self
+            .create_service::<rcl_interfaces::srv::GetParameters::Service>(
+                &format!("{}/get_parameters", node_name),
+                QosProfile::default(),
+            )?
+            .traced_callback(
+                move |req: ServiceRequest<rcl_interfaces::srv::GetParameters::Service>| {
+                    let params = params.lock().unwrap();
+                    let values = req
+                        .message
+                        .names
+                        .iter()
+                        .map(|n| {
+                            // First try to get the parameter from the param structure
+                            if let Some(ps) = &params_struct_clone {
+                                if let Ok(value) = ps.lock().unwrap().get_parameter(n) {
+                                    return value;
+                                }
+                            }
+                            // Otherwise get it from node HashMap
+                            match params.get(n) {
+                                Some(v) => v.value.clone(),
+                                None => ParameterValue::NotSet,
+                            }
+                        })
+                        .map(|v| v.into_parameter_value_msg())
+                        .collect::<Vec<rcl_interfaces::msg::ParameterValue>>();
+
+                    let result = rcl_interfaces::srv::GetParameters::Response { values };
+                    req.respond(result)
+                        .expect("could not send reply to set parameter request");
+                },
+            );
+
+        handlers.push(Box::pin(get_params_future));
+
+        let params = self.params.clone();
+
+        // rcl_interfaces/srv/ListParameters
+        use rcl_interfaces::srv::ListParameters;
+        let list_params_future = self
+            .create_service::<ListParameters::Service>(
+                &format!("{}/list_parameters", node_name),
+                QosProfile::default(),
+            )?
+            .traced_callback(move |req: ServiceRequest<ListParameters::Service>| {
+                Self::handle_list_parameters(req, &params)
+            });
+
+        handlers.push(Box::pin(list_params_future));
+
+        // rcl_interfaces/srv/DescribeParameters
+        use rcl_interfaces::srv::DescribeParameters;
+        let params = self.params.clone();
+        let desc_params_future = self
+            .create_service::<DescribeParameters::Service>(
+                &format!("{node_name}/describe_parameters"),
+                QosProfile::default(),
+            )?
+            .traced_callback(move |req: ServiceRequest<DescribeParameters::Service>| {
+                Self::handle_desc_parameters(req, &params)
+            });
+
+        handlers.push(Box::pin(desc_params_future));
+
+        // rcl_interfaces/srv/GetParameterTypes
+        use rcl_interfaces::srv::GetParameterTypes;
+        let params = self.params.clone();
+        let get_param_types_future = self
+            .create_service::<GetParameterTypes::Service>(
+                &format!("{node_name}/get_parameter_types"),
+                QosProfile::default(),
+            )?
+            .traced_callback(move |req: ServiceRequest<GetParameterTypes::Service>| {
+                let params = params.lock().unwrap();
+                let types = req
+                    .message
+                    .names
+                    .iter()
+                    .map(|name| match params.get(name) {
+                        Some(param) => param.value.into_parameter_type(),
+                        None => rcl_interfaces::msg::ParameterType::PARAMETER_NOT_SET as u8,
+                    })
+                    .collect();
+                req.respond(GetParameterTypes::Response { types })
+                    .expect("could not send reply to get parameter types request");
+            });
+
+        handlers.push(Box::pin(get_param_types_future));
+
+        // rcl_interfaces/srv/SetParametersAtomically
+        let params = self.params.clone();
+        let params_struct_clone = params_struct.clone();
+        let set_params_atomically_future = self
+            .create_service::<rcl_interfaces::srv::SetParametersAtomically::Service>(
+                &format!("{}/set_parameters_atomically", node_name),
+                QosProfile::default(),
+            )?
+            .traced_callback(
+                move |req: ServiceRequest<
+                    rcl_interfaces::srv::SetParametersAtomically::Service,
+                >| {
+                    let mut result =
+                        rcl_interfaces::srv::SetParametersAtomically::Response::default();
+                    result.result.successful = true;
+                    if let Some(ps) = &params_struct_clone {
+                        for p in &req.message.parameters {
+                            let val = ParameterValue::from_parameter_value_msg(p.value.clone());
+                            if let Err(e) = ps.lock().unwrap().check_parameter(&p.name, &val) {
+                                result.result.successful = false;
+                                result.result.reason =
+                                    format!("Can't set parameter {}: {}", p.name, e);
+                                break;
+                            }
+                        }
+                    }
+                    if result.result.successful {
+                        // Since we checked them above now we assume these will be set ok...
+                        for p in &req.message.parameters {
+                            let val = ParameterValue::from_parameter_value_msg(p.value.clone());
+                            let changed = params
+                                .lock()
+                                .unwrap()
+                                .get(&p.name)
+                                .map(|v| v.value != val)
+                                .unwrap_or(true); // changed=true if new
+                            let r = if let Some(ps) = &params_struct_clone {
+                                // Update parameter structure
+                                let result = ps.lock().unwrap().set_parameter(&p.name, &val);
+                                if result.is_ok() {
+                                    // Also update Node::params
+                                    params
+                                        .lock()
+                                        .unwrap()
+                                        .entry(p.name.clone())
+                                        .and_modify(|p| p.value = val.clone());
+                                }
+                                rcl_interfaces::msg::SetParametersResult {
+                                    successful: result.is_ok(),
+                                    reason: result.err().map_or("".into(), |e| e.to_string()),
+                                }
+                            } else {
+                                // No parameter structure - update only Node::params
+                                params
+                                    .lock()
+                                    .unwrap()
+                                    .entry(p.name.clone())
+                                    .and_modify(|p| p.value = val.clone())
+                                    .or_insert(Parameter::new(val.clone()));
+                                rcl_interfaces::msg::SetParametersResult {
+                                    successful: true,
+                                    reason: "".into(),
+                                }
+                            };
+                            // if the value changed, send out new value on parameter event stream
+                            if changed && r.successful {
+                                if let Err(e) =
+                                    set_atomically_event_tx.try_send((p.name.clone(), val))
+                                {
+                                    log::debug!("Warning: could not send parameter event ({}).", e);
+                                }
+                            }
+                        }
+                    }
+                    req.respond(result)
+                        .expect("could not send reply to set parameter request");
+                },
+            );
+
         handlers.push(Box::pin(set_params_atomically_future));
 
         #[cfg(r2r__rosgraph_msgs__msg__Clock)]
@@ -559,7 +555,7 @@ impl Node {
     fn handle_list_parameters(
         req: ServiceRequest<rcl_interfaces::srv::ListParameters::Service>,
         params: &Arc<Mutex<IndexMap<String, Parameter>>>,
-    ) -> future::Ready<()> {
+    ) {
         use rcl_interfaces::srv::ListParameters;
 
         let depth = req.message.depth;
@@ -596,13 +592,12 @@ impl Node {
         }
         req.respond(ListParameters::Response { result })
             .expect("could not send reply to list parameter request");
-        future::ready(())
     }
 
     fn handle_desc_parameters(
         req: ServiceRequest<rcl_interfaces::srv::DescribeParameters::Service>,
         params: &Arc<Mutex<IndexMap<String, Parameter>>>,
-    ) -> future::Ready<()> {
+    ) {
         use rcl_interfaces::{msg::ParameterDescriptor, srv::DescribeParameters};
         let mut descriptors = Vec::<ParameterDescriptor>::new();
         let params = params.lock().unwrap();
@@ -618,7 +613,6 @@ impl Node {
         }
         req.respond(DescribeParameters::Response { descriptors })
             .expect("could not send reply to describe parameters request");
-        future::ready(())
     }
 
     /// Fetch a single ROS parameter.
@@ -649,19 +643,38 @@ impl Node {
     /// This function returns a `Stream` of ros messages.
     pub fn subscribe<T: 'static>(
         &mut self, topic: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = T> + Unpin>
+    ) -> Result<StreamWithTracingData<T>>
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<T>(10);
 
-        let ws = TypedSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(TypedSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+
+        r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
+
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&*subscription).forget_type()
+        });
+
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -670,19 +683,38 @@ impl Node {
     /// This function returns a `Stream` of ros messages without the rust convenience types.
     pub fn subscribe_native<T: 'static>(
         &mut self, topic: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = WrappedNativeMsg<T>> + Unpin>
+    ) -> Result<StreamWithTracingData<WrappedNativeMsg<T>>>
     where
         T: WrappedTypesupport,
     {
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
         let (sender, receiver) = mpsc::channel::<WrappedNativeMsg<T>>(10);
 
-        let ws = NativeSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(NativeSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+
+        r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
+
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -692,18 +724,37 @@ impl Node {
     /// Useful when you cannot know the type of the message at compile time.
     pub fn subscribe_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
+    ) -> Result<StreamWithTracingData<Result<serde_json::Value>>> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
-        let ws = UntypedSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(UntypedSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             topic_type: topic_type.to_string(),
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                msg.ts,
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+
+        r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
+
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -713,7 +764,7 @@ impl Node {
     /// Useful if you just want to pass the data along to another part of the system.
     pub fn subscribe_raw(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = Vec<u8>> + Unpin> {
+    ) -> Result<StreamWithTracingData<Vec<u8>>> {
         // TODO is it possible to handle the raw message without type support?
         //
         // Passing null ts to rcl_subscription_init throws an error ..
@@ -739,16 +790,35 @@ impl Node {
             return Err(Error::from_rcl_error(ret));
         }
 
-        let subscription_handle =
-            create_subscription_helper(self.node_handle.as_mut(), topic, msg.ts, qos_profile)?;
         let (sender, receiver) = mpsc::channel::<Vec<u8>>(10);
 
-        let ws = RawSubscriber {
-            rcl_handle: subscription_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut subscription = Box::new(RawSubscriber {
+            rcl_handle: unsafe { rcl_get_zero_initialized_subscription() },
             msg_buf,
             sender,
+        });
+
+        // SAFETY:
+        // create_subscription_helper requires zero initialized subscription_handle -> done above
+        // Completes initialization of subscription.
+        unsafe {
+            create_subscription_helper(
+                &mut subscription.rcl_handle,
+                self.node_handle.as_mut(),
+                topic,
+                msg.ts,
+                qos_profile,
+            )?;
         };
-        self.subscribers.push(Box::new(ws));
+
+        r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
+
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
+        self.subscribers.push(subscription);
         Ok(receiver)
     }
 
@@ -758,24 +828,41 @@ impl Node {
     /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
         &mut self, service_name: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = ServiceRequest<T>> + Unpin>
+    ) -> Result<StreamWithTracingData<ServiceRequest<T>>>
     where
         T: WrappedServiceTypeSupport,
     {
-        let service_handle = create_service_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            T::get_ts(),
-            qos_profile,
-        )?;
         let (sender, receiver) = mpsc::channel::<ServiceRequest<T>>(10);
 
-        let ws = TypedService::<T> {
-            rcl_handle: service_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut service_arc = Arc::new(Mutex::new(TypedService::<T> {
+            rcl_handle: unsafe { rcl_get_zero_initialized_service() },
             sender,
+        }));
+        let service_ref = Arc::get_mut(&mut service_arc)
+            .unwrap() // No other Arc should exist. The Arc was just created.
+            .get_mut()
+            .unwrap(); // The mutex was just created. It should not be poisoned.
+
+        // SAFETY:
+        // The service was zero initialized above.
+        // Full initialization happens in `create_service_helper``.
+        unsafe {
+            create_service_helper(
+                &mut service_ref.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
 
-        self.services.push(Arc::new(Mutex::new(ws)));
+        let receiver = StreamWithTracingDataBuilder::build_service(receiver, unsafe {
+            TracingId::new(&service_ref.rcl_handle)
+        });
+
+        // Only push after full initialization.
+        self.services.push(service_arc);
         Ok(receiver)
     }
 
@@ -788,19 +875,30 @@ impl Node {
     where
         T: WrappedServiceTypeSupport,
     {
-        let client_handle = create_client_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            T::get_ts(),
-            qos_profile,
-        )?;
-        let ws = TypedClient::<T> {
-            rcl_handle: client_handle,
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut client_arc = Arc::new(Mutex::new(TypedClient::<T> {
+            rcl_handle: unsafe { rcl_get_zero_initialized_client() },
             response_channels: Vec::new(),
             poll_available_channels: Vec::new(),
+        }));
+        let client_ref = Arc::get_mut(&mut client_arc)
+            .unwrap() // No other Arc should exist. The Arc was just created.
+            .get_mut()
+            .unwrap(); // The mutex was just created. It should not be poisoned.
+
+        // SAFETY:
+        // The client was zero initialized above.
+        // Full initialization happens in `create_client_helper`.
+        unsafe {
+            create_client_helper(
+                &mut client_ref.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                T::get_ts(),
+                qos_profile,
+            )?;
         };
 
-        let client_arc = Arc::new(Mutex::new(ws));
         let c = make_client(Arc::downgrade(&client_arc));
         self.clients.push(client_arc);
         Ok(c)
@@ -816,20 +914,32 @@ impl Node {
         &mut self, service_name: &str, service_type: &str, qos_profile: QosProfile,
     ) -> Result<ClientUntyped> {
         let service_type = UntypedServiceSupport::new_from(service_type)?;
-        let client_handle = create_client_helper(
-            self.node_handle.as_mut(),
-            service_name,
-            service_type.ts,
-            qos_profile,
-        )?;
-        let client = UntypedClient_ {
+
+        // SAFETY: The `rcl_handle` is zero initialized (partial initialization) in this block.
+        let mut client_arc = Arc::new(Mutex::new(UntypedClient_ {
             service_type,
-            rcl_handle: client_handle,
+            rcl_handle: unsafe { rcl_get_zero_initialized_client() },
             response_channels: Vec::new(),
             poll_available_channels: Vec::new(),
+        }));
+        let client_ref = Arc::get_mut(&mut client_arc)
+            .unwrap() // No other Arc should exist. The Arc was just created.
+            .get_mut()
+            .unwrap(); // The mutex was just created. It should not be poisoned.
+
+        // SAFETY:
+        // The client was zero initialized above.
+        // Full initialization happens in `create_client_helper`.
+        unsafe {
+            create_client_helper(
+                &mut client_ref.rcl_handle,
+                self.node_handle.as_mut(),
+                service_name,
+                client_ref.service_type.ts,
+                qos_profile,
+            )?;
         };
 
-        let client_arc = Arc::new(Mutex::new(client));
         let c = make_untyped_client(Arc::downgrade(&client_arc));
         self.clients.push(client_arc);
         Ok(c)
@@ -962,11 +1072,10 @@ impl Node {
     where
         T: WrappedTypesupport,
     {
-        let publisher_handle =
+        let publisher_arc =
             create_publisher_helper(self.node_handle.as_mut(), topic, T::get_ts(), qos_profile)?;
-        let arc = Arc::new(publisher_handle);
-        let p = make_publisher(Arc::downgrade(&arc));
-        self.pubs.push(arc);
+        let p = make_publisher(Arc::downgrade(&publisher_arc));
+        self.pubs.push(publisher_arc);
         Ok(p)
     }
 
@@ -977,11 +1086,10 @@ impl Node {
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
     ) -> Result<PublisherUntyped> {
         let dummy = WrappedNativeMsgUntyped::new_from(topic_type)?;
-        let publisher_handle =
+        let publisher_arc =
             create_publisher_helper(self.node_handle.as_mut(), topic, dummy.ts, qos_profile)?;
-        let arc = Arc::new(publisher_handle);
-        let p = make_publisher_untyped(Arc::downgrade(&arc), topic_type.to_owned());
-        self.pubs.push(arc);
+        let p = make_publisher_untyped(Arc::downgrade(&publisher_arc), topic_type.to_owned());
+        self.pubs.push(publisher_arc);
         Ok(p)
     }
 
@@ -1019,6 +1127,8 @@ impl Node {
     /// `timeout` is a duration specifying how long the spin should
     /// block for if there are no pending events.
     pub fn spin_once(&mut self, timeout: Duration) {
+        r2r_tracing::trace_spin_start(&*self.node_handle, timeout);
+
         // first handle any completed action cancellation responses
         for a in &mut self.action_servers {
             a.lock().unwrap().send_completed_cancel_requests();
@@ -1182,8 +1292,11 @@ impl Node {
             unsafe {
                 rcl_wait_set_fini(&mut ws);
             }
+            r2r_tracing::trace_spin_timeout(&*self.node_handle);
             return;
         }
+
+        r2r_tracing::trace_spin_wake(&*self.node_handle);
 
         let mut subs_to_remove = vec![];
         if ws.subscriptions != std::ptr::null_mut() {
@@ -1341,6 +1454,8 @@ impl Node {
         unsafe {
             rcl_wait_set_fini(&mut ws);
         }
+
+        r2r_tracing::trace_spin_end(&*self.node_handle);
     }
 
     /// Returns a map of topic names and type names of the publishers
@@ -1444,9 +1559,15 @@ impl Node {
             _clock: Some(clock), // The timer owns the clock.
             sender: tx,
         };
-        self.timers.push(timer);
 
-        let out_timer = Timer { receiver: rx };
+        let out_timer = unsafe {
+            Timer {
+                receiver: rx,
+                timer_handle: TracingId::new(timer.get_handle()),
+                node_handle: TracingId::new(&*self.node_handle),
+            }
+        };
+        self.timers.push(timer);
 
         Ok(out_timer)
     }
@@ -1467,9 +1588,15 @@ impl Node {
             _clock: None, // The timer does not own the clock (the node owns it).
             sender: tx,
         };
-        self.timers.push(timer);
 
-        let out_timer = Timer { receiver: rx };
+        let out_timer = unsafe {
+            Timer {
+                receiver: rx,
+                timer_handle: TracingId::new(timer.get_handle()),
+                node_handle: TracingId::new(&*self.node_handle),
+            }
+        };
+        self.timers.push(timer);
 
         Ok(out_timer)
     }
@@ -1601,6 +1728,8 @@ impl Drop for Timer_ {
 /// A ROS timer.
 pub struct Timer {
     receiver: mpsc::Receiver<Duration>,
+    timer_handle: TracingId<rcl_timer_t>,
+    node_handle: TracingId<rcl_node_t>,
 }
 
 impl Timer {
@@ -1614,6 +1743,23 @@ impl Timer {
         } else {
             Err(Error::RCL_RET_TIMER_INVALID)
         }
+    }
+
+    /// Transforms this timer stream to a [`Future`] calling the given `callback` on each tick.
+    ///
+    /// The callback execution is traced by r2r_tracing.
+    ///
+    /// This function should be called before dropping the timer's node.
+    /// Otherwise, the trace data might be inconsistent.
+    #[must_use = "Futures do nothing unless you `.await` or poll them"]
+    pub fn on_tick<F: FnMut(Duration)>(self, callback: F) -> impl Future<Output = ()> + Unpin {
+        let mut callback = r2r_tracing::Callback::new_timer(self.timer_handle, callback);
+        r2r_tracing::trace_timer_link_node(self.timer_handle, self.node_handle);
+
+        self.receiver.for_each(move |duration| {
+            callback.call(duration);
+            future::ready(())
+        })
     }
 }
 

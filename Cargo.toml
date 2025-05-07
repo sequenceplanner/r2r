@@ -7,4 +7,5 @@ members = [
     "r2r_msg_gen",
     "r2r_macros",
     "r2r_rcl",
+    "r2r_tracing",
 ]
