@@ -4,7 +4,7 @@ use futures::{
     stream::{Stream, StreamExt},
 };
 use indexmap::IndexMap;
-use r2r_tracing::TracingId;
+use r2r_tracing::{StreamWithTracingData, StreamWithTracingDataBuilder, TracingId};
 use std::{
     collections::HashMap,
     ffi::{CStr, CString},
@@ -650,7 +650,7 @@ impl Node {
     /// This function returns a `Stream` of ros messages.
     pub fn subscribe<T: 'static>(
         &mut self, topic: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = T> + Unpin>
+    ) -> Result<StreamWithTracingData<T>>
     where
         T: WrappedTypesupport,
     {
@@ -677,6 +677,10 @@ impl Node {
 
         r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
 
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&*subscription).forget_type()
+        });
+
         self.subscribers.push(subscription);
         Ok(receiver)
     }
@@ -686,7 +690,7 @@ impl Node {
     /// This function returns a `Stream` of ros messages without the rust convenience types.
     pub fn subscribe_native<T: 'static>(
         &mut self, topic: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = WrappedNativeMsg<T>> + Unpin>
+    ) -> Result<StreamWithTracingData<WrappedNativeMsg<T>>>
     where
         T: WrappedTypesupport,
     {
@@ -713,6 +717,10 @@ impl Node {
 
         r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
 
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
         self.subscribers.push(subscription);
         Ok(receiver)
     }
@@ -723,7 +731,7 @@ impl Node {
     /// Useful when you cannot know the type of the message at compile time.
     pub fn subscribe_untyped(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = Result<serde_json::Value>> + Unpin> {
+    ) -> Result<StreamWithTracingData<Result<serde_json::Value>>> {
         let msg = WrappedNativeMsgUntyped::new_from(topic_type)?;
         let (sender, receiver) = mpsc::channel::<Result<serde_json::Value>>(10);
 
@@ -749,6 +757,10 @@ impl Node {
 
         r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
 
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
         self.subscribers.push(subscription);
         Ok(receiver)
     }
@@ -759,7 +771,7 @@ impl Node {
     /// Useful if you just want to pass the data along to another part of the system.
     pub fn subscribe_raw(
         &mut self, topic: &str, topic_type: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = Vec<u8>> + Unpin> {
+    ) -> Result<StreamWithTracingData<Vec<u8>>> {
         // TODO is it possible to handle the raw message without type support?
         //
         // Passing null ts to rcl_subscription_init throws an error ..
@@ -809,6 +821,10 @@ impl Node {
 
         r2r_tracing::trace_subscription_init(&subscription.rcl_handle, &*subscription);
 
+        let receiver = StreamWithTracingDataBuilder::build_subscription(receiver, unsafe {
+            TracingId::new(&subscription.rcl_handle).forget_type()
+        });
+
         self.subscribers.push(subscription);
         Ok(receiver)
     }
@@ -819,7 +835,7 @@ impl Node {
     /// `respond` on the Service Request to send the reply.
     pub fn create_service<T: 'static>(
         &mut self, service_name: &str, qos_profile: QosProfile,
-    ) -> Result<impl Stream<Item = ServiceRequest<T>> + Unpin>
+    ) -> Result<StreamWithTracingData<ServiceRequest<T>>>
     where
         T: WrappedServiceTypeSupport,
     {
@@ -847,6 +863,10 @@ impl Node {
                 qos_profile,
             )?;
         };
+
+        let receiver = StreamWithTracingDataBuilder::build_service(receiver, unsafe {
+            TracingId::new(&service_ref.rcl_handle)
+        });
 
         // Only push after full initialization.
         self.services.push(service_arc);
@@ -1730,6 +1750,23 @@ impl Timer {
         } else {
             Err(Error::RCL_RET_TIMER_INVALID)
         }
+    }
+
+    /// Transforms this timer stream to a [`Future`] calling the given `callback` on each tick.
+    ///
+    /// The callback execution is traced by r2r_tracing.
+    ///
+    /// This function should be called before dropping the timer's node.
+    /// Otherwise, the trace data might be inconsistent.
+    #[must_use = "Futures do nothing unless you `.await` or poll them"]
+    pub fn on_tick<F: FnMut(Duration)>(self, callback: F) -> impl Future<Output = ()> + Unpin {
+        let mut callback = r2r_tracing::Callback::new_timer(self.timer_handle, callback);
+        r2r_tracing::trace_timer_link_node(self.timer_handle, self.node_handle);
+
+        self.receiver.for_each(move |duration| {
+            callback.call(duration);
+            future::ready(())
+        })
     }
 }
 

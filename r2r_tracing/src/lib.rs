@@ -15,6 +15,9 @@ pub use r2r_tracepoints::*;
 mod callback;
 pub use callback::Callback;
 
+mod stream;
+pub use stream::{StreamWithTracingData, StreamWithTracingDataBuilder};
+
 mod tracing_id;
 pub use tracing_id::TracingId;
 

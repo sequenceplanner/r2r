@@ -9,6 +9,7 @@ repository = "https://github.com/sequenceplanner/r2r"
 readme = "README.md"
 
 [dependencies]
+futures = "0.3.25"
 r2r_rcl = { path = "../r2r_rcl", version = "0.9.5" }
 
 [build-dependencies]

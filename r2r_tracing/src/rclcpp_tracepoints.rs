@@ -4,7 +4,10 @@ use r2r_rcl::{rcl_node_t, rcl_service_t, rcl_subscription_t, rcl_timer_t};
 #[cfg(feature = "tracing")]
 use crate::tracetools_bindings as tp;
 #[cfg(feature = "tracing")]
-use std::{ffi::CString, ptr::null};
+use std::{
+    ffi::{c_void, CString},
+    ptr::null,
+};
 
 #[cfg(feature = "tracing")]
 const fn ref_to_c_void<T>(t: &T) -> *const std::ffi::c_void {
@@ -57,10 +60,10 @@ pub fn trace_subscription_init<S>(
 /// Tracepoint to allow associating the subscription callback identified by `callback_id` with the `subscription` object.
 ///
 /// Tracepoint: `ros2::rclcpp_subscription_callback_added`
-pub fn trace_subscription_callback_added<S>(subscription: &S, callback_id: usize) {
+pub fn trace_subscription_callback_added(subscription: TracingId<std::ffi::c_void>, callback_id: usize) {
     unsafe {
         tp::ros_trace_rclcpp_subscription_callback_added(
-            ref_to_c_void(subscription),
+            subscription.c_void(),
             c_void!(callback_id),
         );
     }
@@ -97,8 +100,8 @@ pub fn trace_take_ptr(message: *const std::ffi::c_void) {
 /// Tracepoint to allow associating the service callback identified by `callback_id` with a `service`.
 ///
 /// Tracepoint: `ros2::rclcpp_service_callback_added`
-pub fn trace_service_callback_added(service: *const rcl_service_t, callback_id: usize) {
-    unsafe { tp::ros_trace_rclcpp_service_callback_added(service.cast(), c_void!(callback_id)) }
+pub fn trace_service_callback_added(service: TracingId<rcl_service_t>, callback_id: usize) {
+    unsafe { tp::ros_trace_rclcpp_service_callback_added(service.c_void(), c_void!(callback_id)) }
 }
 
 /// Tracepoint to allow associating the timer callback identified by `callback_id` with its `rcl_timer_t` handle.

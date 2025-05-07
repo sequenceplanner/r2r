@@ -124,6 +124,7 @@ pub use clocks::{Clock, ClockType};
 
 mod nodes;
 pub use nodes::{Node, Timer};
+pub use r2r_tracing::StreamWithTracingData;
 
 pub mod qos;
 

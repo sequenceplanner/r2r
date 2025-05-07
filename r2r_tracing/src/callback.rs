@@ -5,6 +5,7 @@ use crate::{
 use r2r_rcl::{rcl_service_t, rcl_timer_t};
 use std::{
     any::type_name,
+    ffi::c_void,
     marker::PhantomData,
     sync::atomic::{AtomicUsize, Ordering::Relaxed},
 };
@@ -42,7 +43,7 @@ where
     /// Emits trace event associating this `callback` with the `service`.
     ///
     /// Wraps the callback to allow tracing the callback calls.
-    pub fn new_service(service: *const rcl_service_t, callback: F) -> Self {
+    pub fn new_service(service: TracingId<rcl_service_t>, callback: F) -> Self {
         let id = Self::gen_id();
         trace_service_callback_added(service, id);
 
@@ -62,7 +63,7 @@ where
     /// Emits trace event associating this `callback` with the `subscription`.
     ///
     /// Wraps the callback to allow tracing the callback calls.
-    pub fn new_subscription<S>(subscriber: &S, callback: F) -> Self {
+    pub fn new_subscription(subscriber: TracingId<c_void>, callback: F) -> Self {
         let id = Self::gen_id();
         trace_subscription_callback_added(subscriber, id);
 
