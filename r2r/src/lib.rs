@@ -145,6 +145,8 @@ pub const ROS_DISTRO: &str = "humble";
 pub const ROS_DISTRO: &str = "iron";
 #[cfg(r2r__ros__distro__jazzy)]
 pub const ROS_DISTRO: &str = "jazzy";
+#[cfg(r2r__ros__distro__kilted)]
+pub const ROS_DISTRO: &str = "kilted";
 
 #[cfg(r2r__ros__distro__rolling)]
 pub const ROS_DISTRO: &str = "rolling";
@@ -155,6 +157,7 @@ pub const ROS_DISTRO: &str = "rolling";
     r2r__ros__distro__humble,
     r2r__ros__distro__iron,
     r2r__ros__distro__jazzy,
+    r2r__ros__distro__kilted,
 
     r2r__ros__distro__rolling
 )))]
