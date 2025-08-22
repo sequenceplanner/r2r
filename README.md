@@ -34,7 +34,7 @@ Since the default behavior is to build all sourced message types, build time can
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron Jazzy
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron Jazzy Kilted
 - Building Rust types
 - Publish/subscribe
 - Services
@@ -46,6 +46,7 @@ What works?
 Changelog
 --------------------
 #### [Unreleased]
+- Update to support Kilted
 
 #### [0.9.5] - 2025-04-22
 - Add `/set_parameters_atomically` <https://github.com/sequenceplanner/r2r/pull/120>, <https://github.com/sequenceplanner/r2r/pull/121>. Fixes `ros2 param ...` on Jazzy.
