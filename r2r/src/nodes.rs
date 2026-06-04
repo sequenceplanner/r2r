@@ -1482,7 +1482,7 @@ impl Node {
 
         let mut ctx = self.context.context_handle.lock().unwrap();
         let ret = unsafe {
-            rcl_timer_init(
+            init_timer(
                 &mut timer_handle.as_mut().get_unchecked_mut().handle,
                 clock.clock_handle.as_mut(),
                 ctx.as_mut(),
@@ -1526,8 +1526,14 @@ impl Node {
     }
 }
 
+#[cfg(any(
+    r2r__ros__distro__foxy,
+    r2r__ros__distro__galactic,
+    r2r__ros__distro__humble,
+    r2r__ros__distro__iron
+))]
 #[inline]
-pub unsafe fn rcl_timer_init(
+pub unsafe fn init_timer(
     timer: *mut rcl_timer_t,
     clock: *mut rcl_clock_t,
     context: *mut rcl_context_t,
@@ -1535,15 +1541,28 @@ pub unsafe fn rcl_timer_init(
     callback: rcl_timer_callback_t,
     allocator: rcl_allocator_t,
 ) -> rcl_ret_t {
-    rcl_timer_init2(
-        timer,
-        clock,
-        context,
-        period,
-        callback,
-        allocator,
-        true,
-    )
+    // Call the original function
+    rcl_timer_init(timer, clock, context, period, callback, allocator)
+}
+
+// For Jazzy, Rolling, and newer
+#[cfg(not(any(
+    r2r__ros__distro__foxy,
+    r2r__ros__distro__galactic,
+    r2r__ros__distro__humble,
+    r2r__ros__distro__iron
+)))]
+#[inline]
+pub unsafe fn init_timer(
+    timer: *mut rcl_timer_t,
+    clock: *mut rcl_clock_t,
+    context: *mut rcl_context_t,
+    period: i64,
+    callback: rcl_timer_callback_t,
+    allocator: rcl_allocator_t,
+) -> rcl_ret_t {
+    // Call the new function, defaulting autostart to true
+    rcl_timer_init2(timer, clock, context, period, callback, allocator, true)
 }
 
 #[derive(Debug, Clone, PartialEq)]
