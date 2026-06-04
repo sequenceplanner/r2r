@@ -251,7 +251,7 @@ pub enum ReliabilityPolicy {
     BestEffort,
     Reliable,
     SystemDefault,
-    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
     BestAvailable,
     Unknown,
 }
@@ -267,7 +267,7 @@ impl From<ReliabilityPolicy> for rmw_qos_reliability_policy_t {
             ReliabilityPolicy::SystemDefault => {
                 rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             ReliabilityPolicy::BestAvailable => {
                 rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_BEST_AVAILABLE
             }
@@ -290,7 +290,7 @@ impl From<rmw_qos_reliability_policy_t> for ReliabilityPolicy {
             rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_SYSTEM_DEFAULT => {
                 ReliabilityPolicy::SystemDefault
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             rmw_qos_reliability_policy_t::RMW_QOS_POLICY_RELIABILITY_BEST_AVAILABLE => {
                 ReliabilityPolicy::BestAvailable
             }
@@ -306,7 +306,7 @@ pub enum DurabilityPolicy {
     TransientLocal,
     Volatile,
     SystemDefault,
-    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
     BestAvailable,
     Unknown,
 }
@@ -323,7 +323,7 @@ impl From<DurabilityPolicy> for rmw_qos_durability_policy_t {
             DurabilityPolicy::SystemDefault => {
                 rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             DurabilityPolicy::BestAvailable => {
                 rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_BEST_AVAILABLE
             }
@@ -346,7 +346,7 @@ impl From<rmw_qos_durability_policy_t> for DurabilityPolicy {
             rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_SYSTEM_DEFAULT => {
                 DurabilityPolicy::SystemDefault
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_BEST_AVAILABLE => {
                 DurabilityPolicy::BestAvailable
             }
@@ -360,10 +360,11 @@ impl From<rmw_qos_durability_policy_t> for DurabilityPolicy {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LivelinessPolicy {
     Automatic,
+    #[cfg(not(r2r__ros__distro__lyrical))]
     ManualByNode,
     ManualByTopic,
     SystemDefault,
-    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+    #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
     BestAvailable,
     Unknown,
 }
@@ -374,6 +375,7 @@ impl From<LivelinessPolicy> for rmw_qos_liveliness_policy_t {
             LivelinessPolicy::Automatic => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_AUTOMATIC
             }
+            #[cfg(not(r2r__ros__distro__lyrical))]
             LivelinessPolicy::ManualByNode => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_NODE
             }
@@ -383,7 +385,7 @@ impl From<LivelinessPolicy> for rmw_qos_liveliness_policy_t {
             LivelinessPolicy::SystemDefault => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             LivelinessPolicy::BestAvailable => {
                 rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_BEST_AVAILABLE
             }
@@ -400,6 +402,7 @@ impl From<rmw_qos_liveliness_policy_t> for LivelinessPolicy {
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_AUTOMATIC => {
                 LivelinessPolicy::Automatic
             }
+            #[cfg(not(r2r__ros__distro__lyrical))]
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_MANUAL_BY_NODE => {
                 LivelinessPolicy::ManualByNode
             }
@@ -409,7 +412,7 @@ impl From<rmw_qos_liveliness_policy_t> for LivelinessPolicy {
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT => {
                 LivelinessPolicy::SystemDefault
             }
-            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__rolling))]
+            #[cfg(any(r2r__ros__distro__iron, r2r__ros__distro__jazzy, r2r__ros__distro__lyrical, r2r__ros__distro__rolling))]
             rmw_qos_liveliness_policy_t::RMW_QOS_POLICY_LIVELINESS_BEST_AVAILABLE => {
                 LivelinessPolicy::BestAvailable
             }

@@ -29,6 +29,13 @@ jobs:
     - run: docker build . --file ./tests/Dockerfile_jazzy --tag r2r_jazzy
     - run: docker run r2r_jazzy /r2r/tests/build_minimal_node.bash
 
+  tests_lyrical:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: docker build . --file ./tests/Dockerfile_lyrical --tag r2r_lyrical
+    - run: docker run r2r_lyrical cargo test
+
   tests_jazzy:
     runs-on: ubuntu-latest
     steps:

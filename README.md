@@ -34,7 +34,7 @@ Since the default behavior is to build all sourced message types, build time can
 
 What works?
 --------------------
-- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron Jazzy
+- Up to date with ROS2 ~Dashing~ ~Eloquent~ Foxy Galactic Humble Iron Jazzy Lyrical
 - Building Rust types
 - Publish/subscribe
 - Services

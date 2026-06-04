@@ -1482,13 +1482,14 @@ impl Node {
 
         let mut ctx = self.context.context_handle.lock().unwrap();
         let ret = unsafe {
-            rcl_timer_init(
+            rcl_timer_init2(
                 &mut timer_handle.as_mut().get_unchecked_mut().handle,
                 clock.clock_handle.as_mut(),
                 ctx.as_mut(),
                 period.as_nanos() as i64,
                 None,
                 rcutils_get_default_allocator(),
+                true
             )
         };
 
