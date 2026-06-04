@@ -6595,6 +6595,17 @@ extern "C" {
     ) -> rcl_ret_t;
 }
 extern "C" {
+    pub fn rcl_timer_init2(
+        timer: *mut rcl_timer_t,
+        clock: *mut rcl_clock_t,
+        context: *mut rcl_context_t,
+        period: i64,
+        callback: rcl_timer_callback_t,
+        allocator: rcl_allocator_t,
+        autostart: bool
+    ) -> rcl_ret_t;
+}
+extern "C" {
     pub fn rcl_timer_fini(timer: *mut rcl_timer_t) -> rcl_ret_t;
 }
 extern "C" {

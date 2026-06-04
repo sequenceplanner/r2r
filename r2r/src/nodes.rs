@@ -1541,7 +1541,6 @@ pub unsafe fn init_timer(
     callback: rcl_timer_callback_t,
     allocator: rcl_allocator_t,
 ) -> rcl_ret_t {
-    // Call the original function
     rcl_timer_init(timer, clock, context, period, callback, allocator)
 }
 
@@ -1561,7 +1560,6 @@ pub unsafe fn init_timer(
     callback: rcl_timer_callback_t,
     allocator: rcl_allocator_t,
 ) -> rcl_ret_t {
-    // Call the new function, defaulting autostart to true
     rcl_timer_init2(timer, clock, context, period, callback, allocator, true)
 }
 
