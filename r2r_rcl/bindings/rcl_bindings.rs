@@ -6594,6 +6594,7 @@ extern "C" {
         allocator: rcl_allocator_t,
     ) -> rcl_ret_t;
 }
+
 extern "C" {
     pub fn rcl_timer_init2(
         timer: *mut rcl_timer_t,
