@@ -7444,6 +7444,12 @@ extern "C" {
     pub fn rcl_logging_rosout_enabled() -> bool;
 }
 extern "C" {
+    pub fn rcl_logging_rosout_init_publisher_for_node(node: *mut rcl_node_t) -> rcl_ret_t;
+}
+extern "C" {
+    pub fn rcl_logging_rosout_fini_publisher_for_node(node: *mut rcl_node_t) -> rcl_ret_t;
+}
+extern "C" {
     pub fn rcl_logging_multiple_output_handler(
         location: *const rcutils_log_location_t,
         severity: ::std::os::raw::c_int,

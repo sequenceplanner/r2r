@@ -13,6 +13,7 @@
 
 // logging
 #include <rcl/logging.h>
+#include <rcl/logging_rosout.h>
 
 // errors
 #include <rcutils/error_handling.h>

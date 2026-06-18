@@ -203,6 +203,8 @@ impl Node {
         };
 
         if res == RCL_RET_OK as i32 {
+            init_rosout_publisher(node_handle.as_mut())?;
+
             let ros_clock = Arc::new(Mutex::new(Clock::create(ClockType::RosTime)?));
             #[cfg(r2r__rosgraph_msgs__msg__Clock)]
             let time_source = {
@@ -1693,9 +1695,31 @@ impl Drop for Node {
 
             p.destroy(self.node_handle.as_mut());
         }
+        fini_rosout_publisher(self.node_handle.as_mut());
         unsafe {
             rcl_node_fini(self.node_handle.as_mut());
         }
+    }
+}
+
+fn init_rosout_publisher(node_handle: &mut rcl_node_t) -> Result<()> {
+    if !unsafe { rcl_logging_rosout_enabled() } {
+        return Ok(());
+    }
+    let options = unsafe { rcl_node_get_options(node_handle) };
+    if options.is_null() || !unsafe { (*options).enable_rosout } {
+        return Ok(());
+    }
+    let ret = unsafe { rcl_logging_rosout_init_publisher_for_node(node_handle) };
+    if ret != RCL_RET_OK as i32 {
+        return Err(Error::from_rcl_error(ret));
+    }
+    Ok(())
+}
+
+fn fini_rosout_publisher(node_handle: &mut rcl_node_t) {
+    if unsafe { rcl_logging_rosout_enabled() } {
+        unsafe { rcl_logging_rosout_fini_publisher_for_node(node_handle) };
     }
 }
 
