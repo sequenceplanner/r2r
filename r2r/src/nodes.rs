@@ -182,7 +182,7 @@ impl Node {
 
     /// Creates a ROS node.
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
-        let (res, node_handle) = {
+        let (res, mut node_handle) = {
             let mut ctx_handle = ctx.context_handle.lock().unwrap();
 
             let c_node_name = CString::new(name).unwrap();
