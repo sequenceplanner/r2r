@@ -1428,6 +1428,105 @@ impl Node {
         Ok(topic_info_list)
     }
 
+    /// Returns subscriber endpoint info for `topic_name`.
+    ///
+    /// Mirrors [`Node::get_publishers_info_by_topic`] for the subscriber side, wrapping
+    /// `rcl_get_subscriptions_info_by_topic`.
+    pub fn get_subscriptions_info_by_topic(
+        &self, topic_name: &str, no_mangle: bool,
+    ) -> Result<Vec<TopicEndpointInfo>> {
+        let node = self.node_handle.as_ref();
+
+        let topic_c_string =
+            CString::new(topic_name).map_err(|_| Error::RCL_RET_INVALID_ARGUMENT)?;
+
+        let mut allocator = unsafe { rcutils_get_default_allocator() };
+
+        let mut info_array: rcl_topic_endpoint_info_array_t =
+            unsafe { rmw_get_zero_initialized_topic_endpoint_info_array() };
+
+        let result = unsafe {
+            rcl_get_subscriptions_info_by_topic(
+                node,
+                &mut allocator,
+                topic_c_string.as_ptr(),
+                no_mangle,
+                &mut info_array,
+            )
+        };
+
+        if result != RCL_RET_OK as i32 {
+            unsafe { rmw_topic_endpoint_info_array_fini(&mut info_array, &mut allocator) };
+            return Err(Error::from_rcl_error(result));
+        }
+
+        let topic_info_list = convert_info_array_to_vec(&info_array);
+
+        let result = unsafe { rmw_topic_endpoint_info_array_fini(&mut info_array, &mut allocator) };
+
+        if result != RCL_RET_OK as i32 {
+            return Err(Error::from_rcl_error(result));
+        }
+
+        Ok(topic_info_list)
+    }
+
+    /// Returns the fully-qualified names of all nodes currently visible on the graph.
+    ///
+    /// Wraps `rcl_get_node_names`. The returned strings are fully-qualified
+    /// (`<namespace>/<name>`), with `/` used when a node has no namespace.
+    pub fn get_node_names(&self) -> Result<Vec<String>> {
+        let node = self.node_handle.as_ref();
+
+        let mut names = unsafe { rcutils_get_zero_initialized_string_array() };
+        let mut namespaces = unsafe { rcutils_get_zero_initialized_string_array() };
+        let allocator = unsafe { rcutils_get_default_allocator() };
+
+        let result = unsafe {
+            rcl_get_node_names(node, allocator, &mut names, &mut namespaces)
+        };
+
+        if result != RCL_RET_OK as i32 {
+            unsafe {
+                rcutils_string_array_fini(&mut names);
+                rcutils_string_array_fini(&mut namespaces);
+            }
+            return Err(Error::from_rcl_error(result));
+        }
+
+        let mut out = Vec::with_capacity(names.size);
+        if !names.data.is_null() && !namespaces.data.is_null() && names.size == namespaces.size {
+            let names_slice = unsafe { std::slice::from_raw_parts(names.data, names.size) };
+            let ns_slice = unsafe { std::slice::from_raw_parts(namespaces.data, namespaces.size) };
+
+            for (n, ns) in names_slice.iter().zip(ns_slice) {
+                if n.is_null() || ns.is_null() {
+                    continue;
+                }
+                let name = unsafe { CStr::from_ptr(*n) }.to_string_lossy().into_owned();
+                let namespace = unsafe { CStr::from_ptr(*ns) }.to_string_lossy().into_owned();
+
+                let fqn = if namespace == "/" {
+                    format!("/{}", name.trim_start_matches('/'))
+                } else {
+                    format!(
+                        "{}/{}",
+                        namespace.trim_end_matches('/'),
+                        name.trim_start_matches('/')
+                    )
+                };
+                out.push(fqn);
+            }
+        }
+
+        unsafe {
+            rcutils_string_array_fini(&mut names);
+            rcutils_string_array_fini(&mut namespaces);
+        }
+
+        Ok(out)
+    }
+
     /// Create a ROS wall timer.
     ///
     /// Create a ROS timer that is woken up by spin every `period`.
