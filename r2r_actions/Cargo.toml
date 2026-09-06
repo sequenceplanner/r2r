@@ -15,7 +15,8 @@ r2r_rcl = { path = "../r2r_rcl", version = "0.9.6" }
 r2r_msg_gen = { path = "../r2r_msg_gen", version = "0.9.6" }
 
 [build-dependencies]
-bindgen = "0.71.1"
+# Use the release that handles Clang type definitions correctly.
+bindgen = "0.72.1"
 r2r_common = { path = "../r2r_common", version = "0.9.6" }
 
 [features]
