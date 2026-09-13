@@ -47,6 +47,9 @@ Changelog
 --------------------
 #### [Unreleased]
 
+#### [0.9.7] - 2026-09-13
+- Bump bindgen version to fix errors with LLVM 22 and later <https://github.com/sequenceplanner/r2r/pull/133>.
+
 #### [0.9.6] - 2025-06-04
 - rcl_timer_init wrapper to compile for Foxy Galactic Humble Iron Jazzy and Lyrical
 
