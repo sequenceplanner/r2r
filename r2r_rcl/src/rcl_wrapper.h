@@ -14,6 +14,10 @@
 // logging
 #include <rcl/logging.h>
 
+// per-node /rosout publisher (rcl does not create it in rcl_node_init;
+// the client library has to do it, like rclcpp/rclpy do)
+#include <rcl/logging_rosout.h>
+
 // errors
 #include <rcutils/error_handling.h>
 

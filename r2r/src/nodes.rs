@@ -182,7 +182,7 @@ impl Node {
 
     /// Creates a ROS node.
     pub fn create(ctx: Context, name: &str, namespace: &str) -> Result<Node> {
-        let (res, node_handle) = {
+        let (res, mut node_handle) = {
             let mut ctx_handle = ctx.context_handle.lock().unwrap();
 
             let c_node_name = CString::new(name).unwrap();
@@ -203,6 +203,20 @@ impl Node {
         };
 
         if res == RCL_RET_OK as i32 {
+            // rcl_node_init() does not create the node's /rosout publisher --
+            // the client library has to, exactly as rclcpp and rclpy do. Without
+            // this, rcl_logging_rosout_output_handler() finds no publisher
+            // registered for the node's logger name and silently drops every
+            // record, so logs only ever reach the console.
+            if unsafe { rcl_logging_rosout_enabled() } {
+                let ret = unsafe { rcl_logging_rosout_init_publisher_for_node(node_handle.as_mut()) };
+                if ret != RCL_RET_OK as i32 {
+                    log::error!("could not create /rosout publisher for node ({})", ret);
+                    unsafe { rcl_node_fini(node_handle.as_mut()) };
+                    return Err(Error::from_rcl_error(ret));
+                }
+            }
+
             let ros_clock = Arc::new(Mutex::new(Clock::create(ClockType::RosTime)?));
             #[cfg(r2r__rosgraph_msgs__msg__Clock)]
             let time_source = {
@@ -1694,6 +1708,10 @@ impl Drop for Node {
             p.destroy(self.node_handle.as_mut());
         }
         unsafe {
+            if rcl_logging_rosout_enabled() {
+                // Mirrors the init in Node::create; must happen before node_fini.
+                rcl_logging_rosout_fini_publisher_for_node(self.node_handle.as_mut());
+            }
             rcl_node_fini(self.node_handle.as_mut());
         }
     }
