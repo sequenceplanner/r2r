@@ -429,9 +429,12 @@ where
 
     fn handle_goal_expired(&mut self) {
         let mut goal_info = WrappedNativeMsg::<action_msgs::msg::GoalInfo>::new();
-        let mut num_expired = 1;
+        let mut num_expired = 0;
 
-        while num_expired > 1 {
+        // Must run until nothing is left to expire: this call is what re-arms
+        // or cancels the expire timer, which otherwise stays ready and makes
+        // every rcl_wait return at once.
+        loop {
             let ret = unsafe {
                 rcl_action_expire_goals(&self.rcl_handle, &mut *goal_info, 1, &mut num_expired)
             };
@@ -439,11 +442,15 @@ where
                 log::debug!("action server: could not expire goal.");
                 return;
             }
+            if num_expired == 0 {
+                return;
+            }
             let gi = action_msgs::msg::GoalInfo::from_native(&goal_info);
             let uuid = uuid_msg_to_uuid(&gi.goal_id);
             log::debug!("goal expired: {} - {}", uuid, num_expired);
-            // todo
-            // self.goals.remove(&uuid);
+            // rcl has freed the goal handle, so the pointer must go too.
+            self.goals.remove(&uuid);
+            self.cancel_senders.remove(&uuid);
             self.result_msgs.remove(&uuid);
             self.result_requests.remove(&uuid);
         }
